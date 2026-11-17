@@ -379,7 +379,7 @@ lemma kernelK_zero_lorentz_fourier (u : ℝ) (hu : 0 < u) (ξ : ℝ) :
     have hden' : (u ^ 2 + x ^ 2 : ℂ) ≠ 0 := by norm_cast; positivity
     field_simp [Real.pi_ne_zero, hc₁_ne, hc₂_ne, hden, hden']
     field_simp [hc₁', hc₂', hden, hden']
-    try simp only [Complex.I_sq, Complex.I_mul_I]
+    simp_rw [Complex.I_sq]
     push_cast; ring
   have hFg_int : Integrable (𝓕 g) := by
     have heq : 𝓕 g = fun x : ℝ => ((u / (x ^ 2 + u ^ 2) : ℝ) : ℂ) := funext hFg
@@ -580,7 +580,7 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
     field_simp [Real.pi_ne_zero, hcu1_ne, hcu2_ne, hc11_ne, hc12_ne, hden, d1, d2, d3, d4]
     field_simp [d1, d2, d3, d4, hden, hden_exp]
     have hI3 : (Complex.I : ℂ) ^ 3 = -Complex.I := by rw [pow_succ, Complex.I_sq]; ring
-    try simp only [Complex.I_sq, Complex.I_mul_I, hI3]
+    simp_rw [Complex.I_sq, hI3]
     push_cast; ring
   have hFg_int : Integrable (𝓕 g) := by
     have heq : 𝓕 g = fun x : ℝ => -((x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1)) : ℝ) : ℂ) := funext hFg
