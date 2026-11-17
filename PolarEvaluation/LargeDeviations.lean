@@ -10,7 +10,7 @@ import PolarEvaluation.PrimeMoments
 
 noncomputable section
 
-open Complex Real MeasureTheory Filter Topology
+open Complex Real MeasureTheory Filter Topology Classical
 
 namespace PolarEvaluation
 
@@ -38,7 +38,6 @@ theorem q_aspect_large_deviation (D : LFunctionData) (t₀ θ : ℝ) (hθ : |θ|
       (∀ (q : ℕ) (hq1 : q ≥ 1), q ≥ q₀ → totientStar q ≥ 1 →
         (∀ (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive), D.GRH q hq1 χ hχ) →
         ∀ V : ℝ, A * Real.log (Real.log q) ≤ V → V ≤ Real.log q / Real.log (Real.log q) →
-        letI := Classical.decPred (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive)
         (1 / (totientStar q : ℝ)) *
           ((Finset.univ.filter (fun χ : DirichletCharacter ℂ q =>
             χ.IsPrimitive ∧ D.nonvanishing q χ t₀ ∧ polarLogL D q χ t₀ θ ≥ V)).card : ℝ) ≤
@@ -48,7 +47,6 @@ theorem q_aspect_large_deviation (D : LFunctionData) (t₀ θ : ℝ) (hθ : |θ|
         ∀ α : ℝ, α > 0 →
         let V := α * Real.sqrt (Real.log q * Real.log (Real.log q))
         V ≤ Real.log q / Real.log (Real.log q) →
-        letI := Classical.decPred (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive)
         (1 / (totientStar q : ℝ)) *
           ((Finset.univ.filter (fun χ : DirichletCharacter ℂ q =>
             χ.IsPrimitive ∧ D.nonvanishing q χ t₀ ∧ polarLogL D q χ t₀ θ ≥ V)).card : ℝ) ≤
@@ -74,7 +72,6 @@ theorem S_large_deviation_q (D : LFunctionData) (t₀ : ℝ) :
         (∀ (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive), D.GRH q hq1 χ hχ) →
         let V := α * Real.sqrt (Real.log q * Real.log (Real.log q))
         V ≤ Real.log q / Real.log (Real.log q) →
-        letI := Classical.decPred (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive)
         (1 / (totientStar q : ℝ)) *
           ((Finset.univ.filter (fun χ : DirichletCharacter ℂ q =>
             χ.IsPrimitive ∧ D.nonvanishing q χ t₀ ∧ |D.S_val q χ t₀| ≥ V)).card : ℝ) ≤
