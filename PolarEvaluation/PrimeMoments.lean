@@ -1218,9 +1218,13 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
               Complex.exp (Complex.I * ↑t * ↑(Real.log p)) := by
             rw [← Complex.exp_conj]
             congr 1
-            simp [Complex.conj_ofReal]
-          rw [hce, Complex.add_re]
-          simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
+            simp only [map_mul, map_neg, Complex.conj_I, Complex.conj_ofReal]
+            ring
+          rw [hce]
+          have hstar2 : (starRingEnd ℂ) ((starRingEnd ℂ) (h_hat (Real.log ↑p / (2 * Real.pi)))) =
+              h_hat (Real.log ↑p / (2 * Real.pi)) := star_star _
+          rw [hstar2, ← Complex.add_re, ← Complex.re_ofReal_mul]
+          congr 1
           ring
         rw [h_sum_eq]
         have h2pi_le : 1 / (2 * Real.pi) ≤ 1 := by
@@ -1242,8 +1246,8 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
           _ ≤ 4 ^ k * (‖D₁ t‖ ^ (2 * k) + ‖D₂ t‖ ^ (2 * k)) := by
               gcongr
               rcases le_total ‖D₁ t‖ ‖D₂ t‖ with h | h
-              · rw [max_eq_right h]; linarith [pow_nonneg (norm_nonneg (D₁ t)) (2 * k)]
-              · rw [max_eq_left h]; linarith [pow_nonneg (norm_nonneg (D₂ t)) (2 * k)]
+              · simp only [m, max_eq_right h]; linarith [pow_nonneg (norm_nonneg (D₁ t)) (2 * k)]
+              · simp only [m, max_eq_left h]; linarith [pow_nonneg (norm_nonneg (D₂ t)) (2 * k)]
       exact (pow_le_pow_left₀ (abs_nonneg _) h_le (2 * k)).trans h_max
     have h_poly_bound : ∀ (b : ℕ → ℂ),
         (∀ p ∈ primes, ‖b p‖ ≤ (Real.log p / Real.sqrt p) *
@@ -1265,7 +1269,7 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
           intro f hf
           rw [Fintype.mem_piFinset] at hf
           rw [Finset.mem_Icc]
-          refine ⟨Finset.prod_pos (fun i _ => ?_), ?_⟩
+          refine ⟨Nat.succ_le_of_lt (Finset.prod_pos (fun i _ => ?_)), ?_⟩
           · have hp := hf i
             simp only [primes, Finset.mem_filter] at hp
             exact hp.2.pos
@@ -1295,10 +1299,12 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
         rw [← hf.2, Nat.cast_prod, Real.log_prod (fun i _ => (hpos i).ne')]
         push_cast
         rw [Finset.mul_sum]
-      have h_norm_eq : ∀ t : ℝ, ‖D t‖ ^ (2 * k) =
+      have h_norm_eq : ∀ t : ℝ, ‖∑ p ∈ primes, b p * Complex.exp (-Complex.I * t * Real.log p)‖ ^ (2 * k) =
           ‖∑ n ∈ Finset.Icc 1 (P ^ k), a n * Complex.exp (-Complex.I * t * Real.log n)‖ ^ 2 := by
         intro t
-        rw [mul_comm 2 k, pow_mul, ← norm_pow, h_pow_eq t]
+        rw [mul_comm 2 k, pow_mul, ← norm_pow]
+        change ‖(D t) ^ k‖ ^ 2 = _
+        rw [h_pow_eq t]
       simp_rw [h_norm_eq]
       have hPk_le_T : ((P ^ k : ℕ) : ℝ) ≤ T := by
         have hP_le : (P : ℝ) ≤ X := Nat.floor_le (Real.exp_pos _).le
@@ -1335,7 +1341,7 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
               refine Finset.sum_fiberwise_of_maps_to (fun f hf => ?_) _
               rw [Fintype.mem_piFinset] at hf
               rw [Finset.mem_Icc]
-              refine ⟨Finset.prod_pos (fun i _ => (Finset.mem_filter.mp (hf i)).2.pos), ?_⟩
+              refine ⟨Nat.succ_le_of_lt (Finset.prod_pos (fun i _ => (Finset.mem_filter.mp (hf i)).2.pos)), ?_⟩
               calc ∏ i : Fin k, f i ≤ ∏ _i : Fin k, P :=
                     Finset.prod_le_prod' fun i _ => (Finset.mem_Icc.mp (Finset.mem_filter.mp (hf i)).1).2
                 _ = P ^ k := by simp
@@ -1399,8 +1405,10 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
       Continuous.continuousOn (by fun_prop) |>.integrableOn_Icc
     have hD₂_int : IntegrableOn (fun t : ℝ => ‖D₂ t‖ ^ (2 * k)) (Set.Icc T (2 * T)) :=
       Continuous.continuousOn (by fun_prop) |>.integrableOn_Icc
+    have hRHS_int : IntegrableOn (fun t : ℝ => 4 ^ k * (‖D₁ t‖ ^ (2 * k) + ‖D₂ t‖ ^ (2 * k))) (Set.Icc T (2 * T)) :=
+      Continuous.continuousOn (by fun_prop) |>.integrableOn_Icc
     have hP_int : IntegrableOn (fun t : ℝ => |primeSum1 q χ h_hat X t| ^ (2 * k)) (Set.Icc T (2 * T)) := by
-      refine ((hD₁_int.add hD₂_int).const_mul (4 ^ k)).mono' ?_ ?_
+      refine hRHS_int.mono' ?_ ?_
       · exact (Continuous.continuousOn (by unfold primeSum1; fun_prop)).aestronglyMeasurable measurableSet_Icc
       · filter_upwards with t
         rw [Real.norm_eq_abs, abs_of_nonneg (pow_nonneg (abs_nonneg _) _)]
@@ -1413,10 +1421,14 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
     calc (1 / T) * ∫ t in Set.Icc T (2 * T), |primeSum1 q χ h_hat X t| ^ (2 * k)
         ≤ (1 / T) * ∫ t in Set.Icc T (2 * T), 4 ^ k * (‖D₁ t‖ ^ (2 * k) + ‖D₂ t‖ ^ (2 * k)) := by
           gcongr
-          exact setIntegral_mono_on hP_int ((hD₁_int.add hD₂_int).const_mul _) measurableSet_Icc (fun t _ => h_ptwise t)
+          exact setIntegral_mono_on hP_int hRHS_int measurableSet_Icc (fun t _ => h_ptwise t)
       _ = 4 ^ k * ((1 / T) * ∫ t in Set.Icc T (2 * T), ‖D₁ t‖ ^ (2 * k) +
             (1 / T) * ∫ t in Set.Icc T (2 * T), ‖D₂ t‖ ^ (2 * k)) := by
-          rw [MeasureTheory.integral_const_mul, MeasureTheory.integral_add hD₁_int hD₂_int]
+          have hint_add : ∫ t in Set.Icc T (2 * T), (‖D₁ t‖ ^ (2 * k) + ‖D₂ t‖ ^ (2 * k)) =
+              (∫ t in Set.Icc T (2 * T), ‖D₁ t‖ ^ (2 * k)) +
+              (∫ t in Set.Icc T (2 * T), ‖D₂ t‖ ^ (2 * k)) :=
+            MeasureTheory.integral_add hD₁_int hD₂_int
+          rw [MeasureTheory.integral_const_mul, hint_add]
           ring
       _ ≤ 4 ^ k * ((max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k +
             (max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k) := by
@@ -1424,7 +1436,7 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
           have hb2_bd := h_poly_bound b₂ hb₂
           change (1 / T) * ∫ t in Set.Icc T (2 * T), ‖D₁ t‖ ^ (2 * k) ≤ _ at hb1_bd
           change (1 / T) * ∫ t in Set.Icc T (2 * T), ‖D₂ t‖ ^ (2 * k) ≤ _ at hb2_bd
-          exact mul_le_mul_of_nonneg_left (add_le_add hb1_bd hb2_bd) (by positivity)
+          exact mul_le_mul_of_nonneg_left (by linarith [hb1_bd, hb2_bd]) (by positivity)
       _ ≤ 4 ^ k * (2 ^ k * (max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k) := by
           have h2k : (2 : ℝ) ≤ 2 ^ k := by
             have : (2 : ℝ) ^ 1 ≤ (2 : ℝ) ^ k := pow_le_pow_right₀ (by norm_num) hk_pos
@@ -1470,7 +1482,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
       calc (Finset.univ.filter (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive)).card
           ≤ (Finset.univ : Finset (DirichletCharacter ℂ q)).card := Finset.card_filter_le _ _
         _ = Fintype.card (DirichletCharacter ℂ q) := Finset.card_univ
-        _ = Nat.totient q := DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ q
+        _ = Nat.totient q := by rw [← Nat.card_eq_fintype_card]; exact DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ q
     have h1 : (1 / (totientStar q : ℝ)) *
           ((Finset.univ.filter (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive)).card : ℝ) ≤
         (Nat.totient q : ℝ) / (totientStar q : ℝ) := by
@@ -1559,7 +1571,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
           intro f hf
           rw [Fintype.mem_piFinset] at hf
           rw [Finset.mem_Icc]
-          refine ⟨Finset.prod_pos (fun i _ => (Finset.mem_filter.mp (hf i)).2.pos), ?_⟩
+          refine ⟨Nat.succ_le_of_lt (Finset.prod_pos (fun i _ => (Finset.mem_filter.mp (hf i)).2.pos)), ?_⟩
           calc ∏ i : Fin k, f i ≤ ∏ _i : Fin k, P :=
                 Finset.prod_le_prod' fun i _ => (Finset.mem_Icc.mp (Finset.mem_filter.mp (hf i)).1).2
             _ = P ^ k := by simp
@@ -1623,7 +1635,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
                     calc (n : ZMod q) * ((hun.unit⁻¹ : (ZMod q)ˣ) : ZMod q)
                         = ((hun.unit : (ZMod q)ˣ) : ZMod q) * ((hun.unit⁻¹ : (ZMod q)ˣ) : ZMod q) := by
                           rw [hun.unit_spec]
-                      _ = 1 := by exact_mod_cast mul_inv_cancel hun.unit
+                      _ = 1 := by rw [← Units.val_mul, mul_inv_cancel, Units.val_one]
                   rw [← map_mul, h_umul, map_one]
                 have hχn_ne : χ n ≠ 0 := fun h0 => by simp [h0] at hmul1
                 have hnorm1 : ‖χ n‖ = 1 := dirichletChar_norm_eq_one χ hχn_ne
@@ -1689,7 +1701,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
               calc ∑ χ : DirichletCharacter ℂ q, ‖χ m‖ ^ 2
                   ≤ (Fintype.card (DirichletCharacter ℂ q) : ℝ) := by simpa using hχ_le
                 _ = (Nat.totient q : ℝ) := by
-                    rw [DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ q]
+                    rw [← Nat.card_eq_fintype_card, DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ q]
           _ = (Nat.totient q : ℝ) * ∑ m ∈ Finset.Icc 1 (P ^ k), ‖a m‖ ^ 2 := by
               rw [← Finset.sum_mul, mul_comm]
       have h_cs : ∀ n ∈ Finset.Icc 1 (P ^ k), ‖a n‖ ^ 2 ≤ (k.factorial : ℝ) * ∑ f ∈ fiber n, ∏ i, ‖b (f i)‖ ^ 2 := by
@@ -1720,7 +1732,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
               refine Finset.sum_fiberwise_of_maps_to (fun f hf => ?_) _
               rw [Fintype.mem_piFinset] at hf
               rw [Finset.mem_Icc]
-              refine ⟨Finset.prod_pos (fun i _ => (Finset.mem_filter.mp (hf i)).2.pos), ?_⟩
+              refine ⟨Nat.succ_le_of_lt (Finset.prod_pos (fun i _ => (Finset.mem_filter.mp (hf i)).2.pos)), ?_⟩
               calc ∏ i : Fin k, f i ≤ ∏ _i : Fin k, P :=
                     Finset.prod_le_prod' fun i _ => (Finset.mem_Icc.mp (Finset.mem_filter.mp (hf i)).1).2
                 _ = P ^ k := by simp
@@ -1773,9 +1785,10 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
             |primeSum1 q χ h_hat X t₀| ^ (2 * k)
         ≤ (1 / (totientStar q : ℝ)) *
             ∑ χ : DirichletCharacter ℂ q, |primeSum1 q χ h_hat X t₀| ^ (2 * k) := by
-          gcongr
-          exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
-            (fun χ _ _ => pow_nonneg (abs_nonneg (primeSum1 q χ h_hat X t₀)) (2 * k))
+          exact mul_le_mul_of_nonneg_left
+            (Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
+              (fun χ _ _ => pow_nonneg (abs_nonneg _) _))
+            (by positivity)
       _ ≤ (1 / (totientStar q : ℝ)) *
             ∑ χ : DirichletCharacter ℂ q, 4 ^ k * (‖D₁ χ‖ ^ (2 * k) + ‖D₂ χ‖ ^ (2 * k)) := by
           gcongr
