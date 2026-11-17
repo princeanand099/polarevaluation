@@ -654,7 +654,10 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
       have hre_bd : |(χ (p ^ 2) * h_hat (-(Real.log (p ^ 2) / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log (p ^ 2)) +
            star (χ (p ^ 2)) * h_hat (Real.log (p ^ 2) / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log (p ^ 2))).re| ≤
           2 * C_dec * (1 / Real.log p + 1 / Δ) := by
-        calc |(_).re| ≤ ‖_‖ := Complex.abs_re_le_norm _
+        calc |(χ (p ^ 2) * h_hat (-(Real.log (p ^ 2) / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log (p ^ 2)) +
+                star (χ (p ^ 2)) * h_hat (Real.log (p ^ 2) / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log (p ^ 2))).re|
+            ≤ ‖χ (p ^ 2) * h_hat (-(Real.log (p ^ 2) / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log (p ^ 2)) +
+                star (χ (p ^ 2)) * h_hat (Real.log (p ^ 2) / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log (p ^ 2))‖ := Complex.abs_re_le_norm _
           _ ≤ ‖χ (p ^ 2) * h_hat (-(Real.log (p ^ 2) / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log (p ^ 2))‖ +
               ‖star (χ (p ^ 2)) * h_hat (Real.log (p ^ 2) / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log (p ^ 2))‖ := norm_add_le _ _
           _ = ‖χ (p ^ 2)‖ * ‖h_hat (-(Real.log (p ^ 2) / (2 * Real.pi)))‖ * 1 +
@@ -664,7 +667,9 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
               gcongr <;> exact hchi_le _
           _ = 2 * C_dec * (1 / Real.log p + 1 / Δ) := by ring
       rw [abs_mul, abs_of_nonneg (div_nonneg hlogp_pos.le hp_pos.le)]
-      calc (Real.log p / (p : ℝ)) * |(_).re|
+      calc (Real.log p / (p : ℝ)) *
+            |(χ (p ^ 2) * h_hat (-(Real.log (p ^ 2) / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log (p ^ 2)) +
+              star (χ (p ^ 2)) * h_hat (Real.log (p ^ 2) / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log (p ^ 2))).re|
           ≤ (Real.log p / (p : ℝ)) * (2 * C_dec * (1 / Real.log p + 1 / Δ)) := by gcongr
         _ = 2 * C_dec * (1 / (p : ℝ) + (1 / Δ) * (Real.log p / (p : ℝ))) := by
             field_simp [hlogp_pos.ne', hp_pos.ne']; ring
