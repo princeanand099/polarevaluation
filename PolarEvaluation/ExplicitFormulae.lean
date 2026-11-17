@@ -368,19 +368,17 @@ lemma kernelK_zero_lorentz_fourier (u : ℝ) (hu : 0 < u) (ξ : ℝ) :
     rw [hI1, hI2]
     have hc₁_ne : c₁ ≠ 0 := by intro h; rw [h] at hc₁_re; simp at hc₁_re
     have hc₂_ne : c₂ ≠ 0 := by intro h; rw [h] at hc₂_re; simp at hc₂_re
-    have hden : (x ^ 2 + u ^ 2 : ℂ) ≠ 0 := by
-      norm_cast
-      positivity
-    dsimp only [c₁, c₂] at *
-    have hc₁' : (-↑u - Complex.I * ↑x : ℂ) ≠ 0 := by
-      intro h; have := congr_arg Complex.re h; simp at this; linarith
-    have hc₂' : (-↑u + Complex.I * ↑x : ℂ) ≠ 0 := by
-      intro h; have := congr_arg Complex.re h; simp at this; linarith
-    have hden' : (u ^ 2 + x ^ 2 : ℂ) ≠ 0 := by norm_cast; positivity
-    have hx_u : x ^ 2 + u ^ 2 ≠ 0 := by positivity
-    field_simp [Real.pi_ne_zero, hc₁_ne, hc₂_ne, hden, hden']
-    apply Complex.ext <;> simp [Complex.div_re, Complex.div_im, Complex.inv_re, Complex.inv_im, Complex.normSq_apply] <;>
-      field_simp [hx_u] <;> ring
+    have hx_u : (x ^ 2 + u ^ 2 : ℂ) ≠ 0 := by norm_cast; positivity
+    have hprod : c₁ * c₂ = 4 * (Real.pi : ℂ) ^ 2 * ((x ^ 2 + u ^ 2 : ℝ) : ℂ) := by
+      dsimp only [c₁, c₂]; push_cast; ring_nf; simp [Complex.I_sq]; ring
+    have hsum : c₁ + c₂ = -4 * (Real.pi : ℂ) * (u : ℂ) := by
+      dsimp only [c₁, c₂]; ring
+    rw [show (Real.pi : ℂ) * (-1 / c₂) + (Real.pi : ℂ) * (-1 / c₁) =
+        -(Real.pi : ℂ) * (c₁ + c₂) / (c₁ * c₂) by
+      field_simp [hc₁_ne, hc₂_ne]; ring]
+    rw [hsum, hprod]
+    push_cast
+    field_simp [Real.pi_ne_zero, hx_u]
   have hFg_int : Integrable (𝓕 g) := by
     have heq : 𝓕 g = fun x : ℝ => ((u / (x ^ 2 + u ^ 2) : ℝ) : ℂ) := funext hFg
     rw [heq]
@@ -563,25 +561,34 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
     have hcu2_ne : cu2 ≠ 0 := by intro h; rw [h] at hcu2_re; simp at hcu2_re
     have hc11_ne : c11 ≠ 0 := by intro h; rw [h] at hc11_re; simp at hc11_re
     have hc12_ne : c12 ≠ 0 := by intro h; rw [h] at hc12_re; simp at hc12_re
-    have hden : ((x ^ 2 + u ^ 2) * (x ^ 2 + 1) : ℂ) ≠ 0 := by
-      norm_cast; positivity
-    have d1 : (Complex.I * ↑x - ↑u : ℂ) ≠ 0 := by
-      intro h; have := congr_arg Complex.re h; simp at this; linarith
-    have d2 : (-1 + Complex.I * ↑x : ℂ) ≠ 0 := by
-      intro h; have := congr_arg Complex.re h; simp at this
-    have d3 : (-(Complex.I * ↑x) - ↑u : ℂ) ≠ 0 := by
-      intro h; have := congr_arg Complex.re h; simp at this; linarith
-    have d4 : (-1 - Complex.I * ↑x : ℂ) ≠ 0 := by
-      intro h; have := congr_arg Complex.re h; simp at this
-    dsimp only [cu1, cu2, c11, c12] at *
-    have hden_exp : (x ^ 2 + x ^ 2 * u ^ 2 + x ^ 4 + u ^ 2 : ℂ) ≠ 0 := by
-      have : (x ^ 2 + x ^ 2 * u ^ 2 + x ^ 4 + u ^ 2 : ℂ) = (x ^ 2 + u ^ 2) * (x ^ 2 + 1) := by ring
-      rw [this]; exact hden
-    have hx_u : x ^ 2 + u ^ 2 ≠ 0 := by positivity
-    have hx_1 : x ^ 2 + 1 ≠ 0 := by positivity
-    field_simp [Real.pi_ne_zero, hcu1_ne, hcu2_ne, hc11_ne, hc12_ne, hden, d1, d2, d3, d4]
-    apply Complex.ext <;> simp [Complex.div_re, Complex.div_im, Complex.inv_re, Complex.inv_im, Complex.normSq_apply] <;>
-      field_simp [hx_u, hx_1] <;> ring
+    have hx_u : (x ^ 2 + u ^ 2 : ℂ) ≠ 0 := by norm_cast; positivity
+    have hx_1 : (x ^ 2 + 1 : ℂ) ≠ 0 := by norm_cast; positivity
+    have hprodu : cu1 * cu2 = 4 * (Real.pi : ℂ) ^ 2 * (x ^ 2 + u ^ 2 : ℂ) := by
+      dsimp only [cu1, cu2]; push_cast; ring_nf; simp [Complex.I_sq]; ring
+    have hdiffu : cu2 - cu1 = 4 * (Real.pi : ℂ) * Complex.I * (x : ℂ) := by
+      dsimp only [cu1, cu2]; ring
+    have hprod1 : c11 * c12 = 4 * (Real.pi : ℂ) ^ 2 * (x ^ 2 + 1 : ℂ) := by
+      dsimp only [c11, c12]; push_cast; ring_nf; simp [Complex.I_sq]; ring
+    have hdiff1 : c12 - c11 = 4 * (Real.pi : ℂ) * Complex.I * (x : ℂ) := by
+      dsimp only [c11, c12]; ring
+    have hterm_u : Complex.I * (Real.pi : ℂ) * (1 / cu1 - 1 / cu2) = -(x : ℂ) / (x ^ 2 + u ^ 2 : ℂ) := by
+      rw [show 1 / cu1 - 1 / cu2 = (cu2 - cu1) / (cu1 * cu2) by field_simp [hcu1_ne, hcu2_ne]; ring]
+      rw [hdiffu, hprodu]
+      field_simp [Real.pi_ne_zero, hx_u]
+      ring_nf; simp [Complex.I_sq]; ring
+    have hterm_1 : -Complex.I * (Real.pi : ℂ) * (1 / c11 - 1 / c12) = (x : ℂ) / (x ^ 2 + 1 : ℂ) := by
+      rw [show 1 / c11 - 1 / c12 = (c12 - c11) / (c11 * c12) by field_simp [hc11_ne, hc12_ne]; ring]
+      rw [hdiff1, hprod1]
+      field_simp [Real.pi_ne_zero, hx_1]
+      ring_nf; simp [Complex.I_sq]; ring
+    rw [show Complex.I * (Real.pi : ℂ) * (-1 / cu2 - -1 / c12) +
+        -Complex.I * (Real.pi : ℂ) * (-1 / cu1 - -1 / c11) =
+        Complex.I * (Real.pi : ℂ) * (1 / cu1 - 1 / cu2) +
+        (-Complex.I * (Real.pi : ℂ) * (1 / c11 - 1 / c12)) by ring]
+    rw [hterm_u, hterm_1]
+    push_cast
+    field_simp [hx_u, hx_1]
+    ring
   have hFg_int : Integrable (𝓕 g) := by
     have heq : 𝓕 g = fun x : ℝ => -((x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1)) : ℝ) : ℂ) := funext hFg
     rw [heq]
