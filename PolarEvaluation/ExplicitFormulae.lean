@@ -166,10 +166,10 @@ lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi /
         · exact (continuous_id.sub Real.continuous_arctan).continuousOn
         · exact fun t _ => (differentiableAt_id.sub (Real.differentiableAt_arctan t)).differentiableWithinAt
         · intro t _
-          have h1 : HasDerivAt (fun s : ℝ => s - Real.arctan s) (1 - (1 + t ^ 2)⁻¹) t :=
+          have h1 : HasDerivAt (fun s : ℝ => s - Real.arctan s) (1 - 1 / (1 + t ^ 2)) t :=
             (hasDerivAt_id t).sub (Real.hasDerivAt_arctan t)
           rw [h1.deriv]
-          have hle : (1 + t ^ 2)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by linarith [sq_nonneg t])
+          have hle : 1 / (1 + t ^ 2) ≤ 1 := div_le_one_of_le₀ (by linarith [sq_nonneg t]) (by positivity)
           linarith
       have := hmono (by simp : (0 : ℝ) ∈ Set.Ici 0) hu_pos.le hu_pos.le
       simp only [sub_zero, Real.arctan_zero] at this
@@ -197,7 +197,7 @@ lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi /
             have : t ^ 2 - t + 1 = (t - 1 / 2) ^ 2 + 3 / 4 := by ring
             nlinarith [sq_nonneg (t - 1 / 2)]
           have heq : 1 / (1 + t ^ 2) - (1 - t) = t * (t ^ 2 - t + 1) / (1 + t ^ 2) := by
-            field_simp; ring
+            field_simp
           rw [heq]
           exact div_nonneg hpos (by positivity)
       have := hmono (by simp : (0 : ℝ) ∈ Set.Ici 0) hu_pos.le hu_pos.le
