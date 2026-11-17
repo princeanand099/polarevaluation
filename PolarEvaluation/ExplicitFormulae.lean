@@ -258,7 +258,7 @@ lemma fourierHat_eq_fourier (f : ℝ → ℂ) (ξ : ℝ) :
   unfold fourierHat
   rw [Real.fourier_eq]
   congr 1; ext x
-  rw [smul_eq_mul, mul_comm]
+  rw [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, mul_comm]
   congr 1
   push_cast
   ring_nf
@@ -268,16 +268,22 @@ lemma fourierInv_eq_fourierHat_neg (f : ℝ → ℂ) (ξ : ℝ) :
   unfold fourierHat
   rw [Real.fourierInv_eq]
   congr 1; ext x
-  rw [smul_eq_mul, mul_comm]
+  rw [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, mul_comm]
   congr 1
   push_cast
   ring_nf
 
 lemma integral_Iio_zero_eq_Ioi (F : ℝ → ℂ) :
     (∫ y in Set.Iio (0 : ℝ), F y) = ∫ y in Set.Ioi (0 : ℝ), F (-y) := by
-  have hpre : (fun y : ℝ => -y) ⁻¹' Set.Ioi (0 : ℝ) = Set.Iio (0 : ℝ) := by
-    ext y; simp
-  rw [← hpre, ← MeasureTheory.integral_comp_neg_set (Set.Ioi (0 : ℝ)) F]
+  rw [← MeasureTheory.integral_indicator measurableSet_Iio,
+    ← MeasureTheory.integral_indicator measurableSet_Ioi,
+    ← integral_neg_eq_self (μ := volume) (fun y : ℝ => (Set.Iio (0 : ℝ)).indicator F y)]
+  congr 1; ext y
+  by_cases hy : 0 < y
+  · have h1 : -y ∈ Set.Iio (0 : ℝ) := by simp; linarith
+    simp [Set.indicator_of_mem h1, Set.indicator_of_mem (Set.mem_Ioi.mpr hy)]
+  · have h1 : -y ∉ Set.Iio (0 : ℝ) := by simp; linarith
+    simp [Set.indicator_of_notMem h1, Set.indicator_of_notMem (Set.mem_Ioi.not.mpr hy)]
 
 lemma kernelK_zero_lorentz_fourier (u : ℝ) (hu : 0 < u) (ξ : ℝ) :
     fourierHat (fun x : ℝ => ((u / (x ^ 2 + u ^ 2) : ℝ) : ℂ)) ξ =
@@ -289,7 +295,7 @@ lemma kernelK_zero_lorentz_fourier (u : ℝ) (hu : 0 < u) (ξ : ℝ) :
   have hg_int_Ioi : IntegrableOn g (Set.Ioi (0 : ℝ)) := by
     have h1 : IntegrableOn (fun y : ℝ => Complex.exp ((-2 * Real.pi * u : ℂ) * y)) (Set.Ioi (0 : ℝ)) :=
       integrableOn_exp_mul_complex_Ioi (by simp; positivity) 0
-    refine (h1.const_mul (Real.pi : ℂ)).congr_fun ?_ measurableSet_Ioi
+    refine IntegrableOn.congr_fun (h1.const_mul (Real.pi : ℂ)) ?_ measurableSet_Ioi
     intro y hy
     have hy0 : 0 < y := hy
     dsimp only [g]
@@ -370,8 +376,9 @@ lemma kernelK_zero_lorentz_fourier (u : ℝ) (hu : 0 < u) (ξ : ℝ) :
       intro h; have := congr_arg Complex.re h; simp at this; linarith
     have hc₂' : (-↑u + Complex.I * ↑x : ℂ) ≠ 0 := by
       intro h; have := congr_arg Complex.re h; simp at this; linarith
-    field_simp [Real.pi_ne_zero, hc₁_ne, hc₂_ne, hden]
-    field_simp [hc₁', hc₂', hden]
+    have hden' : (u ^ 2 + x ^ 2 : ℂ) ≠ 0 := by norm_cast; positivity
+    field_simp [Real.pi_ne_zero, hc₁_ne, hc₂_ne, hden, hden']
+    field_simp [hc₁', hc₂', hden, hden']
     push_cast; ring
   have hFg_int : Integrable (𝓕 g) := by
     have heq : 𝓕 g = fun x : ℝ => ((u / (x ^ 2 + u ^ 2) : ℝ) : ℂ) := funext hFg
@@ -451,7 +458,7 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
     refine IntegrableOn.congr_fun ((h1.sub h2).const_mul (-Complex.I * (Real.pi : ℂ) * 1)) ?_ measurableSet_Ioi
     intro y hy
     have hy0 : 0 < y := hy
-    dsimp only [g, sgnC]
+    dsimp only [g, sgnC, Pi.sub_apply]
     rw [if_pos hy0, abs_of_pos hy0]
     congr 1; congr 1 <;> congr 1 <;> push_cast <;> ring
   have hg_int_Iio : IntegrableOn g (Set.Iio (0 : ℝ)) := by
@@ -566,8 +573,12 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
     have d4 : (-1 - Complex.I * ↑x : ℂ) ≠ 0 := by
       intro h; have := congr_arg Complex.re h; simp at this
     dsimp only [cu1, cu2, c11, c12] at *
+    have hden_exp : (x ^ 2 + x ^ 2 * u ^ 2 + x ^ 4 + u ^ 2 : ℂ) ≠ 0 := by
+      have : (x ^ 2 + x ^ 2 * u ^ 2 + x ^ 4 + u ^ 2 : ℂ) = (x ^ 2 + u ^ 2) * (x ^ 2 + 1) := by ring
+      rw [this]; exact hden
     field_simp [Real.pi_ne_zero, hcu1_ne, hcu2_ne, hc11_ne, hc12_ne, hden, d1, d2, d3, d4]
-    field_simp [d1, d2, d3, d4, hden]
+    field_simp [d1, d2, d3, d4, hden, hden_exp]
+    simp only [Complex.I_sq]
     push_cast; ring
   have hFg_int : Integrable (𝓕 g) := by
     have heq : 𝓕 g = fun x : ℝ => -((x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1)) : ℝ) : ℂ) := funext hFg
@@ -846,10 +857,10 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
                 simpa [div_eq_mul_inv] using tendsto_const_nhds.add (tendsto_const_nhds.mul hinv)
               have hden : Tendsto (fun x : ℝ => 1 + 1 / x ^ 2) atTop (nhds (1 + 0)) :=
                 tendsto_const_nhds.add hinv
-              simpa [one_div] using (hnum.div hden (by norm_num)).congr (fun _ => rfl)
+              simpa [one_div, Pi.div_apply] using Tendsto.div hnum hden (by norm_num)
             have hlog_lim := (Real.continuousAt_log (by norm_num : (1 : ℝ) ≠ 0)).tendsto.comp hlim
             simpa [G, Real.log_one] using tendsto_const_nhds.mul hlog_lim
-          have hres := integral_Ioi_of_hasDerivAt_of_tendsto' hG_deriv h_Ioi_int hG_tend hG_cont.continuousWithinAt
+          have hres := integral_Ioi_of_hasDerivAt_of_tendsto' hG_deriv h_Ioi_int hG_tend
           have hG0 : G 0 = Real.log u := by
             dsimp only [G]
             simp only [ne_eq, OfNat.ofNat_ne_zero, not_false_eq_true, zero_pow, zero_add, div_one]
@@ -1006,10 +1017,10 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
       have hd2 := hd1.cexp.const_mul (-(1 / (2 * ((|ξ| : ℝ) : ℂ))))
       convert hd2 using 1
       · ext v; congr 1; ring
-      · field_simp [hξ_ne]; ring
+      · field_simp [hξ_ne]
     rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv (by
       apply ContinuousOn.intervalIntegrable; exact Continuous.continuousOn (by fun_prop))]
-    simp only [mul_zero, zero_mul, Complex.exp_zero, mul_one]
+    simp only [Complex.ofReal_zero, Complex.ofReal_one, mul_zero, zero_mul, Complex.exp_zero, mul_one]
     field_simp [hξ_ne]
     ring
   have hKpi_zero : fourierHat (fun x : ℝ => (kernelK (Real.pi / 2) x : ℂ)) 0 = 0 := by
@@ -1061,7 +1072,7 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
       have hd4 := (hd2.sub hd3).const_mul (-Complex.I * (Real.pi : ℂ) * (if 0 < ξ then (1 : ℂ) else -1))
       convert hd4 using 1
       · ext v; congr 2; congr 1; ring
-      · field_simp [Real.pi_ne_zero, h_abs_ne]; ring
+      · field_simp [Real.pi_ne_zero, h_abs_ne]; push_cast; ring
     rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv (by
       apply ContinuousOn.intervalIntegrable; exact Continuous.continuousOn (by fun_prop))]
     have hξ_ne : (ξ : ℂ) ≠ 0 := by exact_mod_cast hξ
@@ -1114,6 +1125,7 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
         zero_mul, one_mul, add_zero, zero_add]
       ring
     congr 1; ext x
+    dsimp only
     rw [hK_eq x]
     push_cast; ring
   constructor
