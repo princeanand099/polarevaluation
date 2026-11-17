@@ -44,6 +44,76 @@ theorem guinand_weil_bandlimited (D : LFunctionData) :
               C₁ * (M_sup + (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * M_sup else 0)) :=
   guinand_weil_external D
 
+lemma kernelK_integrable_zero : Integrable (fun x : ℝ => kernelK 0 x) := by
+  have hmeas : AEStronglyMeasurable (fun x : ℝ => kernelK 0 x) volume := by
+    unfold kernelK
+    fun_prop
+  have h_Ioi : IntegrableOn (fun x : ℝ => kernelK 0 x) (Set.Ioi (1 : ℝ)) := by
+    have hpow : IntegrableOn (fun x : ℝ => x ^ (-2 : ℝ)) (Set.Ioi (1 : ℝ)) :=
+      integrableOn_Ioi_rpow_of_lt (by norm_num) (by norm_num)
+    refine hpow.mono' (hmeas.restrict) ?_
+    filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
+    have hx1 : 1 < x := hx
+    have hx_pos : 0 < x := by linarith
+    have hx2_pos : 0 < x ^ 2 := sq_pos_of_pos hx_pos
+    unfold kernelK
+    simp only [Real.cos_zero, Real.sin_zero, zero_mul, add_zero]
+    have hlog_nonneg : 0 ≤ Real.log ((x ^ 2 + 1) / x ^ 2) := by
+      apply Real.log_nonneg
+      rw [one_le_div hx2_pos]
+      linarith
+    have hlog_le : Real.log ((x ^ 2 + 1) / x ^ 2) ≤ 1 / x ^ 2 := by
+      have h1 : (x ^ 2 + 1) / x ^ 2 - 1 = 1 / x ^ 2 := by field_simp; ring
+      linarith [Real.log_le_sub_one_of_pos (div_pos (by positivity) hx2_pos)]
+    rw [Real.norm_eq_abs, abs_mul, abs_neg, abs_of_nonneg (by positivity : (0 : ℝ) ≤ 1 / 2),
+      abs_of_nonneg hlog_nonneg]
+    have hrpow : x ^ (-2 : ℝ) = 1 / x ^ 2 := by
+      rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hx_pos.le, Real.rpow_natCast, one_div]
+    rw [hrpow]
+    linarith
+  have h_Iio : IntegrableOn (fun x : ℝ => kernelK 0 x) (Set.Iio (-1 : ℝ)) := by
+    have h_even : ∀ x : ℝ, kernelK 0 (-x) = kernelK 0 x := by
+      intro x
+      unfold kernelK
+      simp [Real.cos_zero, Real.sin_zero]
+    have hcomp : IntegrableOn (fun x : ℝ => kernelK 0 (-x)) (Set.Ioi (1 : ℝ)) := by
+      simpa [h_even] using h_Ioi
+    have hmap := hcomp.comp_neg
+    simpa [Set.preimage_neg_Ioi] using hmap
+  have h_Icc : IntegrableOn (fun x : ℝ => kernelK 0 x) (Set.Icc (-1 : ℝ) 1) := by
+    have h_log_abs : IntegrableOn (fun x : ℝ => Real.log |x|) (Set.Icc (-1 : ℝ) 1) := by
+      have h01 : IntervalIntegrable Real.log volume 0 1 := Real.intervalIntegrable_log
+      have h_pos : IntegrableOn (fun x : ℝ => Real.log |x|) (Set.Icc (0 : ℝ) 1) := by
+        refine (intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num : (0 : ℝ) ≤ 1)).mp ?_
+        refine h01.congr ?_
+        intro x hx
+        rw [Set.uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at hx
+        rw [abs_of_pos hx.1]
+      have h_neg : IntegrableOn (fun x : ℝ => Real.log |x|) (Set.Icc (-1 : ℝ) 0) := by
+        have := h_pos.comp_neg
+        simpa [abs_neg, Set.preimage_neg_Icc] using this
+      simpa [Set.Icc_union_Icc_eq_Icc (by norm_num : (-1 : ℝ) ≤ 0) (by norm_num : (0 : ℝ) ≤ 1)] using
+        h_neg.union h_pos
+    have h_log_sq : IntegrableOn (fun x : ℝ => Real.log (x ^ 2 + 1)) (Set.Icc (-1 : ℝ) 1) :=
+      (Continuous.continuousOn (by fun_prop)).integrableOn_Icc
+    have h_comb : IntegrableOn (fun x : ℝ => -(1 / 2 : ℝ) * (Real.log (x ^ 2 + 1) - 2 * Real.log |x|))
+        (Set.Icc (-1 : ℝ) 1) :=
+      (h_log_sq.sub (h_log_abs.const_mul 2)).const_mul (-(1 / 2 : ℝ))
+    sorry
+  sorry
+
+lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi / 2) x) := by
+  sorry
+
+lemma kernelK_integrable (θ : ℝ) : Integrable (fun x : ℝ => kernelK θ x) := by
+  have h : (fun x : ℝ => kernelK θ x) =
+      (fun x : ℝ => Real.cos θ * kernelK 0 x + Real.sin θ * kernelK (Real.pi / 2) x) := by
+    ext x
+    unfold kernelK
+    simp [Real.cos_zero, Real.sin_zero, Real.cos_pi_div_two, Real.sin_pi_div_two]
+  rw [h]
+  exact (kernelK_integrable_zero.const_mul _).add (kernelK_integrable_pi_half.const_mul _)
+
 /-- **Lemma 2.3 (Part 1)**: Explicit Fourier transform `K̂_θ(ξ)` for `θ ∈ [-π/2, π/2]` and `ξ ≠ 0`,
 together with `K̂_θ(0) = -π cos θ`. -/
 theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
@@ -67,6 +137,126 @@ theorem majorant_fourier_decay (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2
           C_dec * (1 / Real.log p + 1 / Δ) ∧
         ‖fourierHat (fun x : ℝ => (M x : ℂ)) (-(Real.log p / (2 * Real.pi)))‖ ≤
           C_dec * (1 / Real.log p + 1 / Δ) := by
-  sorry
+  refine ⟨max (4 * Real.pi) (max C_L1 1), by positivity, fun Δ M hΔ hInt hL1 p hp => ?_⟩
+  set C_dec := max (4 * Real.pi) (max C_L1 1)
+  have hK_int : Integrable (fun x : ℝ => kernelK θ x) := kernelK_integrable θ
+  have hM_int : Integrable (fun x : ℝ => M x) := by
+    have : (fun x : ℝ => M x) = (fun x : ℝ => (M x - kernelK θ x) + kernelK θ x) := by
+      ext x; ring
+    rw [this]
+    exact hInt.add hK_int
+  have h_bound_ξ : ∀ ξ : ℝ, ξ ≠ 0 → 1 / |ξ| = 2 * Real.pi / Real.log p →
+      ‖fourierHat (fun x : ℝ => (M x : ℂ)) ξ‖ ≤ C_dec * (1 / Real.log p + 1 / Δ) := by
+    intro ξ hξ hξ_abs
+    have hK_four := (kernelK_fourier θ hθ).2 ξ hξ
+    have h_exp_le : Real.exp (-2 * Real.pi * |ξ|) ≤ 1 := by
+      rw [Real.exp_le_one_iff]
+      have : 0 ≤ 2 * Real.pi * |ξ| := by positivity
+      linarith
+    have h_exp_pos : 0 < Real.exp (-2 * Real.pi * |ξ|) := Real.exp_pos _
+    have h_one_sub : ‖(1 : ℂ) - Complex.exp (-2 * Real.pi * |ξ|)‖ ≤ 1 := by
+      rw [← Complex.ofReal_exp, ← Complex.ofReal_one, ← Complex.ofReal_sub, Complex.norm_real,
+        Real.norm_eq_abs, abs_of_nonneg (by linarith)]
+      linarith
+    have h_pi_exp : Real.pi * Real.exp (-2 * Real.pi * |ξ|) ≤ 1 / (2 * |ξ|) := by
+      have h_lin : 2 * Real.pi * |ξ| ≤ Real.exp (2 * Real.pi * |ξ|) := by
+        linarith [Real.add_one_le_exp (2 * Real.pi * |ξ|)]
+      have h_pos : 0 < 2 * Real.pi * |ξ| := by positivity
+      calc Real.pi * Real.exp (-2 * Real.pi * |ξ|)
+          = Real.pi / Real.exp (2 * Real.pi * |ξ|) := by rw [Real.exp_neg, div_eq_mul_inv]
+        _ ≤ Real.pi / (2 * Real.pi * |ξ|) := by gcongr
+        _ = 1 / (2 * |ξ|) := by field_simp [Real.pi_ne_zero]
+    have hK_norm : ‖fourierHat (fun x : ℝ => (kernelK θ x : ℂ)) ξ‖ ≤ 3 / (2 * |ξ|) := by
+      rw [hK_four]
+      have h1 : ‖-(Real.cos θ : ℂ) * ((1 - Complex.exp (-2 * Real.pi * |ξ|)) / (2 * |ξ|))‖ ≤
+          1 / (2 * |ξ|) := by
+        rw [norm_mul, norm_neg, Complex.norm_real, Real.norm_eq_abs]
+        calc |Real.cos θ| * ‖(1 - Complex.exp (-2 * Real.pi * |ξ|)) / (2 * |ξ|)‖
+            ≤ 1 * (1 / (2 * |ξ|)) := by
+              gcongr
+              · exact Real.abs_cos_le_one θ
+              · rw [norm_div, Complex.norm_real, Real.norm_eq_abs,
+                  abs_of_nonneg (by positivity : (0 : ℝ) ≤ 2 * |ξ|)]
+                exact div_le_div_of_nonneg_right h_one_sub (by positivity)
+          _ = 1 / (2 * |ξ|) := one_mul _
+      have h2 : ‖Complex.I * (Real.sin θ : ℂ) *
+            ((1 - Complex.exp (-2 * Real.pi * |ξ|)) / (2 * ξ) -
+              Real.pi * (if 0 < ξ then (1 : ℂ) else -1) * Complex.exp (-2 * Real.pi * |ξ|))‖ ≤
+          2 / (2 * |ξ|) := by
+        rw [norm_mul, norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs]
+        have hsin : |Real.sin θ| ≤ 1 := Real.abs_sin_le_one θ
+        have h2a : ‖(1 - Complex.exp (-2 * Real.pi * |ξ|)) / (2 * ξ)‖ ≤ 1 / (2 * |ξ|) := by
+          rw [norm_div, Complex.norm_real, Real.norm_eq_abs, abs_mul, abs_of_pos two_pos]
+          exact div_le_div_of_nonneg_right h_one_sub (by positivity)
+        have h2b : ‖(Real.pi : ℂ) * (if 0 < ξ then (1 : ℂ) else -1) * Complex.exp (-2 * Real.pi * |ξ|)‖ ≤
+            1 / (2 * |ξ|) := by
+          have hsgn : ‖if 0 < ξ then (1 : ℂ) else -1‖ = 1 := by split_ifs <;> simp
+          rw [norm_mul, norm_mul, hsgn, mul_one, Complex.norm_real, Real.norm_eq_abs,
+            abs_of_pos Real.pi_pos, ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs,
+            abs_of_pos h_exp_pos]
+          exact h_pi_exp
+        have h2c : ‖(1 - Complex.exp (-2 * Real.pi * |ξ|)) / (2 * ξ) -
+            Real.pi * (if 0 < ξ then (1 : ℂ) else -1) * Complex.exp (-2 * Real.pi * |ξ|)‖ ≤
+            2 / (2 * |ξ|) := by
+          calc _ ≤ _ + _ := norm_sub_le _ _
+            _ ≤ 1 / (2 * |ξ|) + 1 / (2 * |ξ|) := add_le_add h2a h2b
+            _ = 2 / (2 * |ξ|) := by ring
+        calc |Real.sin θ| * ‖_‖ ≤ 1 * (2 / (2 * |ξ|)) := mul_le_mul hsin h2c (norm_nonneg _) zero_le_one
+          _ = 2 / (2 * |ξ|) := one_mul _
+      calc ‖_ - _‖ ≤ ‖_‖ + ‖_‖ := norm_sub_le _ _
+        _ ≤ 1 / (2 * |ξ|) + 2 / (2 * |ξ|) := add_le_add h1 h2
+        _ = 3 / (2 * |ξ|) := by ring
+    have hdiff_norm : ‖fourierHat (fun x : ℝ => (M x : ℂ)) ξ -
+        fourierHat (fun x : ℝ => (kernelK θ x : ℂ)) ξ‖ ≤ C_L1 / Δ := by
+      have hM_c : Integrable (fun x : ℝ => (M x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x)) := by
+        refine (hM_int.norm).mono ?_ ?_
+        · fun_prop
+        · filter_upwards with x
+          simp [norm_mul, Complex.norm_exp_ofReal_mul_I]
+      have hK_c : Integrable (fun x : ℝ => (kernelK θ x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x)) := by
+        refine (hK_int.norm).mono ?_ ?_
+        · fun_prop
+        · filter_upwards with x
+          simp [norm_mul, Complex.norm_exp_ofReal_mul_I]
+      unfold fourierHat
+      rw [← integral_sub hM_c hK_c]
+      calc ‖∫ x : ℝ, ((M x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x) -
+            (kernelK θ x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x))‖
+          ≤ ∫ x : ℝ, ‖(M x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x) -
+            (kernelK θ x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x)‖ :=
+            norm_integral_le_integral_norm _
+        _ = ∫ x : ℝ, |M x - kernelK θ x| := by
+            congr 1; ext x
+            rw [← sub_mul, norm_mul, ← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
+            have hexp : ‖Complex.exp (-2 * Real.pi * Complex.I * ξ * x)‖ = 1 := by
+              have : (-2 * Real.pi * Complex.I * ξ * x : ℂ) = ((-2 * Real.pi * ξ * x : ℝ) : ℂ) * Complex.I := by
+                push_cast; ring
+              rw [this, Complex.norm_exp_ofReal_mul_I]
+            rw [hexp, mul_one]
+        _ ≤ C_L1 / Δ := hL1
+    have hK_p : 3 / (2 * |ξ|) ≤ C_dec * (1 / Real.log p) := by
+      rw [show 3 / (2 * |ξ|) = (3 / 2) * (1 / |ξ|) by ring, hξ_abs]
+      have hlogp_pos : 0 < Real.log p := Real.log_pos (by exact_mod_cast hp.one_lt)
+      have h3pi : 3 * Real.pi ≤ C_dec := le_trans (by linarith [Real.pi_pos]) (le_max_left _ _)
+      calc (3 / 2) * (2 * Real.pi / Real.log p) = (3 * Real.pi) * (1 / Real.log p) := by ring
+        _ ≤ C_dec * (1 / Real.log p) := by gcongr
+    have hCL1_le : C_L1 / Δ ≤ C_dec * (1 / Δ) := by
+      have hCL1 : C_L1 ≤ C_dec := le_trans (le_max_left _ _) (le_max_right _ _)
+      have hΔ_pos : 0 < Δ := by linarith
+      calc C_L1 / Δ = C_L1 * (1 / Δ) := by ring
+        _ ≤ C_dec * (1 / Δ) := by gcongr
+    calc ‖fourierHat (fun x : ℝ => (M x : ℂ)) ξ‖
+        ≤ ‖fourierHat (fun x : ℝ => (kernelK θ x : ℂ)) ξ‖ +
+          ‖fourierHat (fun x : ℝ => (M x : ℂ)) ξ - fourierHat (fun x : ℝ => (kernelK θ x : ℂ)) ξ‖ := by
+          simpa [add_comm] using norm_le_norm_add_norm_sub' (fourierHat (fun x : ℝ => (M x : ℂ)) ξ)
+            (fourierHat (fun x : ℝ => (kernelK θ x : ℂ)) ξ)
+      _ ≤ 3 / (2 * |ξ|) + C_L1 / Δ := add_le_add hK_norm hdiff_norm
+      _ ≤ C_dec * (1 / Real.log p) + C_dec * (1 / Δ) := add_le_add hK_p hCL1_le
+      _ = C_dec * (1 / Real.log p + 1 / Δ) := by ring
+  have hlogp_pos : 0 < Real.log p := Real.log_pos (by exact_mod_cast hp.one_lt)
+  have hξ_pos : 0 < Real.log p / (2 * Real.pi) := div_pos hlogp_pos (by positivity)
+  refine ⟨h_bound_ξ _ hξ_pos.ne' ?_, h_bound_ξ _ (neg_ne_zero.mpr hξ_pos.ne') ?_⟩
+  · rw [abs_of_pos hξ_pos, one_div_div]
+  · rw [abs_neg, abs_of_pos hξ_pos, one_div_div]
 
 end PolarEvaluation
