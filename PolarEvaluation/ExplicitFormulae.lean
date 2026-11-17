@@ -370,7 +370,7 @@ lemma kernelK_zero_lorentz_fourier (u : ℝ) (hu : 0 < u) (ξ : ℝ) :
     have hc₂_ne : c₂ ≠ 0 := by intro h; rw [h] at hc₂_re; simp at hc₂_re
     have hx_u : (x ^ 2 + u ^ 2 : ℂ) ≠ 0 := by norm_cast; positivity
     have hprod : c₁ * c₂ = 4 * (Real.pi : ℂ) ^ 2 * ((x ^ 2 + u ^ 2 : ℝ) : ℂ) := by
-      dsimp only [c₁, c₂]; push_cast; ring_nf; simp [Complex.I_sq]; ring
+      dsimp only [c₁, c₂]; push_cast; ring_nf; simp [Complex.I_sq]
     have hsum : c₁ + c₂ = -4 * (Real.pi : ℂ) * (u : ℂ) := by
       dsimp only [c₁, c₂]; ring
     rw [show (Real.pi : ℂ) * (-1 / c₂) + (Real.pi : ℂ) * (-1 / c₁) =
@@ -564,23 +564,23 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
     have hx_u : (x ^ 2 + u ^ 2 : ℂ) ≠ 0 := by norm_cast; positivity
     have hx_1 : (x ^ 2 + 1 : ℂ) ≠ 0 := by norm_cast; positivity
     have hprodu : cu1 * cu2 = 4 * (Real.pi : ℂ) ^ 2 * (x ^ 2 + u ^ 2 : ℂ) := by
-      dsimp only [cu1, cu2]; push_cast; ring_nf; simp [Complex.I_sq]; ring
+      dsimp only [cu1, cu2]; push_cast; ring_nf; simp [Complex.I_sq]
     have hdiffu : cu2 - cu1 = 4 * (Real.pi : ℂ) * Complex.I * (x : ℂ) := by
       dsimp only [cu1, cu2]; ring
     have hprod1 : c11 * c12 = 4 * (Real.pi : ℂ) ^ 2 * (x ^ 2 + 1 : ℂ) := by
-      dsimp only [c11, c12]; push_cast; ring_nf; simp [Complex.I_sq]; ring
+      dsimp only [c11, c12]; push_cast; ring_nf; simp [Complex.I_sq]
     have hdiff1 : c12 - c11 = 4 * (Real.pi : ℂ) * Complex.I * (x : ℂ) := by
       dsimp only [c11, c12]; ring
     have hterm_u : Complex.I * (Real.pi : ℂ) * (1 / cu1 - 1 / cu2) = -(x : ℂ) / (x ^ 2 + u ^ 2 : ℂ) := by
-      rw [show 1 / cu1 - 1 / cu2 = (cu2 - cu1) / (cu1 * cu2) by field_simp [hcu1_ne, hcu2_ne]; ring]
+      rw [show 1 / cu1 - 1 / cu2 = (cu2 - cu1) / (cu1 * cu2) by field_simp [hcu1_ne, hcu2_ne]]
       rw [hdiffu, hprodu]
       field_simp [Real.pi_ne_zero, hx_u]
-      ring_nf; simp [Complex.I_sq]; ring
+      ring_nf; simp [Complex.I_sq]
     have hterm_1 : -Complex.I * (Real.pi : ℂ) * (1 / c11 - 1 / c12) = (x : ℂ) / (x ^ 2 + 1 : ℂ) := by
-      rw [show 1 / c11 - 1 / c12 = (c12 - c11) / (c11 * c12) by field_simp [hc11_ne, hc12_ne]; ring]
+      rw [show 1 / c11 - 1 / c12 = (c12 - c11) / (c11 * c12) by field_simp [hc11_ne, hc12_ne]]
       rw [hdiff1, hprod1]
       field_simp [Real.pi_ne_zero, hx_1]
-      ring_nf; simp [Complex.I_sq]; ring
+      ring_nf; simp [Complex.I_sq]
     rw [show Complex.I * (Real.pi : ℂ) * (-1 / cu2 - -1 / c12) +
         -Complex.I * (Real.pi : ℂ) * (-1 / cu1 - -1 / c11) =
         Complex.I * (Real.pi : ℂ) * (1 / cu1 - 1 / cu2) +
