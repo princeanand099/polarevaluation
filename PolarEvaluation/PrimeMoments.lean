@@ -12,6 +12,41 @@ open Complex Real MeasureTheory Filter Topology
 
 namespace PolarEvaluation
 
+lemma dirichletChar_norm_eq_one {q : ℕ} (χ : DirichletCharacter ℂ q) {n : ℕ} (h0 : χ n ≠ 0) :
+    ‖χ n‖ = 1 := by
+  by_cases hq0 : q = 0
+  · subst hq0
+    have hu : IsUnit (n : ZMod 0) := by
+      by_contra hnu
+      exact h0 (MulChar.map_nonunit χ hnu)
+    have h1 : (n : ℤ) = 1 ∨ (n : ℤ) = -1 := Int.isUnit_iff.mp hu
+    rcases h1 with h | h
+    · have : (n : ZMod 0) = 1 := h
+      rw [this, map_one, norm_one]
+    · have : (n : ZMod 0) = -1 := h
+      have hsq : χ n * χ n = 1 := by rw [← map_mul, this]; norm_num
+      have hnsq : ‖χ n‖ ^ 2 = 1 := by
+        rw [sq, ← norm_mul, hsq, norm_one]
+      nlinarith [norm_nonneg (χ n)]
+  · haveI : NeZero q := ⟨hq0⟩
+    have hu : IsUnit (n : ZMod q) := by
+      by_contra hnu
+      exact h0 (MulChar.map_nonunit χ hnu)
+    set m := Fintype.card (ZMod q)ˣ
+    have hm : 0 < m := Fintype.card_pos
+    have hpow : (χ n) ^ m = 1 := by
+      rw [← map_pow, ← hu.unit_spec]
+      push_cast
+      rw [← Units.val_pow_eq_pow_val, pow_card_eq_one, Units.val_one, map_one]
+    have hnorm_pow : ‖χ n‖ ^ m = 1 := by rw [← norm_pow, hpow, norm_one]
+    have h1 : ‖χ n‖ ^ m = 1 ^ m := by rw [hnorm_pow, one_pow]
+    exact (pow_left_inj₀ (norm_nonneg _) zero_le_one hm.ne').mp h1
+
+lemma dirichletChar_norm_le_one {q : ℕ} (χ : DirichletCharacter ℂ q) (n : ℕ) : ‖χ n‖ ≤ 1 := by
+  by_cases h0 : χ n = 0
+  · simp [h0]
+  · exact (dirichletChar_norm_eq_one χ h0).le
+
 /-- Helper: general Fourier decay of any `L^1`-close majorant `M` for `K_θ` at any `ξ ≠ 0`. -/
 lemma majorant_fourier_decay_any (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2) (hΔ₀ : Δ₀ ≥ 1) :
     ∃ C_dec > 0, ∀ (Δ : ℝ) (M : ℝ → ℝ), Δ ≥ Δ₀ →
@@ -566,7 +601,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
     intro n
     by_cases h0 : χ n = 0
     · simp [h0]
-    · exact (χ.norm_eq_one_of_ne_zero h0).le
+    · exact (dirichletChar_norm_eq_one χ h0).le
   have hX_ge_16 : (16 : ℝ) ≤ X := by
     have he1 : (2 : ℝ) ≤ Real.exp 1 := by linarith [Real.add_one_le_exp (1 : ℝ)]
     have h4 : (4 : ℝ) ≤ 2 * Real.pi * Δ := by nlinarith [Real.two_le_pi]
@@ -944,49 +979,47 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
           have h1 : max C_L1 1 * (16 * S_54) ≤ 100 * max C_L1 1 * (S_54 + 1) := by nlinarith [le_max_right C_L1 1]
           exact h1.trans (le_max_right _ _)
 
-lemma prime_tuple_fiber_card (k n : ℕ) :
-    ((Finset.univ : Finset (Fin k → ℕ)).filter
-      (fun f => (∀ i, Nat.Prime (f i)) ∧ (∏ i, f i) = n)).card ≤ k.factorial := by
+lemma prime_tuple_fiber_card (S : Finset ℕ) (hS : ∀ p ∈ S, Nat.Prime p) (k n : ℕ) :
+    ((Fintype.piFinset (fun _ : Fin k => S)).filter (fun f => (∏ i, f i) = n)).card ≤ k.factorial := by
   induction k generalizing n with
   | zero =>
     have hsub : Subsingleton (Fin 0 → ℕ) := inferInstance
     exact (Finset.card_le_one_of_subsingleton _).trans (by simp)
   | succ k ih =>
-    set F := (Finset.univ : Finset (Fin (k + 1) → ℕ)).filter
-      (fun f => (∀ i, Nat.Prime (f i)) ∧ (∏ i, f i) = n)
+    set F := (Fintype.piFinset (fun _ : Fin (k + 1) => S)).filter (fun f => (∏ i, f i) = n)
     by_cases h_emp : F = ∅
     · rw [h_emp, Finset.card_empty]; exact Nat.zero_le _
     · obtain ⟨f₀, hf₀⟩ := Finset.nonempty_iff_ne_empty.mpr h_emp
-      simp only [F, Finset.mem_filter, Finset.mem_univ, true_and] at hf₀
+      simp only [F, Finset.mem_filter, Fintype.mem_piFinset] at hf₀
       have hn_pos : 0 < n := by
         rw [← hf₀.2]
-        exact Finset.prod_pos (fun i _ => (hf₀.1 i).pos)
+        exact Finset.prod_pos (fun i _ => (hS _ (hf₀.1 i)).pos)
       have hpf_sub : n.primeFactors ⊆ Finset.image f₀ Finset.univ := by
         intro p hp
         rw [Nat.mem_primeFactors] at hp
         have hp_dvd : p ∣ ∏ i : Fin (k + 1), f₀ i := by rw [hf₀.2]; exact hp.1.2
         obtain ⟨i, _, hi⟩ := hp.1.dvd_finset_prod_iff.mp hp_dvd
-        have hpeq : p = f₀ i := (Nat.prime_dvd_prime_iff_eq hp.1 (hf₀.1 i)).mp hi
+        have hpeq : p = f₀ i := (Nat.prime_dvd_prime_iff_eq hp.1 (hS _ (hf₀.1 i))).mp hi
         exact Finset.mem_image.mpr ⟨i, Finset.mem_univ i, hpeq.symm⟩
       have hpf_card : n.primeFactors.card ≤ k + 1 :=
         (Finset.card_le_card hpf_sub).trans (Finset.card_image_le.trans (by simp))
       have hF_sub : F ⊆ n.primeFactors.biUnion (fun p => F.filter (fun f => f 0 = p)) := by
         intro f hf
-        simp only [F, Finset.mem_filter, Finset.mem_univ, true_and] at hf
-        refine Finset.mem_biUnion.mpr ⟨f 0, ?_, Finset.mem_filter.mpr ⟨Finset.mem_filter.mpr ⟨Finset.mem_univ _, hf⟩, rfl⟩⟩
+        simp only [F, Finset.mem_filter, Fintype.mem_piFinset] at hf
+        refine Finset.mem_biUnion.mpr ⟨f 0, ?_,
+          Finset.mem_filter.mpr ⟨Finset.mem_filter.mpr ⟨Fintype.mem_piFinset.mpr hf.1, hf.2⟩, rfl⟩⟩
         rw [Nat.mem_primeFactors]
-        refine ⟨hf.1 0, ?_, hn_pos.ne'⟩
+        refine ⟨hS _ (hf.1 0), ?_, hn_pos.ne'⟩
         rw [← hf.2]
         exact Finset.dvd_prod_of_mem f (Finset.mem_univ 0)
       have h_fiber : ∀ p ∈ n.primeFactors, (F.filter (fun f => f 0 = p)).card ≤ k.factorial := by
         intro p hp
-        set G := (Finset.univ : Finset (Fin k → ℕ)).filter
-          (fun g => (∀ i, Nat.Prime (g i)) ∧ (∏ i, g i) = n / p)
+        set G := (Fintype.piFinset (fun _ : Fin k => S)).filter (fun g => (∏ i, g i) = n / p)
         have h_card_le : (F.filter (fun f => f 0 = p)).card ≤ G.card := by
           refine Finset.card_le_card_of_injOn (fun f i => f i.succ) ?_ ?_
           · intro f hf
-            simp only [Finset.mem_filter, F, Finset.mem_univ, true_and] at hf
-            simp only [G, Finset.mem_filter, Finset.mem_univ, true_and]
+            simp only [Finset.mem_filter, F, Fintype.mem_piFinset] at hf
+            simp only [G, Finset.mem_filter, Fintype.mem_piFinset]
             refine ⟨fun i => hf.1.1 i.succ, ?_⟩
             have hprod : p * ∏ i : Fin k, f i.succ = n := by
               rw [← hf.2, ← Fin.prod_univ_succ, hf.1.2]
@@ -1280,17 +1313,8 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
           gcongr; exact norm_sum_le _ _
         have h2 : (∑ f ∈ fiber n, ‖∏ i, b (f i)‖) ^ 2 ≤ (fiber n).card * ∑ f ∈ fiber n, ‖∏ i, b (f i)‖ ^ 2 :=
           sq_sum_le_card_mul_sum_sq
-        have h_card : (fiber n).card ≤ k.factorial := by
-          have hsub : fiber n ⊆ (Finset.univ : Finset (Fin k → ℕ)).filter
-              (fun f => (∀ i, Nat.Prime (f i)) ∧ (∏ i, f i) = n) := by
-            intro f hf
-            simp only [fiber, Finset.mem_filter, Fintype.mem_piFinset] at hf
-            simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-            refine ⟨fun i => ?_, hf.2⟩
-            have hp := hf.1 i
-            simp only [primes, Finset.mem_filter] at hp
-            exact hp.2
-          exact (Finset.card_le_card hsub).trans (prime_tuple_fiber_card k n)
+        have h_card : (fiber n).card ≤ k.factorial :=
+          prime_tuple_fiber_card primes (fun p hp => (Finset.mem_filter.mp hp).2) k n
         have h3 : ((fiber n).card : ℝ) * ∑ f ∈ fiber n, ‖∏ i, b (f i)‖ ^ 2 ≤
             (k.factorial : ℝ) * ∑ f ∈ fiber n, ∏ i, ‖b (f i)‖ ^ 2 := by
           have h_eq : ∑ f ∈ fiber n, ‖∏ i, b (f i)‖ ^ 2 = ∑ f ∈ fiber n, ∏ i, ‖b (f i)‖ ^ 2 := by
@@ -1346,7 +1370,7 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
     have hchi_le : ∀ p : ℕ, ‖χ p‖ ≤ 1 := fun p => by
       by_cases h0 : χ p = 0
       · simp [h0]
-      · exact (χ.norm_eq_one_of_ne_zero h0).le
+      · exact (dirichletChar_norm_eq_one χ h0).le
     have hb₁ : ∀ p ∈ primes, ‖b₁ p‖ ≤ (Real.log p / Real.sqrt p) *
         max ‖h_hat (-(Real.log p / (2 * Real.pi)))‖ ‖h_hat (Real.log p / (2 * Real.pi))‖ := by
       intro p hp
@@ -1396,7 +1420,11 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
           ring
       _ ≤ 4 ^ k * ((max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k +
             (max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k) := by
-          exact mul_le_mul_of_nonneg_left (add_le_add (h_poly_bound b₁ hb₁) (h_poly_bound b₂ hb₂)) (by positivity)
+          have hb1_bd := h_poly_bound b₁ hb₁
+          have hb2_bd := h_poly_bound b₂ hb₂
+          change (1 / T) * ∫ t in Set.Icc T (2 * T), ‖D₁ t‖ ^ (2 * k) ≤ _ at hb1_bd
+          change (1 / T) * ∫ t in Set.Icc T (2 * T), ‖D₂ t‖ ^ (2 * k) ≤ _ at hb2_bd
+          exact mul_le_mul_of_nonneg_left (add_le_add hb1_bd hb2_bd) (by positivity)
       _ ≤ 4 ^ k * (2 ^ k * (max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k) := by
           have h2k : (2 : ℝ) ≤ 2 ^ k := by
             have : (2 : ℝ) ^ 1 ≤ (2 : ℝ) ^ k := pow_le_pow_right₀ (by norm_num) hk_pos
@@ -1433,6 +1461,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
   set h_hat := fourierHat (fun x : ℝ => (M x : ℂ))
   have hq_pos : 0 < q := by omega
   have hq_ne : q ≠ 0 := hq_pos.ne'
+  haveI : NeZero q := ⟨hq_ne⟩
   have hqstar_pos : (0 : ℝ) < totientStar q := by exact_mod_cast hqstar
   rcases Nat.eq_zero_or_pos k with rfl | hk_pos
   · simp only [mul_zero, pow_zero, Nat.cast_zero, mul_one, Finset.sum_const, nsmul_eq_mul]
@@ -1480,16 +1509,14 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
           have hstar2 : (starRingEnd ℂ) ((starRingEnd ℂ) (h_hat (Real.log ↑p / (2 * Real.pi)))) =
               h_hat (Real.log ↑p / (2 * Real.pi)) := star_star _
           rw [hstar2, ← Complex.add_re]
-          have h_factor : ((Real.log ↑p / Real.sqrt ↑p : ℝ) : ℂ) *
-              (h_hat (-(Real.log ↑p / (2 * Real.pi))) * Complex.exp (-Complex.I * ↑t₀ * ↑(Real.log ↑p)) * χ ↑p +
-               h_hat (Real.log ↑p / (2 * Real.pi)) * Complex.exp (Complex.I * ↑t₀ * ↑(Real.log ↑p)) * (starRingEnd ℂ) (χ ↑p)) =
-              ((Real.log ↑p / Real.sqrt ↑p : ℝ) : ℂ) * h_hat (-(Real.log ↑p / (2 * Real.pi))) *
-                Complex.exp (-Complex.I * ↑t₀ * ↑(Real.log ↑p)) * χ ↑p +
-              ((Real.log ↑p / Real.sqrt ↑p : ℝ) : ℂ) * h_hat (Real.log ↑p / (2 * Real.pi)) *
-                Complex.exp (Complex.I * ↑t₀ * ↑(Real.log ↑p)) * (starRingEnd ℂ) (χ ↑p) := by ring
-          rw [← h_factor, Complex.re_ofReal_mul]
-          congr 2
-          ring
+          have h_rhs_eq : ((Real.log ↑p / Real.sqrt ↑p : ℝ) : ℂ) * h_hat (-(Real.log ↑p / (2 * Real.pi))) *
+              Complex.exp (-Complex.I * ↑t₀ * ↑(Real.log p)) * χ ↑p +
+              (starRingEnd ℂ) (χ ↑p) * (Complex.exp (Complex.I * ↑t₀ * ↑(Real.log p)) *
+                (h_hat (Real.log ↑p / (2 * Real.pi)) * ((Real.log ↑p / Real.sqrt ↑p : ℝ) : ℂ))) =
+              ((Real.log ↑p / Real.sqrt ↑p : ℝ) : ℂ) *
+                (χ ↑p * h_hat (-(Real.log ↑p / (2 * Real.pi))) * Complex.exp (-Complex.I * ↑t₀ * ↑(Real.log p)) +
+                 (starRingEnd ℂ) (χ ↑p) * h_hat (Real.log ↑p / (2 * Real.pi)) * Complex.exp (Complex.I * ↑t₀ * ↑(Real.log p))) := by ring
+          rw [h_rhs_eq, Complex.re_ofReal_mul]
         rw [h_sum_eq]
         have h2pi_le : 1 / (2 * Real.pi) ≤ 1 := by
           rw [div_le_one (by positivity)]; linarith [Real.two_le_pi]
@@ -1592,12 +1619,17 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
                   star (χ n) = χ ((hun.unit⁻¹ : (ZMod q)ˣ) : ZMod q) := by
                 intro χ
                 have hmul1 : χ n * χ ((hun.unit⁻¹ : (ZMod q)ˣ) : ZMod q) = 1 := by
-                  rw [← map_mul, show (n : ZMod q) * ((hun.unit⁻¹ : (ZMod q)ˣ) : ZMod q) = 1 from by
-                    rw [← hun.unit_spec]; exact_mod_cast mul_inv_cancel hun.unit, map_one]
+                  have h_umul : (n : ZMod q) * ((hun.unit⁻¹ : (ZMod q)ˣ) : ZMod q) = 1 := by
+                    calc (n : ZMod q) * ((hun.unit⁻¹ : (ZMod q)ˣ) : ZMod q)
+                        = ((hun.unit : (ZMod q)ˣ) : ZMod q) * ((hun.unit⁻¹ : (ZMod q)ˣ) : ZMod q) := by
+                          rw [hun.unit_spec]
+                      _ = 1 := by exact_mod_cast mul_inv_cancel hun.unit
+                  rw [← map_mul, h_umul, map_one]
                 have hχn_ne : χ n ≠ 0 := fun h0 => by simp [h0] at hmul1
-                have hnorm1 : ‖χ n‖ = 1 := χ.norm_eq_one_of_ne_zero hχn_ne
+                have hnorm1 : ‖χ n‖ = 1 := dirichletChar_norm_eq_one χ hχn_ne
                 have hmul2 : χ n * star (χ n) = 1 := by
-                  rw [Complex.star_def, Complex.mul_conj', hnorm1, one_pow, Complex.ofReal_one]
+                  rw [Complex.star_def, Complex.mul_conj', hnorm1]
+                  norm_num
                 exact mul_left_cancel₀ hχn_ne (hmul2.trans hmul1.symm)
               have h_prod : ∀ χ : DirichletCharacter ℂ q,
                   χ m * star (χ n) = χ (((hun.unit⁻¹ * hum.unit : (ZMod q)ˣ) : ZMod q)) := by
@@ -1610,7 +1642,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
               have ha_ne1 : (((hun.unit⁻¹ * hum.unit : (ZMod q)ˣ) : ZMod q)) ≠ 1 := by
                 intro heq
                 have hu_eq : hun.unit⁻¹ * hum.unit = 1 := Units.ext (by simpa using heq)
-                have hum_eq : hum.unit = hun.unit := eq_of_inv_mul_eq_one hu_eq
+                have hum_eq : hum.unit = hun.unit := (eq_of_inv_mul_eq_one hu_eq).symm
                 have hmn_zmod : (m : ZMod q) = (n : ZMod q) := by
                   rw [← hum.unit_spec, ← hun.unit_spec, hum_eq]
                 have hm_lt : m < q := hm.2.trans_lt hPk_lt_q
@@ -1638,7 +1670,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
             = ∑ m ∈ Finset.Icc 1 (P ^ k), ‖a m‖ ^ 2 * ∑ χ : DirichletCharacter ℂ q, ‖χ m‖ ^ 2 := by
               refine Finset.sum_congr rfl fun m _ => ?_
               have h1 : a m * star (a m) = ((‖a m‖ ^ 2 : ℝ) : ℂ) := by
-                rw [Complex.star_def, Complex.mul_conj']
+                rw [Complex.star_def, Complex.mul_conj']; push_cast; rfl
               have h2 : ∑ χ : DirichletCharacter ℂ q, χ m * star (χ m) =
                   ((∑ χ : DirichletCharacter ℂ q, ‖χ m‖ ^ 2 : ℝ) : ℂ) := by
                 push_cast
@@ -1653,7 +1685,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
                 refine Finset.sum_le_sum fun χ _ => ?_
                 by_cases h0 : χ m = 0
                 · simp [h0]
-                · rw [χ.norm_eq_one_of_ne_zero h0, one_pow]
+                · rw [dirichletChar_norm_eq_one χ h0, one_pow]
               calc ∑ χ : DirichletCharacter ℂ q, ‖χ m‖ ^ 2
                   ≤ (Fintype.card (DirichletCharacter ℂ q) : ℝ) := by simpa using hχ_le
                 _ = (Nat.totient q : ℝ) := by
@@ -1667,15 +1699,8 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
           gcongr; exact norm_sum_le _ _
         have h2 : (∑ f ∈ fiber n, ‖∏ i, b (f i)‖) ^ 2 ≤ (fiber n).card * ∑ f ∈ fiber n, ‖∏ i, b (f i)‖ ^ 2 :=
           sq_sum_le_card_mul_sum_sq
-        have h_card : (fiber n).card ≤ k.factorial := by
-          have hsub : fiber n ⊆ (Finset.univ : Finset (Fin k → ℕ)).filter
-              (fun f => (∀ i, Nat.Prime (f i)) ∧ (∏ i, f i) = n) := by
-            intro f hf
-            simp only [fiber, Finset.mem_filter, Fintype.mem_piFinset] at hf
-            simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-            refine ⟨fun i => ?_, hf.2⟩
-            exact (Finset.mem_filter.mp (hf.1 i)).2
-          exact (Finset.card_le_card hsub).trans (prime_tuple_fiber_card k n)
+        have h_card : (fiber n).card ≤ k.factorial :=
+          prime_tuple_fiber_card primes (fun p hp => (Finset.mem_filter.mp hp).2) k n
         have h3 : ((fiber n).card : ℝ) * ∑ f ∈ fiber n, ‖∏ i, b (f i)‖ ^ 2 ≤
             (k.factorial : ℝ) * ∑ f ∈ fiber n, ∏ i, ‖b (f i)‖ ^ 2 := by
           have h_eq : ∑ f ∈ fiber n, ‖∏ i, b (f i)‖ ^ 2 = ∑ f ∈ fiber n, ∏ i, ‖b (f i)‖ ^ 2 := by
@@ -1713,7 +1738,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
           ≤ (Nat.totient q : ℝ) * ∑ n ∈ Finset.Icc 1 (P ^ k), ‖a n‖ ^ 2 := h_orth
         _ ≤ (Nat.totient q : ℝ) * ((k.factorial : ℝ) * (∑ p ∈ primes, ‖b p‖ ^ 2) ^ k) := by gcongr
         _ ≤ (Nat.totient q : ℝ) * ((k : ℝ) ^ k * (C_l2 * Real.log (Real.log X)) ^ k) := by
-            gcongr; exact Finset.sum_nonneg (fun _ _ => sq_nonneg _)
+            gcongr
         _ = (Nat.totient q : ℝ) * (C_l2 * k * Real.log (Real.log X)) ^ k := by
             rw [← mul_pow]; ring_nf
     have hb₁ : ∀ p ∈ primes, ‖b₁ p‖ ≤ (Real.log p / Real.sqrt p) *
@@ -1750,7 +1775,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
             ∑ χ : DirichletCharacter ℂ q, |primeSum1 q χ h_hat X t₀| ^ (2 * k) := by
           gcongr
           exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
-            (fun χ _ _ => pow_nonneg (abs_nonneg _) _)
+            (fun χ _ _ => pow_nonneg (abs_nonneg (primeSum1 q χ h_hat X t₀)) (2 * k))
       _ ≤ (1 / (totientStar q : ℝ)) *
             ∑ χ : DirichletCharacter ℂ q, 4 ^ k * (‖D₁ χ‖ ^ (2 * k) + ‖D₂ χ‖ ^ (2 * k)) := by
           gcongr
@@ -1762,8 +1787,12 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
       _ ≤ (1 / (totientStar q : ℝ)) *
             (4 ^ k * ((Nat.totient q : ℝ) * (C_l2 * k * Real.log (Real.log X)) ^ k +
               (Nat.totient q : ℝ) * (C_l2 * k * Real.log (Real.log X)) ^ k)) := by
+          have hb1_bd := h_poly_bound b₁ hb₁
+          have hb2_bd := h_poly_bound b₂ hb₂
+          change ∑ χ : DirichletCharacter ℂ q, ‖D₁ χ‖ ^ (2 * k) ≤ _ at hb1_bd
+          change ∑ χ : DirichletCharacter ℂ q, ‖D₂ χ‖ ^ (2 * k) ≤ _ at hb2_bd
           exact mul_le_mul_of_nonneg_left
-            (mul_le_mul_of_nonneg_left (add_le_add (h_poly_bound b₁ hb₁) (h_poly_bound b₂ hb₂)) (by positivity))
+            (mul_le_mul_of_nonneg_left (add_le_add hb1_bd hb2_bd) (by positivity))
             (by positivity)
       _ = ((Nat.totient q : ℝ) / (totientStar q : ℝ)) *
             (4 ^ k * (2 * (C_l2 * k * Real.log (Real.log X)) ^ k)) := by ring
