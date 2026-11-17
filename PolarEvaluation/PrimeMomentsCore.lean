@@ -251,11 +251,11 @@ lemma chebyshev_theta_le : ∀ N : ℕ,
               have hchoose := Nat.choose_mul_factorial_mul_factorial (by omega : m ≤ 2 * m + 1)
               have hsub : 2 * m + 1 - m = m + 1 := by omega
               rw [hsub] at hchoose
-              have hp_dvd_fac : p ∣ (2 * m + 1)! := hp.2.dvd_factorial.mpr hp.1.2
+              have hp_dvd_fac : p ∣ Nat.factorial (2 * m + 1) := hp.2.dvd_factorial.mpr hp.1.2
               rw [← hchoose] at hp_dvd_fac
-              have hp_not_m : ¬ p ∣ m ! := by
+              have hp_not_m : ¬ p ∣ Nat.factorial m := by
                 rw [hp.2.dvd_factorial]; omega
-              have hp_not_m1 : ¬ p ∣ (m + 1)! := by
+              have hp_not_m1 : ¬ p ∣ Nat.factorial (m + 1) := by
                 rw [hp.2.dvd_factorial]; omega
               rcases hp.2.dvd_mul.mp hp_dvd_fac with h1 | h2
               · rcases hp.2.dvd_mul.mp h1 with h1a | h1b
@@ -313,7 +313,7 @@ lemma abel_sum_primes (f g : ℕ → ℝ) : ∀ N : ℕ, N ≥ 2 →
         ∑ k ∈ Finset.Ico 2 N, (∑ p ∈ (Finset.Icc 2 k).filter Nat.Prime, f p) * (g k - g (k + 1)) := by
   intro N hN
   induction N, hN using Nat.le_induction with
-  | base => simp
+  | base => simp [Finset.filter_singleton, Nat.prime_two]
   | succ N hN ih =>
     have hIcc : (Finset.Icc 2 (N + 1)).filter Nat.Prime =
         if Nat.Prime (N + 1) then insert (N + 1) ((Finset.Icc 2 N).filter Nat.Prime)
@@ -340,10 +340,6 @@ lemma abel_sum_primes (f g : ℕ → ℝ) : ∀ N : ℕ, N ≥ 2 →
           exact ⟨⟨h1, by omega⟩, hp'⟩
     have hnot_mem : N + 1 ∉ (Finset.Icc 2 N).filter Nat.Prime := by
       simp only [Finset.mem_filter, Finset.mem_Icc]; omega
-    have hIco : Finset.Ico 2 (N + 1) = insert N (Finset.Ico 2 N) := by
-      rw [← Finset.Ico_insert_right (by omega : 2 ≤ N + 1)]
-      simp
-    have hN_not_Ico : N ∉ Finset.Ico 2 N := by simp
     rw [Finset.sum_Ico_succ_top hN]
     by_cases hp : Nat.Prime (N + 1)
     · rw [hIcc, if_pos hp, Finset.sum_insert hnot_mem, Finset.sum_insert hnot_mem, ih]
@@ -351,12 +347,20 @@ lemma abel_sum_primes (f g : ℕ → ℝ) : ∀ N : ℕ, N ≥ 2 →
     · rw [hIcc, if_neg hp, ih]
       ring
 
+lemma sum_Ico_sub_telescope (f : ℕ → ℝ) {a b : ℕ} (hab : a ≤ b) :
+    ∑ k ∈ Finset.Ico a b, (f (k + 1) - f k) = f b - f a := by
+  induction b, hab using Nat.le_induction with
+  | base => simp
+  | succ b hab ih => rw [Finset.sum_Ico_succ_top hab, ih]; ring
+
 /-- Mertens' 1st Theorem (upper bound): `∑_{p ≤ N} log p / p ≤ log 4 * (log N + 1)`. -/
 lemma mertens_first (N : ℕ) (hN : N ≥ 2) :
     ∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, Real.log p / p ≤ Real.log 4 * (Real.log N + 1) := by
   have h_abel := abel_sum_primes (fun p => Real.log p) (fun k => 1 / (k : ℝ)) N hN
-  simp_rw [div_eq_mul_one_div]
-  rw [h_abel]
+  have h_div_eq : ∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, Real.log p / (p : ℝ) =
+      ∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, Real.log p * (1 / (p : ℝ)) :=
+    Finset.sum_congr rfl fun p _ => div_eq_mul_one_div _ _
+  rw [h_div_eq, h_abel]
   have h1 : (∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, Real.log p) * (1 / (N : ℝ)) ≤ Real.log 4 := by
     have hN_pos : (0 : ℝ) < N := by exact_mod_cast (by omega : 0 < N)
     calc (∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, Real.log p) * (1 / (N : ℝ))
@@ -402,7 +406,7 @@ lemma mertens_first (N : ℕ) (hN : N ≥ 2) :
           rw [← Finset.mul_sum]
       _ = Real.log 4 * (Real.log N - Real.log 2) := by
           congr 1
-          exact Finset.sum_Ico_sub' (fun k : ℕ => Real.log k) hN
+          exact sum_Ico_sub_telescope (fun k : ℕ => Real.log k) hN
       _ ≤ Real.log 4 * Real.log N := by
           gcongr
           linarith [Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 2)]
@@ -446,7 +450,7 @@ lemma mertens_second (N : ℕ) (hN : N ≥ 3) :
       Real.log 4 * (1 + 1 / Real.log 2) := by
     have hset : (Finset.Icc 2 2).filter Nat.Prime = {2} := by
       ext p; simp only [Finset.mem_filter, Finset.mem_Icc, Finset.mem_singleton]
-      exact ⟨fun h => by omega, fun h => h ▸ ⟨⟨le_rfl, le_rfl⟩, Nat.prime_two⟩⟩
+      exact ⟨fun h => by omega, by rintro rfl; exact ⟨⟨le_rfl, le_rfl⟩, Nat.prime_two⟩⟩
     rw [hset, Finset.sum_singleton]
     have hlog3_pos : 0 < Real.log 3 := Real.log_pos (by norm_num)
     have hle : 1 / Real.log 2 - 1 / Real.log 3 ≤ 1 / Real.log 2 := by linarith [div_pos one_pos hlog3_pos]
@@ -493,7 +497,7 @@ lemma mertens_second (N : ℕ) (hN : N ≥ 3) :
           field_simp [hlogk_pos.ne', hlogk1_pos.ne']
         linarith
       rw [h_eq] at hm1
-      exact hm1.trans (mul_le_mul_of_nonneg_left (add_le_add_right h_loglog _) (Real.log_nonneg (by norm_num)))
+      exact hm1.trans (mul_le_mul_of_nonneg_left (add_le_add h_loglog le_rfl) (Real.log_nonneg (by norm_num)))
     calc ∑ k ∈ Finset.Ico 3 N,
           (∑ p ∈ (Finset.Icc 2 k).filter Nat.Prime, Real.log p / p) *
             (1 / Real.log k - 1 / Real.log (k + 1 : ℕ))
@@ -505,20 +509,23 @@ lemma mertens_second (N : ℕ) (hN : N ≥ 3) :
       _ = Real.log 4 * ((Real.log (Real.log N) - Real.log (Real.log 3)) +
             (1 / Real.log 3 - 1 / Real.log N)) := by
           congr 2
-          · exact Finset.sum_Ico_sub' (fun k : ℕ => Real.log (Real.log k)) hN
-          · have := Finset.sum_Ico_sub' (fun k : ℕ => -(1 / Real.log k)) hN
-            simpa [sub_neg_eq_add, add_comm] using this
+          · exact sum_Ico_sub_telescope (fun k : ℕ => Real.log (Real.log k)) hN
+          · have hsub := sum_Ico_sub_telescope (fun k : ℕ => -(1 / Real.log k)) hN
+            simpa [sub_neg_eq_add, add_comm] using hsub
       _ ≤ Real.log 4 * (Real.log (Real.log N) + 1 / Real.log 3 + 1) := by
           have hlog3_gt1 : 1 < Real.log 3 := by
             have he : Real.exp 1 < 3 := Real.exp_one_lt_d9.trans (by norm_num)
             rw [← Real.log_exp 1]
             exact Real.log_lt_log (Real.exp_pos 1) he
           have hloglog3_nonneg : 0 ≤ Real.log (Real.log 3) := Real.log_nonneg hlog3_gt1.le
-          gcongr
-          linarith [div_pos one_pos hlogN_pos]
+          exact mul_le_mul_of_nonneg_left
+            (by linarith [div_pos one_pos hlogN_pos, hloglog3_nonneg])
+            (Real.log_nonneg (by norm_num))
   have hlog4_le : Real.log 4 ≤ 2 := by
-    have h := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 4)
-    linarith
+    have hlog2_le : Real.log 2 ≤ 1 := by
+      have he : (2 : ℝ) ≤ Real.exp 1 := by linarith [Real.add_one_le_exp (1 : ℝ)]
+      rw [← Real.log_exp 1]; exact Real.log_le_log (by norm_num) he
+    rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; norm_num; linarith
   have hlog2_ge : (1 / 2 : ℝ) ≤ Real.log 2 := by
     have h := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 1 / 2)
     rw [one_div, Real.log_inv] at h
@@ -550,8 +557,8 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
         |primeSumGe3 q χ h_hat X t| ≤ C_tail := by
   obtain ⟨C_dec, hC_dec, h_dec⟩ := majorant_fourier_decay_any θ C_L1 Δ₀ hθ hΔ₀
   have hsumm_54 : Summable (fun n : ℕ => (n : ℝ) ^ (-5 / 4 : ℝ)) := by
-    rw [Real.summable_nat_rpow_inv.symm]
-    norm_num
+    simpa [Real.rpow_neg (Nat.cast_nonneg _), inv_eq_one_div] using
+      (Real.summable_one_div_nat_rpow (p := (5 / 4 : ℝ))).mpr (by norm_num)
   set S_54 := ∑' n : ℕ, (n : ℝ) ^ (-5 / 4 : ℝ)
   have hS_54_nonneg : 0 ≤ S_54 := tsum_nonneg (fun n => by positivity)
   refine ⟨max (100 * C_dec) (100 * max C_L1 1 * (S_54 + 1)), by positivity,
@@ -569,7 +576,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
       have he : Real.exp 1 < 3 := Real.exp_one_lt_d9.trans (by norm_num)
       linarith [Real.two_le_pi]
     rw [← Real.log_exp 1]
-    exact Real.log_le_log (Real.exp_pos 1) (by nlinarith)
+    exact Real.log_le_log (Real.exp_pos 1) (by nlinarith [hΔ₀.trans hΔ])
   have hK_int : Integrable (fun x : ℝ => kernelK θ x) := kernelK_integrable θ
   have hM_int : Integrable (fun x : ℝ => M x) := by
     have : (fun x : ℝ => M x) = (fun x : ℝ => (M x - kernelK θ x) + kernelK θ x) := by ext x; ring
@@ -634,7 +641,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
         rw [abs_of_pos hξ_pos]
         have heq : 2 * Real.pi * (Real.log (p ^ 2) / (2 * Real.pi)) = 2 * Real.log p := by
           field_simp [Real.pi_ne_zero]
-          rw [Nat.cast_pow, Real.log_pow]; norm_num
+          rw [Real.log_pow]; norm_num
         rw [heq]
         exact one_div_le_one_div_of_le hlogp_pos (by linarith)
       have h_abs_nξ : 1 / (2 * Real.pi * |-(Real.log (p ^ 2) / (2 * Real.pi))|) ≤ 1 / Real.log p := by
@@ -664,7 +671,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
               ‖χ (p ^ 2)‖ * ‖h_hat (Real.log (p ^ 2) / (2 * Real.pi))‖ * 1 := by
               rw [norm_mul, norm_mul, norm_mul, norm_mul, he1, he2, norm_star]
           _ ≤ 1 * (C_dec * (1 / Real.log p + 1 / Δ)) * 1 + 1 * (C_dec * (1 / Real.log p + 1 / Δ)) * 1 := by
-              gcongr <;> simpa [Nat.cast_pow] using hchi_le (p ^ 2)
+              gcongr <;> exact (by simpa using hchi_le (p ^ 2) : ‖χ ((p : ZMod q) ^ 2)‖ ≤ 1)
           _ = 2 * C_dec * (1 / Real.log p + 1 / Δ) := by ring
       rw [abs_mul, abs_of_nonneg (div_nonneg hlogp_pos.le hp_pos.le)]
       calc (Real.log p / (p : ℝ)) *
@@ -672,7 +679,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
               star (χ (p ^ 2)) * h_hat (Real.log (p ^ 2) / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log (p ^ 2))).re|
           ≤ (Real.log p / (p : ℝ)) * (2 * C_dec * (1 / Real.log p + 1 / Δ)) := by gcongr
         _ = 2 * C_dec * (1 / (p : ℝ) + (1 / Δ) * (Real.log p / (p : ℝ))) := by
-            field_simp [hlogp_pos.ne', hp_pos.ne']; ring
+            field_simp [hlogp_pos.ne', hp_pos.ne']
     have hsum_bd : |∑ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime,
           (Real.log p / (p : ℝ)) *
             (χ (p ^ 2) * h_hat (-(Real.log (p ^ 2) / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log (p ^ 2)) +
