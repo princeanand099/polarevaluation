@@ -59,7 +59,39 @@ theorem corollary_1_3_i (D : LFunctionData) :
           D.logAbsL q χ t ≥ 0 →
           |D.S_val q χ t| ≤ (1 / 6 + ε) *
             (Real.log (analyticConductor q t) / Real.log (Real.log (analyticConductor q t))) := by
-  sorry
+  intro ε hε
+  have hα : (0 : ℝ) ≤ Real.log 2 / 2 := by positivity
+  obtain ⟨δ, Q₀, hδ, hQ₀, hmain⟩ := modulus_argument_tradeoff D 0 hα ε hε
+  refine ⟨Q₀, hQ₀, fun q hq χ hχ hGRH t ht hcond hlog => ?_⟩
+  have hscale : 0 ≤ Real.log (analyticConductor q t) / Real.log (Real.log (analyticConductor q t)) := by
+    have h1 : Real.log (analyticConductor q t) ≥ Real.log 100 := Real.log_le_log (by norm_num) hcond
+    have h2 : Real.log 100 > Real.exp 1 := by
+      have : (100 : ℝ) > Real.exp (Real.exp 1) := by
+        have he : Real.exp 1 < 3 := Real.exp_one_lt_d9.trans (by norm_num)
+        calc Real.exp (Real.exp 1) < Real.exp 3 := Real.exp_lt_exp.mpr he
+        _ = Real.exp 1 * Real.exp 1 * Real.exp 1 := by rw [← Real.exp_add, ← Real.exp_add]; ring_nf
+        _ < 3 * 3 * 3 := by gcongr
+        _ < 100 := by norm_num
+      linarith [Real.log_lt_log (by positivity) this, Real.log_exp (Real.exp 1)]
+    have hlog_pos : 0 < Real.log (analyticConductor q t) := by linarith [Real.exp_pos 1]
+    have hloglog_pos : 0 < Real.log (Real.log (analyticConductor q t)) := by
+      apply Real.log_pos
+      linarith [Real.one_lt_exp_iff.mpr one_pos]
+    positivity
+  have hlog' : D.logAbsL q χ t ≥ (0 - δ) * (Real.log (analyticConductor q t) /
+      Real.log (Real.log (analyticConductor q t))) := by
+    have : (0 - δ) * (Real.log (analyticConductor q t) /
+        Real.log (Real.log (analyticConductor q t))) ≤ 0 := by
+      nlinarith
+    linarith
+  have hres := hmain q hq χ hχ hGRH t ht hcond hlog'
+  have harc : Real.arccos (Real.exp (2 * 0) / 2) / (2 * Real.pi) = 1 / 6 := by
+    rw [mul_zero, Real.exp_zero]
+    have hcos : Real.cos (Real.pi / 3) = 1 / 2 := Real.cos_pi_div_three
+    rw [← hcos, Real.arccos_cos (by positivity) (by linarith [Real.pi_pos])]
+    field_simp [Real.pi_ne_zero]
+    ring
+  rwa [harc] at hres
 
 /-- **Corollary 1.3(ii)**: Whenever `log|L(1/2 + it, χ)| ≥ ((log 2)/2 - δ) log q / log log q`,
 we have `|S(t, χ)| ≤ ε log q / log log q`. -/
@@ -72,7 +104,14 @@ theorem corollary_1_3_ii (D : LFunctionData) :
             Real.log (Real.log (analyticConductor q t))) →
           |D.S_val q χ t| ≤ ε *
             (Real.log (analyticConductor q t) / Real.log (Real.log (analyticConductor q t))) := by
-  sorry
+  intro ε hε
+  obtain ⟨δ, Q₀, hδ, hQ₀, hmain⟩ := modulus_argument_tradeoff D (Real.log 2 / 2) le_rfl ε hε
+  refine ⟨δ, Q₀, hδ, hQ₀, fun q hq χ hχ hGRH t ht hcond hlog => ?_⟩
+  have hres := hmain q hq χ hχ hGRH t ht hcond hlog
+  have harc : Real.arccos (Real.exp (2 * (Real.log 2 / 2)) / 2) / (2 * Real.pi) = 0 := by
+    have h1 : 2 * (Real.log 2 / 2) = Real.log 2 := by ring
+    rw [h1, Real.exp_log (by norm_num), div_self (by norm_num), Real.arccos_one, zero_div]
+  rwa [harc, zero_add] at hres
 
 /-- **Corollary 1.3(iii)**: In the `q`-aspect at `s = 1/2`, normalized `log L(1/2, χ)` lies in the
 `ε`-neighborhood of `Ω` for `q ≥ q₀(ε)`. -/

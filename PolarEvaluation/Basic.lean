@@ -72,6 +72,7 @@ structure LFunctionData where
   zeros : (q : ℕ) → DirichletCharacter ℂ q → ℕ → ℝ
   GRH : (q : ℕ) → q ≥ 1 → (χ : DirichletCharacter ℂ q) → χ.IsPrimitive → Prop
   nonvanishing : (q : ℕ) → DirichletCharacter ℂ q → ℝ → Prop
+  nonvanishing_zeros : ∀ q χ t, nonvanishing q χ t → ∀ n : ℕ, t ≠ zeros q χ n
 
 /-- Polar projection `Re(e^{-iθ} log L(1/2 + it, χ)) = cos(θ) log|L(1/2 + it, χ)| + sin(θ) π S(t, χ)`. -/
 def polarLogL (D : LFunctionData) (q : ℕ) (χ : DirichletCharacter ℂ q) (t θ : ℝ) : ℝ :=
