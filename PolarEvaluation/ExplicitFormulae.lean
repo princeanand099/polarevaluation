@@ -83,10 +83,14 @@ lemma kernelK_integrable_zero : Integrable (fun x : ℝ => kernelK 0 x) := by
   have h_Icc : IntegrableOn (fun x : ℝ => kernelK 0 x) (Set.Icc (-1 : ℝ) 1) := by
     have h_log_abs : IntegrableOn (fun x : ℝ => Real.log |x|) (Set.Icc (-1 : ℝ) 1) := by
       have h01 : IntegrableOn (fun x : ℝ => Real.log |x|) (Set.Icc (0 : ℝ) 1) := by
-        have hrpow : IntegrableOn (fun x : ℝ => 2 * x ^ (-1 / 2 : ℝ)) (Set.Icc (0 : ℝ) 1) := by
-          refine ((intervalIntegrable_rpow' (by norm_num : (-1 : ℝ) < -1 / 2)).1.mono_set
-            Set.Ioc_subset_Ioc_self).integrableOn_Icc.const_mul 2
-        refine hrpow.mono' (AEStronglyMeasurable.restrict (by fun_prop)) ?_
+        have hrpow_ioc : IntegrableOn (fun x : ℝ => 2 * x ^ (-1 / 2 : ℝ)) (Set.Ioc (0 : ℝ) 1) :=
+          ((intervalIntegrable_iff_integrableOn_Ioc_of_le (by norm_num : (0 : ℝ) ≤ 1)).mp
+            (intervalIntegral.intervalIntegrable_rpow' (by norm_num : (-1 : ℝ) < -1 / 2))).const_mul 2
+        have hrpow : IntegrableOn (fun x : ℝ => 2 * x ^ (-1 / 2 : ℝ)) (Set.Icc (0 : ℝ) 1) :=
+          hrpow_ioc.congr_set_ae Ioc_ae_eq_Icc.symm
+        have hmeas_log : AEStronglyMeasurable (fun x : ℝ => Real.log |x|) volume :=
+          (Real.measurable_log.comp measurable_abs).aestronglyMeasurable
+        refine hrpow.mono' hmeas_log.restrict ?_
         filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
         by_cases hx0 : x = 0
         · subst hx0; simp
@@ -102,7 +106,7 @@ lemma kernelK_integrable_zero : Integrable (fun x : ℝ => kernelK 0 x) := by
           exact hbound
       have h_neg : IntegrableOn (fun x : ℝ => Real.log |x|) (Set.Icc (-1 : ℝ) 0) := by
         have hpre : (fun x : ℝ => -x) ⁻¹' Set.Icc (0 : ℝ) 1 = Set.Icc (-1 : ℝ) 0 := by
-          ext x; simp; constructor <;> intro h <;> linarith
+          ext x; simp
         simpa [abs_neg, hpre] using h01.comp_neg
       simpa [Set.Icc_union_Icc_eq_Icc (by norm_num : (-1 : ℝ) ≤ 0) (by norm_num : (0 : ℝ) ≤ 1)] using
         h_neg.union h01
@@ -112,11 +116,8 @@ lemma kernelK_integrable_zero : Integrable (fun x : ℝ => kernelK 0 x) := by
         (Set.Icc (-1 : ℝ) 1) :=
       (h_log_sq.sub (h_log_abs.const_mul 2)).const_mul (-(1 / 2 : ℝ))
     refine h_comb.congr_fun_ae ?_
-    have hne : ∀ᵐ x ∂(volume.restrict (Set.Icc (-1 : ℝ) 1)), x ≠ 0 := by
-      rw [ae_restrict_iff' measurableSet_Icc]
-      have hzero : volume ({0} : Set ℝ) = 0 := volume_singleton
-      filter_upwards [ae_iff.mpr (by simpa using hzero)] with x hx _
-      exact hx
+    have hne : ∀ᵐ x ∂(volume.restrict (Set.Icc (-1 : ℝ) 1)), x ≠ 0 :=
+      ae_restrict_of_ae (ae_iff.mpr (by simp))
     filter_upwards [hne] with x hx
     unfold kernelK
     simp only [Real.cos_zero, Real.sin_zero, zero_mul, add_zero]
@@ -125,7 +126,7 @@ lemma kernelK_integrable_zero : Integrable (fun x : ℝ => kernelK 0 x) := by
       Real.log_pow, Nat.cast_ofNat]
     ring
   have huniv : Set.Iio (-1 : ℝ) ∪ Set.Icc (-1 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) = Set.univ := by
-    ext x; simp; by_cases h1 : x < -1 <;> by_cases h2 : x ≤ 1 <;> simp_all <;> linarith
+    ext x; simp; by_cases h1 : x < -1 <;> by_cases h2 : x ≤ 1 <;> simp_all
   rw [← integrableOn_univ, ← huniv]
   exact (h_Iio.union h_Icc).union h_Ioi
 
@@ -165,8 +166,8 @@ lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi /
         · exact (continuous_id.sub Real.continuous_arctan).continuousOn
         · exact fun t _ => (differentiableAt_id.sub (Real.differentiableAt_arctan t)).differentiableWithinAt
         · intro t _
-          have h1 : HasDerivAt (fun s : ℝ => s - Real.arctan s) (1 - (1 + t ^ 2)⁻¹) t := by
-            simpa [inv_eq_one_div] using (hasDerivAt_id t).sub (Real.hasDerivAt_arctan t)
+          have h1 : HasDerivAt (fun s : ℝ => s - Real.arctan s) (1 - (1 + t ^ 2)⁻¹) t :=
+            (hasDerivAt_id t).sub (Real.hasDerivAt_arctan t)
           rw [h1.deriv]
           have hle : (1 + t ^ 2)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by linarith [sq_nonneg t])
           linarith
@@ -186,8 +187,11 @@ lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi /
               (1 / (1 + t ^ 2) - (1 - t)) t := by
             have ha := Real.hasDerivAt_arctan t
             have hb := (hasDerivAt_id t).sub ((hasDerivAt_pow 2 t).div_const 2)
-            convert ha.sub hb using 1
-            ring
+            have hsub := ha.sub hb
+            have hder : 1 / (1 + t ^ 2) - (1 - (2 : ℕ) * t ^ (2 - 1) / 2) = 1 / (1 + t ^ 2) - (1 - t) := by
+              norm_num; ring
+            rw [hder] at hsub
+            exact hsub
           rw [h1.deriv]
           have hpos : 0 ≤ t * (t ^ 2 - t + 1) := by
             have : t ^ 2 - t + 1 = (t - 1 / 2) ^ 2 + 3 / 4 := by ring
@@ -233,7 +237,7 @@ lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi /
       ext x; simp
     simpa [hpre] using hcomp.neg.comp_neg
   have huniv : Set.Iio (-1 : ℝ) ∪ Set.Icc (-1 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) = Set.univ := by
-    ext x; simp; by_cases h1 : x < -1 <;> by_cases h2 : x ≤ 1 <;> simp_all <;> linarith
+    ext x; simp; by_cases h1 : x < -1 <;> by_cases h2 : x ≤ 1 <;> simp_all
   rw [← integrableOn_univ, ← huniv]
   exact (h_Iio.union h_Icc).union h_Ioi
 
