@@ -125,7 +125,7 @@ lemma kernelK_integrable_zero : Integrable (fun x : ℝ => kernelK 0 x) := by
     rw [Real.log_div (by positivity) hx2.ne', show x ^ 2 = |x| ^ 2 by rw [sq_abs],
       Real.log_pow, Nat.cast_ofNat]
   have huniv : Set.Iio (-1 : ℝ) ∪ Set.Icc (-1 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) = Set.univ := by
-    ext x; simp; by_cases h1 : x < -1 <;> by_cases h2 : x ≤ 1 <;> linarith
+    ext x; simp
   rw [← integrableOn_univ, ← huniv]
   exact (h_Iio.union h_Icc).union h_Ioi
 
@@ -236,7 +236,7 @@ lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi /
       ext x; simp
     simpa [hpre] using hcomp.neg.comp_neg
   have huniv : Set.Iio (-1 : ℝ) ∪ Set.Icc (-1 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) = Set.univ := by
-    ext x; simp; by_cases h1 : x < -1 <;> by_cases h2 : x ≤ 1 <;> linarith
+    ext x; simp
   rw [← integrableOn_univ, ← huniv]
   exact (h_Iio.union h_Icc).union h_Ioi
 
