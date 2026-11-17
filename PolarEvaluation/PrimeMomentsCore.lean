@@ -764,7 +764,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
             (χ n * h_hat (-(Real.log n / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log n) +
              star (χ n) * h_hat (Real.log n / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log n)).re =
         ∑ n ∈ Finset.Icc 2 N, f n := by
-      rw [Finset.mul_sum]; rfl
+      rw [Finset.mul_sum]; refine Finset.sum_congr rfl fun n _ => by dsimp only [f]; ring
     rw [hP_all, hP1, hP2]
     have h_sub1 : (Finset.Icc 2 N).filter Nat.Prime ⊆ Finset.Icc 2 N := Finset.filter_subset _ _
     have h_sub2 : ((Finset.Icc 2 N₂).filter Nat.Prime).image (· ^ 2) ⊆
@@ -778,7 +778,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
       · refine Nat.le_floor ?_
         have hp_le : (p : ℝ) ≤ Real.sqrt X := (Nat.le_floor_iff (Real.sqrt_nonneg X)).mp hp.1.2
         have hsq : (p : ℝ) ^ 2 ≤ Real.sqrt X ^ 2 := by nlinarith [Nat.cast_nonneg p]
-        rwa [Nat.cast_pow, Real.sq_sqrt (by linarith)] at hsq
+        rw [Real.sq_sqrt (by linarith)] at hsq; push_cast; exact hsq
       · intro hmem
         rcases hmem.2.eq_one_or_self_of_dvd p (dvd_pow_self p two_ne_zero) with h1 | h2
         · linarith [hp.2.two_le]
@@ -854,7 +854,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
           ≤ (1 / (2 * Real.pi)) * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) * (2 * max C_L1 1) := h_mul_bd
         _ = ((1 / (2 * Real.pi)) * 2) * max C_L1 1 * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) := by ring
         _ ≤ 1 * max C_L1 1 * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) := by gcongr
-        _ = max C_L1 1 * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) := one_mul _
+        _ = max C_L1 1 * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) := by rw [one_mul]
     set S_pk := ((Finset.Icc 2 N).filter Nat.Prime) ×ˢ (Finset.Icc 3 N)
     have h_sub_img : S_rest.filter IsPrimePow ⊆ S_pk.image (fun pk : ℕ × ℕ => pk.1 ^ pk.2) := by
       intro n hn
@@ -870,7 +870,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
         apply hn.1.2
         refine ⟨p, ⟨⟨hp.two_le, ?_⟩, hp⟩, rfl⟩
         refine Nat.le_floor ?_
-        rw [Real.le_sqrt' (Nat.cast_nonneg p)]
+        rw [Real.le_sqrt' (by exact_mod_cast hp.pos)]
         have hp2_le : (p ^ 2 : ℝ) ≤ (N : ℝ) := by exact_mod_cast hn.1.1.1.2
         exact hp2_le.trans (Nat.floor_le (by linarith))
       have hk3 : 3 ≤ k := by omega
@@ -885,9 +885,9 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
       refine Finset.mem_image.mpr ⟨(p, k), ?_, rfl⟩
       simp only [S_pk, Finset.mem_product, Finset.mem_filter, Finset.mem_Icc]
       exact ⟨⟨⟨hp.two_le, hp_le_N⟩, hp⟩, ⟨hk3, hk_le_N⟩⟩
-    have h_sum_img_le : ∀ {α β : Type} [DecidableEq β] (s : Finset α) (φ : α → β) (g : β → ℝ),
+    have h_sum_img_le : ∀ {α β : Type} [DecidableEq α] [DecidableEq β] (s : Finset α) (φ : α → β) (g : β → ℝ),
         (∀ x ∈ s, 0 ≤ g (φ x)) → ∑ y ∈ s.image φ, g y ≤ ∑ x ∈ s, g (φ x) := by
-      intro α β _ s φ g hg
+      intro α β _ _ s φ g hg
       induction s using Finset.induction_on with
       | empty => simp
       | @insert a s ha ih =>
@@ -911,7 +911,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
           have : 0 ≤ (ArithmeticFunction.vonMangoldt n : ℝ) := ArithmeticFunction.vonMangoldt_nonneg
           positivity
       _ ≤ ∑ pk ∈ S_pk,
-            max C_L1 1 * ((ArithmeticFunction.vonMangoldt (pk.1 ^ pk.2) : ℝ) / Real.sqrt (pk.1 ^ pk.2)) := by
+            max C_L1 1 * ((ArithmeticFunction.vonMangoldt (pk.1 ^ pk.2) : ℝ) / Real.sqrt ((pk.1 ^ pk.2 : ℕ) : ℝ)) := by
           refine h_sum_img_le S_pk (fun pk : ℕ × ℕ => pk.1 ^ pk.2)
             (fun n : ℕ => max C_L1 1 * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n)) (fun pk _ => ?_)
           have : 0 ≤ (ArithmeticFunction.vonMangoldt (pk.1 ^ pk.2) : ℝ) :=
@@ -935,7 +935,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
               Real.rpow_mul (Nat.cast_nonneg p), Real.rpow_natCast]
           rw [ArithmeticFunction.vonMangoldt_apply_pow (by omega : k ≠ 0),
             ArithmeticFunction.vonMangoldt_apply_prime hp.2,
-            Nat.cast_pow, hsqrt_pow, one_div, inv_pow, div_eq_mul_inv]
+            hsqrt_pow, one_div, inv_pow, div_eq_mul_inv]
       _ ≤ max C_L1 1 * ∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, 16 * (p : ℝ) ^ (-5 / 4 : ℝ) := by
           refine mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun p hp => ?_) (by positivity)
           simp only [Finset.mem_filter, Finset.mem_Icc] at hp
