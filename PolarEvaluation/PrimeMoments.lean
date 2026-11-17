@@ -168,7 +168,8 @@ lemma chebyshev_theta_le : ∀ N : ℕ,
           rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; norm_num
         linarith [Real.log_pos (by norm_num : (1 : ℝ) < 2)]
       · rcases Nat.even_or_odd N with ⟨m, hm⟩ | ⟨m, hm⟩
-        · have hm2 : m ≥ 2 := by omega
+        · -- N = m + m = 2 * m, N > 2 so m ≥ 2 and N is not prime
+          have hm2 : m ≥ 2 := by omega
           have hN_not_prime : ¬ Nat.Prime N := by
             intro hp
             have h2dvd : 2 ∣ N := ⟨m, by omega⟩
@@ -191,7 +192,8 @@ lemma chebyshev_theta_le : ∀ N : ℕ,
           have hN_le : ((N - 1 : ℕ) : ℝ) ≤ (N : ℝ) := by exact_mod_cast (by omega : N - 1 ≤ N)
           have hlog4_pos : 0 ≤ Real.log 4 := Real.log_nonneg (by norm_num)
           exact h_ih.trans (mul_le_mul_of_nonneg_right hN_le hlog4_pos)
-        · have hm1 : m ≥ 1 := by omega
+        · -- N = 2 * m + 1
+          have hm1 : m ≥ 1 := by omega
           have hsplit : (Finset.Icc 2 N).filter Nat.Prime =
               (Finset.Icc 2 (m + 1)).filter Nat.Prime ∪ (Finset.Icc (m + 2) (2 * m + 1)).filter Nat.Prime := by
             ext p
@@ -205,6 +207,7 @@ lemma chebyshev_theta_le : ∀ N : ℕ,
             omega
           rw [hsplit, Finset.sum_union hdisj]
           have h_ih := ih (m + 1) (by omega)
+          -- Now bound ∑_{m+2 ≤ p ≤ 2m+1} log p ≤ m * log 4
           set s := (Finset.Icc (m + 2) (2 * m + 1)).filter Nat.Prime
           have hdvd : ∏ p ∈ s, p ∣ Nat.choose (2 * m + 1) m := by
             apply Finset.prod_dvd_of_coprime
@@ -305,6 +308,10 @@ lemma abel_sum_primes (f g : ℕ → ℝ) : ∀ N : ℕ, N ≥ 2 →
           exact ⟨⟨h1, by omega⟩, hp'⟩
     have hnot_mem : N + 1 ∉ (Finset.Icc 2 N).filter Nat.Prime := by
       simp only [Finset.mem_filter, Finset.mem_Icc]; omega
+    have hIco : Finset.Ico 2 (N + 1) = insert N (Finset.Ico 2 N) := by
+      rw [← Finset.Ico_insert_right (by omega : 2 ≤ N + 1)]
+      simp
+    have hN_not_Ico : N ∉ Finset.Ico 2 N := by simp
     rw [Finset.sum_Ico_succ_top hN]
     by_cases hp : Nat.Prime (N + 1)
     · rw [hIcc, if_pos hp, Finset.sum_insert hnot_mem, Finset.sum_insert hnot_mem, ih]
@@ -526,9 +533,11 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
   have hlogX_eq : Real.log X = 2 * Real.pi * Δ := Real.log_exp _
   have hloglogX_ge : 1 ≤ Real.log (Real.log X) := by
     rw [hlogX_eq]
-    have he : Real.exp 1 < 3 := Real.exp_one_lt_d9.trans (by norm_num)
+    have h2pi_ge : Real.exp 1 ≤ 2 * Real.pi := by
+      have he : Real.exp 1 < 3 := Real.exp_one_lt_d9.trans (by norm_num)
+      linarith [Real.two_le_pi]
     rw [← Real.log_exp 1]
-    exact Real.log_le_log (Real.exp_pos 1) (by nlinarith [Real.two_le_pi])
+    exact Real.log_le_log (Real.exp_pos 1) (by nlinarith)
   have hK_int : Integrable (fun x : ℝ => kernelK θ x) := kernelK_integrable θ
   have hM_int : Integrable (fun x : ℝ => M x) := by
     have : (fun x : ℝ => M x) = (fun x : ℝ => (M x - kernelK θ x) + kernelK θ x) := by ext x; ring
@@ -572,7 +581,8 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
     have : (3 : ℕ) ≤ Nat.floor (Real.sqrt X) := Nat.le_floor (by norm_num; linarith)
     exact this
   constructor
-  · unfold primeSum2
+  · -- Bound |primeSum2|
+    unfold primeSum2
     set N₂ := Nat.floor (Real.sqrt X)
     have h_term : ∀ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime,
         |(Real.log p / (p : ℝ)) *
@@ -675,7 +685,8 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
       _ ≤ C_tail * Real.log (Real.log X) := by
           gcongr
           exact le_trans (by linarith) (le_max_left _ _)
-  · unfold primeSumGe3 primePowerSum primeSum1 primeSum2
+  · -- Bound |primeSumGe3|
+    unfold primeSumGe3 primePowerSum primeSum1 primeSum2
     set N := Nat.floor X
     set N₂ := Nat.floor (Real.sqrt X)
     let f : ℕ → ℝ := fun n =>
@@ -1370,43 +1381,32 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
       · filter_upwards with t
         rw [Real.norm_eq_abs, abs_of_nonneg (pow_nonneg (abs_nonneg _) _)]
         exact h_ptwise t
+    have hloglogX_ge : 0 ≤ Real.log (Real.log X) := by
+      rw [show Real.log X = 2 * Real.pi * Δ from Real.log_exp _]
+      apply Real.log_nonneg
+      have : 1 ≤ Δ := hΔ₀.trans hΔ
+      nlinarith [Real.two_le_pi]
     calc (1 / T) * ∫ t in Set.Icc T (2 * T), |primeSum1 q χ h_hat X t| ^ (2 * k)
         ≤ (1 / T) * ∫ t in Set.Icc T (2 * T), 4 ^ k * (‖D₁ t‖ ^ (2 * k) + ‖D₂ t‖ ^ (2 * k)) := by
           gcongr
           exact setIntegral_mono_on hP_int ((hD₁_int.add hD₂_int).const_mul _) measurableSet_Icc (fun t _ => h_ptwise t)
       _ = 4 ^ k * ((1 / T) * ∫ t in Set.Icc T (2 * T), ‖D₁ t‖ ^ (2 * k) +
             (1 / T) * ∫ t in Set.Icc T (2 * T), ‖D₂ t‖ ^ (2 * k)) := by
-          rw [integral_const_mul, integral_add hD₁_int hD₂_int]; ring
+          rw [MeasureTheory.integral_const_mul, MeasureTheory.integral_add hD₁_int hD₂_int]
+          ring
       _ ≤ 4 ^ k * ((max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k +
             (max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k) := by
-          gcongr
-          · exact h_poly_bound b₁ hb₁
-          · exact h_poly_bound b₂ hb₂
+          exact mul_le_mul_of_nonneg_left (add_le_add (h_poly_bound b₁ hb₁) (h_poly_bound b₂ hb₂)) (by positivity)
       _ ≤ 4 ^ k * (2 ^ k * (max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k) := by
           have h2k : (2 : ℝ) ≤ 2 ^ k := by
             have : (2 : ℝ) ^ 1 ≤ (2 : ℝ) ^ k := pow_le_pow_right₀ (by norm_num) hk_pos
             simpa using this
-          have hnn : 0 ≤ (max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k := by
-            apply pow_nonneg
-            have hlogX_eq : Real.log X = 2 * Real.pi * Δ := Real.log_exp _
-            have hloglogX_ge : 0 ≤ Real.log (Real.log X) := by
-              rw [hlogX_eq]
-              apply Real.log_nonneg
-              have : 1 ≤ Δ := hΔ₀.trans hΔ
-              nlinarith [Real.two_le_pi]
-            positivity
-          nlinarith
+          have hnn : 0 ≤ (max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k := by positivity
+          exact mul_le_mul_of_nonneg_left (by linarith [mul_le_mul_of_nonneg_right h2k hnn]) (by positivity)
       _ = (8 * max C₂ 1 * C_l2 * k * Real.log (Real.log X)) ^ k := by
           rw [← mul_pow, ← mul_pow]; ring_nf
       _ ≤ (B * k * Real.log (Real.log X)) ^ k := by
           gcongr
-          have hlogX_eq : Real.log X = 2 * Real.pi * Δ := Real.log_exp _
-          have hloglogX_ge : 0 ≤ Real.log (Real.log X) := by
-            rw [hlogX_eq]
-            apply Real.log_nonneg
-            have : 1 ≤ Δ := hΔ₀.trans hΔ
-            nlinarith [Real.two_le_pi]
-          positivity
           exact le_max_left _ _
 
 /-- **Lemma 4.2(ii)** (`2k`-th moment bound in the `q`-aspect). -/
@@ -1441,7 +1441,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
       calc (Finset.univ.filter (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive)).card
           ≤ (Finset.univ : Finset (DirichletCharacter ℂ q)).card := Finset.card_filter_le _ _
         _ = Fintype.card (DirichletCharacter ℂ q) := Finset.card_univ
-        _ = Nat.totient q := DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity q ℂ
+        _ = Nat.totient q := DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ q
     have h1 : (1 / (totientStar q : ℝ)) *
           ((Finset.univ.filter (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive)).card : ℝ) ≤
         (Nat.totient q : ℝ) / (totientStar q : ℝ) := by
@@ -1474,9 +1474,21 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
               Complex.exp (Complex.I * ↑t₀ * ↑(Real.log p)) := by
             rw [← Complex.exp_conj]
             congr 1
-            simp [Complex.conj_ofReal]
-          rw [hce, Complex.add_re]
-          simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero]
+            simp only [map_mul, map_neg, Complex.conj_I, Complex.conj_ofReal]
+            ring
+          rw [hce]
+          have hstar2 : (starRingEnd ℂ) ((starRingEnd ℂ) (h_hat (Real.log ↑p / (2 * Real.pi)))) =
+              h_hat (Real.log ↑p / (2 * Real.pi)) := star_star _
+          rw [hstar2, ← Complex.add_re]
+          have h_factor : ((Real.log ↑p / Real.sqrt ↑p : ℝ) : ℂ) *
+              (h_hat (-(Real.log ↑p / (2 * Real.pi))) * Complex.exp (-Complex.I * ↑t₀ * ↑(Real.log ↑p)) * χ ↑p +
+               h_hat (Real.log ↑p / (2 * Real.pi)) * Complex.exp (Complex.I * ↑t₀ * ↑(Real.log ↑p)) * (starRingEnd ℂ) (χ ↑p)) =
+              ((Real.log ↑p / Real.sqrt ↑p : ℝ) : ℂ) * h_hat (-(Real.log ↑p / (2 * Real.pi))) *
+                Complex.exp (-Complex.I * ↑t₀ * ↑(Real.log ↑p)) * χ ↑p +
+              ((Real.log ↑p / Real.sqrt ↑p : ℝ) : ℂ) * h_hat (Real.log ↑p / (2 * Real.pi)) *
+                Complex.exp (Complex.I * ↑t₀ * ↑(Real.log ↑p)) * (starRingEnd ℂ) (χ ↑p) := by ring
+          rw [← h_factor, Complex.re_ofReal_mul]
+          congr 2
           ring
         rw [h_sum_eq]
         have h2pi_le : 1 / (2 * Real.pi) ≤ 1 := by
@@ -1498,8 +1510,8 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
           _ ≤ 4 ^ k * (‖D₁ χ‖ ^ (2 * k) + ‖D₂ χ‖ ^ (2 * k)) := by
               gcongr
               rcases le_total ‖D₁ χ‖ ‖D₂ χ‖ with h | h
-              · rw [max_eq_right h]; linarith [pow_nonneg (norm_nonneg (D₁ χ)) (2 * k)]
-              · rw [max_eq_left h]; linarith [pow_nonneg (norm_nonneg (D₂ χ)) (2 * k)]
+              · simp only [m, max_eq_right h]; linarith [pow_nonneg (norm_nonneg (D₁ χ)) (2 * k)]
+              · simp only [m, max_eq_left h]; linarith [pow_nonneg (norm_nonneg (D₂ χ)) (2 * k)]
       exact (pow_le_pow_left₀ (abs_nonneg _) h_le (2 * k)).trans h_max
     have h_poly_bound : ∀ (b : ℕ → ℂ),
         (∀ p ∈ primes, ‖b p‖ ≤ (Real.log p / Real.sqrt p) *
@@ -1534,10 +1546,12 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
         congr 1
         push_cast
         rw [map_prod]
-      have h_norm_eq : ∀ χ : DirichletCharacter ℂ q, ‖D χ‖ ^ (2 * k) =
+      have h_norm_eq : ∀ χ : DirichletCharacter ℂ q, ‖∑ p ∈ primes, b p * χ p‖ ^ (2 * k) =
           ‖∑ n ∈ Finset.Icc 1 (P ^ k), a n * χ n‖ ^ 2 := by
         intro χ
-        rw [mul_comm 2 k, pow_mul, ← norm_pow, h_pow_eq χ]
+        rw [mul_comm 2 k, pow_mul, ← norm_pow]
+        change ‖(D χ) ^ k‖ ^ 2 = _
+        rw [h_pow_eq χ]
       simp_rw [h_norm_eq]
       have hPk_lt_q : P ^ k < q := by
         have h1 : ((P ^ k : ℕ) : ℝ) < (q : ℝ) := by
@@ -1643,7 +1657,7 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
               calc ∑ χ : DirichletCharacter ℂ q, ‖χ m‖ ^ 2
                   ≤ (Fintype.card (DirichletCharacter ℂ q) : ℝ) := by simpa using hχ_le
                 _ = (Nat.totient q : ℝ) := by
-                    rw [DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity q ℂ]
+                    rw [DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ q]
           _ = (Nat.totient q : ℝ) * ∑ m ∈ Finset.Icc 1 (P ^ k), ‖a m‖ ^ 2 := by
               rw [← Finset.sum_mul, mul_comm]
       have h_cs : ∀ n ∈ Finset.Icc 1 (P ^ k), ‖a n‖ ^ 2 ≤ (k.factorial : ℝ) * ∑ f ∈ fiber n, ∏ i, ‖b (f i)‖ ^ 2 := by
@@ -1735,11 +1749,12 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
         ≤ (1 / (totientStar q : ℝ)) *
             ∑ χ : DirichletCharacter ℂ q, |primeSum1 q χ h_hat X t₀| ^ (2 * k) := by
           gcongr
-          exact Finset.sum_le_univ_sum_of_nonneg (fun χ => pow_nonneg (abs_nonneg _) _)
+          exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
+            (fun χ _ _ => pow_nonneg (abs_nonneg _) _)
       _ ≤ (1 / (totientStar q : ℝ)) *
             ∑ χ : DirichletCharacter ℂ q, 4 ^ k * (‖D₁ χ‖ ^ (2 * k) + ‖D₂ χ‖ ^ (2 * k)) := by
           gcongr
-          exact Finset.sum_le_sum (fun χ _ => h_ptwise χ)
+          exact h_ptwise _
       _ = (1 / (totientStar q : ℝ)) *
             (4 ^ k * (∑ χ : DirichletCharacter ℂ q, ‖D₁ χ‖ ^ (2 * k) +
               ∑ χ : DirichletCharacter ℂ q, ‖D₂ χ‖ ^ (2 * k))) := by
@@ -1747,9 +1762,9 @@ theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
       _ ≤ (1 / (totientStar q : ℝ)) *
             (4 ^ k * ((Nat.totient q : ℝ) * (C_l2 * k * Real.log (Real.log X)) ^ k +
               (Nat.totient q : ℝ) * (C_l2 * k * Real.log (Real.log X)) ^ k)) := by
-          gcongr
-          · exact h_poly_bound b₁ hb₁
-          · exact h_poly_bound b₂ hb₂
+          exact mul_le_mul_of_nonneg_left
+            (mul_le_mul_of_nonneg_left (add_le_add (h_poly_bound b₁ hb₁) (h_poly_bound b₂ hb₂)) (by positivity))
+            (by positivity)
       _ = ((Nat.totient q : ℝ) / (totientStar q : ℝ)) *
             (4 ^ k * (2 * (C_l2 * k * Real.log (Real.log X)) ^ k)) := by ring
       _ ≤ ((Nat.totient q : ℝ) / (totientStar q : ℝ)) *
