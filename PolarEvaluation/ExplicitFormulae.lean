@@ -335,9 +335,9 @@ lemma kernelK_zero_lorentz_fourier (u : ℝ) (hu : 0 < u) (ξ : ℝ) :
     set c₂ : ℂ := -2 * Real.pi * u + 2 * Real.pi * Complex.I * x
     have hc₁_re : c₁.re < 0 := by simp [c₁]; positivity
     have hc₂_re : c₂.re < 0 := by simp [c₂]; positivity
-    have hI1 : (∫ y in Set.Ioi (0 : ℝ), g (-y) * Complex.exp (-2 * Real.pi * Complex.I * x * (-y))) =
+    have hI1 : (∫ y in Set.Ioi (0 : ℝ), g (-y) * Complex.exp (-2 * Real.pi * Complex.I * x * ((-y : ℝ) : ℂ))) =
         (Real.pi : ℂ) * (-1 / c₂) := by
-      have heq : Set.EqOn (fun y : ℝ => g (-y) * Complex.exp (-2 * Real.pi * Complex.I * x * (-y)))
+      have heq : Set.EqOn (fun y : ℝ => g (-y) * Complex.exp (-2 * Real.pi * Complex.I * x * ((-y : ℝ) : ℂ)))
           (fun y : ℝ => (Real.pi : ℂ) * Complex.exp (c₂ * y)) (Set.Ioi 0) := by
         intro y hy
         have hy0 : 0 < y := hy
@@ -375,9 +375,9 @@ lemma kernelK_zero_lorentz_fourier (u : ℝ) (hu : 0 < u) (ξ : ℝ) :
       have hr : (1 / u : ℝ) ≠ 0 := by positivity
       have h1 := (integrable_inv_one_add_mul_sq hr).const_mul (1 / u)
       refine h1.congr (ae_of_all _ fun x => ?_)
-      field_simp [hu.ne']
+      field_simp [hu.ne']; ring
     exact hreal.ofReal
-  have hinv := Continuous.fourierInv_fourier_eq hg_cont hg_int hFg_int (-ξ)
+  have hinv := congr_fun (Continuous.fourierInv_fourier_eq hg_cont hg_int hFg_int) (-ξ)
   rw [fourierInv_eq_fourierHat_neg, neg_neg] at hinv
   have heq_f : fourierHat (𝓕 g) ξ = fourierHat (fun x : ℝ => ((u / (x ^ 2 + u ^ 2) : ℝ) : ℂ)) ξ := by
     unfold fourierHat
@@ -495,18 +495,18 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
     have hcu2_re : cu2.re < 0 := by simp [cu2]; positivity
     have hc11_re : c11.re < 0 := by simp [c11]; positivity
     have hc12_re : c12.re < 0 := by simp [c12]; positivity
-    have hI1 : (∫ y in Set.Ioi (0 : ℝ), g (-y) * Complex.exp (-2 * Real.pi * Complex.I * x * (-y))) =
+    have hI1 : (∫ y in Set.Ioi (0 : ℝ), g (-y) * Complex.exp (-2 * Real.pi * Complex.I * x * ((-y : ℝ) : ℂ))) =
         Complex.I * (Real.pi : ℂ) * (-1 / cu2 - (-1 / c12)) := by
-      have heq : Set.EqOn (fun y : ℝ => g (-y) * Complex.exp (-2 * Real.pi * Complex.I * x * (-y)))
+      have heq : Set.EqOn (fun y : ℝ => g (-y) * Complex.exp (-2 * Real.pi * Complex.I * x * ((-y : ℝ) : ℂ)))
           (fun y : ℝ => Complex.I * (Real.pi : ℂ) * (Complex.exp (cu2 * y) - Complex.exp (c12 * y))) (Set.Ioi 0) := by
         intro y hy
         have hy0 : 0 < y := hy
         dsimp only [g, sgnC, cu2, c12]
         rw [if_neg (not_lt.mpr (neg_lt_zero.mpr hy0).le), if_pos (neg_lt_zero.mpr hy0), abs_neg, abs_of_pos hy0]
         rw [mul_sub, sub_mul, mul_assoc, mul_assoc, ← Complex.exp_add, ← Complex.exp_add]
-        have he1 : ((-2 * Real.pi * u * y : ℝ) : ℂ) + -2 * Real.pi * Complex.I * x * (-y) = cu2 * y := by
+        have he1 : ((-2 * Real.pi * u * y : ℝ) : ℂ) + -2 * Real.pi * Complex.I * x * ((-y : ℝ) : ℂ) = cu2 * y := by
           dsimp only [cu2]; push_cast; ring
-        have he2 : ((-2 * Real.pi * y : ℝ) : ℂ) + -2 * Real.pi * Complex.I * x * (-y) = c12 * y := by
+        have he2 : ((-2 * Real.pi * y : ℝ) : ℂ) + -2 * Real.pi * Complex.I * x * ((-y : ℝ) : ℂ) = c12 * y := by
           dsimp only [c12]; push_cast; ring
         rw [he1, he2]; ring
       rw [setIntegral_congr_fun measurableSet_Ioi heq, integral_const_mul,
@@ -548,7 +548,7 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
       have h_Ioi : IntegrableOn (fun x : ℝ => x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))) (Set.Ioi 1) := by
         have hpow : IntegrableOn (fun x : ℝ => x ^ (-2 : ℝ)) (Set.Ioi (1 : ℝ)) :=
           integrableOn_Ioi_rpow_of_lt (by norm_num) (by norm_num)
-        refine hpow.mono' (by fun_prop) ?_
+        refine hpow.mono' ((Continuous.aestronglyMeasurable ((by fun_prop : Continuous (fun x : ℝ => x * (1 - u ^ 2))).div (by fun_prop) (fun x => by positivity))).restrict) ?_
         filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
         have hx1 : 1 < x := hx
         have hx_pos : 0 < x := by linarith
@@ -564,7 +564,7 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
             _ ≤ (x ^ 2 + u ^ 2) * (x ^ 2 + 1) := by nlinarith [sq_nonneg u]
         calc x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))
             ≤ x / x ^ 3 := div_le_div₀ hx_pos.le hnum (by positivity) hden
-          _ = 1 / x ^ 2 := by field_simp [hx_pos.ne']; ring
+          _ = 1 / x ^ 2 := by field_simp [hx_pos.ne']
       have h_Iio : IntegrableOn (fun x : ℝ => x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))) (Set.Iio (-1)) := by
         have hpre : (fun x : ℝ => -x) ⁻¹' Set.Ioi (1 : ℝ) = Set.Iio (-1 : ℝ) := by ext x; simp
         have hcomp : IntegrableOn (fun x : ℝ => -((-x) * (1 - u ^ 2) / (((-x) ^ 2 + u ^ 2) * ((-x) ^ 2 + 1)))) (Set.Iio (-1)) := by
@@ -577,8 +577,8 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
       have huniv : Set.Iio (-1 : ℝ) ∪ Set.Icc (-1 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) = Set.univ := by ext x; simp
       rw [← integrableOn_univ, ← huniv]
       exact (h_Iio.union h_Icc).union h_Ioi
-    exact hreal.neg.ofReal
-  have hinv := Continuous.fourierInv_fourier_eq hg_cont hg_int hFg_int (-ξ)
+    exact (hreal.neg.ofReal).congr (ae_of_all _ fun x => by simp)
+  have hinv := congr_fun (Continuous.fourierInv_fourier_eq hg_cont hg_int hFg_int) (-ξ)
   rw [fourierInv_eq_fourierHat_neg, neg_neg] at hinv
   have heq_f : fourierHat (𝓕 g) ξ =
       -fourierHat (fun x : ℝ => ((x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1)) : ℝ) : ℂ)) ξ := by
@@ -601,7 +601,7 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
   have hres : fourierHat (fun x : ℝ => ((x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1)) : ℝ) : ℂ)) ξ = -g (-ξ) := by
     linear_combination -hinv
   rw [hres, hgn]
-  congr 2 <;> congr 1 <;> push_cast <;> ring
+  push_cast; ring
 
 theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
     fourierHat (fun x : ℝ => (kernelK θ x : ℂ)) 0 = (-Real.pi * Real.cos θ : ℂ) ∧
@@ -625,7 +625,7 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
       have hreal : Integrable (fun x : ℝ => u / (x ^ 2 + u ^ 2)) := by
         have hr : (1 / u : ℝ) ≠ 0 := by positivity
         refine ((integrable_inv_one_add_mul_sq hr).const_mul (1 / u)).congr (ae_of_all _ fun x => ?_)
-        field_simp [hu0.ne']
+        field_simp [hu0.ne']; ring
       refine hreal.norm.mono (by dsimp only [F]; fun_prop) ?_
       filter_upwards with x
       have hn : ‖Complex.exp (-2 * Real.pi * Complex.I * ξ * x)‖ = 1 := by
@@ -635,7 +635,7 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
       dsimp only [F]
       rw [norm_mul, Complex.norm_real, hn, mul_one, norm_norm]
     have hF_u_int : Integrable (fun u : ℝ => ∫ x : ℝ, ‖F (x, u)‖) (volume.restrict (Set.Ioc (0 : ℝ) 1)) := by
-      have heq : EqOn (fun u : ℝ => ∫ x : ℝ, ‖F (x, u)‖) (fun _ : ℝ => Real.pi) (Set.Ioc 0 1) := by
+      have heq : Set.EqOn (fun u : ℝ => ∫ x : ℝ, ‖F (x, u)‖) (fun _ : ℝ => Real.pi) (Set.Ioc 0 1) := by
         intro u hu
         have hu0 : 0 < u := hu.1
         have h1 : ∀ x : ℝ, ‖F (x, u)‖ = (1 / u) * (1 + ((1 / u) * x) ^ 2)⁻¹ := by
@@ -652,10 +652,10 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
         rw [integral_const_mul, integral_univ_inv_one_add_mul_sq (by positivity : (1 / u) ≠ 0)]
         rw [abs_of_pos (by positivity)]
         field_simp [hu0.ne']
-      exact ((continuousOn_const.integrableOn_Ioc : IntegrableOn (fun _ : ℝ => Real.pi) (Set.Ioc 0 1))).congr_fun
+      exact (continuousOn_const.integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self : IntegrableOn (fun _ : ℝ => Real.pi) (Set.Ioc 0 1)).congr_fun
         heq measurableSet_Ioc
     have hF_prod_int : Integrable F (volume.prod (volume.restrict (Set.Ioc (0 : ℝ) 1))) :=
-      integrable_prod_iff.mpr ⟨hF_meas, hF_x_int, hF_u_int⟩
+      (integrable_prod_iff hF_meas).mpr ⟨hF_x_int, hF_u_int⟩
     have h_inner_x : ∀ x : ℝ, x ≠ 0 →
         (∫ u in Set.Ioc (0 : ℝ) 1, F (x, u)) = -(kernelK 0 x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x) := by
       intro x hx
@@ -672,13 +672,11 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
           field_simp [hpos]; ring
         rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv (by
           apply ContinuousOn.intervalIntegrable
-          exact Continuous.continuousOn (by fun_prop : Continuous (fun u : ℝ => u / (x ^ 2 + u ^ 2))))]
+          exact Continuous.continuousOn (continuous_id.div (by fun_prop) (fun u => by positivity)))]
         unfold kernelK
         simp only [Real.cos_zero, Real.sin_zero, zero_mul, add_zero]
         have hx2 : 0 < x ^ 2 := sq_pos_of_ne_zero hx
         rw [← mul_sub, ← Real.log_div (by positivity) (by positivity)]
-        ring_nf
-        rw [show x ^ 2 + 1 = 1 + x ^ 2 by ring]
         ring
       have hofReal : (∫ u in Set.Ioc (0 : ℝ) 1, ((u / (x ^ 2 + u ^ 2) : ℝ) : ℂ)) =
           ((∫ u in Set.Ioc (0 : ℝ) 1, u / (x ^ 2 + u ^ 2) : ℝ) : ℂ) := integral_ofReal
@@ -712,9 +710,10 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
         have h_Ioi : IntegrableOn (fun x : ℝ => x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))) (Set.Ioi 1) := by
           have hpow : IntegrableOn (fun x : ℝ => x ^ (-2 : ℝ)) (Set.Ioi (1 : ℝ)) :=
             integrableOn_Ioi_rpow_of_lt (by norm_num) (by norm_num)
-          refine hpow.mono' (by fun_prop) ?_
+          refine hpow.mono' ((Continuous.aestronglyMeasurable ((by fun_prop : Continuous (fun x : ℝ => x * (1 - u ^ 2))).div (by fun_prop) (fun x => by positivity))).restrict) ?_
           filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
-          have hx_pos : 0 < x := by linarith [hx]
+          have hx1 : 1 < x := hx
+          have hx_pos : 0 < x := by linarith
           have h1u : 0 ≤ 1 - u ^ 2 := by nlinarith
           rw [Real.norm_eq_abs, abs_of_nonneg (div_nonneg (mul_nonneg hx_pos.le h1u) (by positivity))]
           have hrpow : x ^ (-2 : ℝ) = 1 / x ^ 2 := by
@@ -723,11 +722,11 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
           have hnum : x * (1 - u ^ 2) ≤ x := mul_le_of_le_one_right hx_pos.le (by nlinarith [sq_nonneg u])
           have hden : x ^ 3 ≤ (x ^ 2 + u ^ 2) * (x ^ 2 + 1) := by
             calc x ^ 3 = x ^ 2 * x := by ring
-              _ ≤ x ^ 2 * x ^ 2 := by nlinarith [hx]
+              _ ≤ x ^ 2 * x ^ 2 := by nlinarith
               _ ≤ (x ^ 2 + u ^ 2) * (x ^ 2 + 1) := by nlinarith [sq_nonneg u]
           calc x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))
               ≤ x / x ^ 3 := div_le_div₀ hx_pos.le hnum (by positivity) hden
-            _ = 1 / x ^ 2 := by field_simp [hx_pos.ne']; ring
+            _ = 1 / x ^ 2 := by field_simp [hx_pos.ne']
         have h_Iio : IntegrableOn (fun x : ℝ => x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))) (Set.Iio (-1)) := by
           have hpre : (fun x : ℝ => -x) ⁻¹' Set.Ioi (1 : ℝ) = Set.Iio (-1 : ℝ) := by ext x; simp
           have hcomp : IntegrableOn (fun x : ℝ => -((-x) * (1 - u ^ 2) / (((-x) ^ 2 + u ^ 2) * ((-x) ^ 2 + 1)))) (Set.Iio (-1)) := by
@@ -748,7 +747,7 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
       dsimp only [F]
       rw [norm_mul, Complex.norm_real, hn, mul_one, norm_norm]
     have hF_u_int : Integrable (fun u : ℝ => ∫ x : ℝ, ‖F (x, u)‖) (volume.restrict (Set.Ioc (0 : ℝ) 1)) := by
-      have heq : EqOn (fun u : ℝ => ∫ x : ℝ, ‖F (x, u)‖) (fun u : ℝ => -2 * Real.log u) (Set.Ioc 0 1) := by
+      have heq : Set.EqOn (fun u : ℝ => ∫ x : ℝ, ‖F (x, u)‖) (fun u : ℝ => -2 * Real.log u) (Set.Ioc 0 1) := by
         intro u hu
         have hu0 : 0 < u := hu.1
         have hu1 : u ≤ 1 := hu.2
@@ -771,9 +770,10 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
             have h1inf : IntegrableOn (fun x : ℝ => x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))) (Set.Ioi 1) := by
               have hpow : IntegrableOn (fun x : ℝ => x ^ (-2 : ℝ)) (Set.Ioi (1 : ℝ)) :=
                 integrableOn_Ioi_rpow_of_lt (by norm_num) (by norm_num)
-              refine hpow.mono' (by fun_prop) ?_
+              refine hpow.mono' ((Continuous.aestronglyMeasurable ((by fun_prop : Continuous (fun x : ℝ => x * (1 - u ^ 2))).div (by fun_prop) (fun x => by positivity))).restrict) ?_
               filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
-              have hx_pos : 0 < x := by linarith [hx]
+              have hx1 : 1 < x := hx
+              have hx_pos : 0 < x := by linarith
               rw [Real.norm_eq_abs, abs_of_nonneg (div_nonneg (mul_nonneg hx_pos.le h1u) (by positivity))]
               have hrpow : x ^ (-2 : ℝ) = 1 / x ^ 2 := by
                 rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hx_pos.le, Real.rpow_natCast, one_div]
@@ -781,11 +781,11 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
               have hnum : x * (1 - u ^ 2) ≤ x := mul_le_of_le_one_right hx_pos.le (by nlinarith [sq_nonneg u])
               have hden : x ^ 3 ≤ (x ^ 2 + u ^ 2) * (x ^ 2 + 1) := by
                 calc x ^ 3 = x ^ 2 * x := by ring
-                  _ ≤ x ^ 2 * x ^ 2 := by nlinarith [hx]
+                  _ ≤ x ^ 2 * x ^ 2 := by nlinarith
                   _ ≤ (x ^ 2 + u ^ 2) * (x ^ 2 + 1) := by nlinarith [sq_nonneg u]
               calc x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))
                   ≤ x / x ^ 3 := div_le_div₀ hx_pos.le hnum (by positivity) hden
-                _ = 1 / x ^ 2 := by field_simp [hx_pos.ne']; ring
+                _ = 1 / x ^ 2 := by field_simp [hx_pos.ne']
             have hun : Set.Ioc (0 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) = Set.Ioi 0 := Set.Ioc_union_Ioi_eq_Ioi (by norm_num)
             rw [← hun]
             exact h01.union h1inf
@@ -836,9 +836,10 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
             have h1inf : IntegrableOn (fun x : ℝ => x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))) (Set.Ioi 1) := by
               have hpow : IntegrableOn (fun x : ℝ => x ^ (-2 : ℝ)) (Set.Ioi (1 : ℝ)) :=
                 integrableOn_Ioi_rpow_of_lt (by norm_num) (by norm_num)
-              refine hpow.mono' (by fun_prop) ?_
+              refine hpow.mono' ((Continuous.aestronglyMeasurable ((by fun_prop : Continuous (fun x : ℝ => x * (1 - u ^ 2))).div (by fun_prop) (fun x => by positivity))).restrict) ?_
               filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
-              have hx_pos : 0 < x := by linarith [hx]
+              have hx1 : 1 < x := hx
+              have hx_pos : 0 < x := by linarith
               rw [Real.norm_eq_abs, abs_of_nonneg (div_nonneg (mul_nonneg hx_pos.le h1u) (by positivity))]
               have hrpow : x ^ (-2 : ℝ) = 1 / x ^ 2 := by
                 rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hx_pos.le, Real.rpow_natCast, one_div]
@@ -846,11 +847,11 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
               have hnum : x * (1 - u ^ 2) ≤ x := mul_le_of_le_one_right hx_pos.le (by nlinarith [sq_nonneg u])
               have hden : x ^ 3 ≤ (x ^ 2 + u ^ 2) * (x ^ 2 + 1) := by
                 calc x ^ 3 = x ^ 2 * x := by ring
-                  _ ≤ x ^ 2 * x ^ 2 := by nlinarith [hx]
+                  _ ≤ x ^ 2 * x ^ 2 := by nlinarith
                   _ ≤ (x ^ 2 + u ^ 2) * (x ^ 2 + 1) := by nlinarith [sq_nonneg u]
               calc x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))
                   ≤ x / x ^ 3 := div_le_div₀ hx_pos.le hnum (by positivity) hden
-                _ = 1 / x ^ 2 := by field_simp [hx_pos.ne']; ring
+                _ = 1 / x ^ 2 := by field_simp [hx_pos.ne']
             rw [← Set.Ioc_union_Ioi_eq_Ioi (by norm_num : (0 : ℝ) ≤ 1)]
             exact h01.union h1inf
           have h_Iio : IntegrableOn (fun x : ℝ => |x| * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1))) (Set.Iio 0) := by
@@ -899,7 +900,7 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
         linarith
       exact hlog_int.congr_fun heq.symm measurableSet_Ioc
     have hF_prod_int : Integrable F (volume.prod (volume.restrict (Set.Ioc (0 : ℝ) 1))) :=
-      integrable_prod_iff.mpr ⟨hF_meas, hF_x_int, hF_u_int⟩
+      (integrable_prod_iff hF_meas).mpr ⟨hF_x_int, hF_u_int⟩
     have h_inner_x : ∀ x : ℝ, x ≠ 0 →
         (∫ u in Set.Ioc (0 : ℝ) 1, F (x, u)) = (kernelK (Real.pi / 2) x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x) := by
       intro x hx
@@ -921,11 +922,11 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
           intro u _
           have ha := ((hasDerivAt_id u).div_const x).arctan
           have hb := (hasDerivAt_id u).mul_const (x / (x ^ 2 + 1))
-          convert ha.sub hb using 1
+          refine (ha.sub hb).congr_deriv ?_
           field_simp [hx]; ring
         rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv (by
           apply ContinuousOn.intervalIntegrable
-          exact Continuous.continuousOn ((by fun_prop : Continuous (fun u : ℝ => x / (x ^ 2 + u ^ 2))).sub continuous_const))]
+          exact Continuous.continuousOn ((continuous_const.div (by fun_prop) (fun u => by positivity)).sub continuous_const))]
         unfold kernelK
         simp [Real.cos_pi_div_two, Real.sin_pi_div_two]
       have hofReal : (∫ u in Set.Ioc (0 : ℝ) 1, ((x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1)) : ℝ) : ℂ)) =
@@ -945,10 +946,10 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
     have heq : Set.EqOn (fun u : ℝ => fourierHat (fun x : ℝ => ((u / (x ^ 2 + u ^ 2) : ℝ) : ℂ)) 0)
         (fun _ : ℝ => (Real.pi : ℂ)) (Set.Ioc 0 1) := by
       intro u hu
+      dsimp only
       rw [kernelK_zero_lorentz_fourier u hu.1 0]
       simp
-    rw [setIntegral_congr_fun measurableSet_Ioc heq, setIntegral_const, Real.volume_Ioc, sub_zero,
-      ENNReal.toReal_one, one_smul]
+    rw [setIntegral_congr_fun measurableSet_Ioc heq, setIntegral_const, Real.volume_real_Ioc_of_le (by norm_num), sub_zero, one_smul]
   have hK0_nz : ∀ ξ : ℝ, ξ ≠ 0 → fourierHat (fun x : ℝ => (kernelK 0 x : ℂ)) ξ =
       -((1 - Complex.exp (-2 * Real.pi * |ξ|)) / (2 * |ξ|)) := by
     intro ξ hξ
@@ -967,16 +968,15 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
         simpa using (hasDerivAt_id u).ofReal_comp.const_mul (-2 * (Real.pi : ℂ) * |ξ|)
       have hd2 := hd1.cexp.const_mul (-(1 / (2 * |ξ|) : ℂ))
       convert hd2 using 1
-      · ext v; congr 1; ring
-      · have hξ_ne : (|ξ| : ℂ) ≠ 0 := by exact_mod_cast abs_ne_zero.mpr hξ
-        field_simp [hξ_ne]; ring
+      · ext v; congr 1; push_cast; ring
+      · have hξ_ne : (|ξ| : ℂ) ≠ 0 := by exact_mod_cast (abs_ne_zero.mpr hξ)
+        field_simp [hξ_ne]; push_cast; ring
     rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv (by
       apply ContinuousOn.intervalIntegrable; exact Continuous.continuousOn (by fun_prop))]
-    have hξ_ne : (|ξ| : ℂ) ≠ 0 := by exact_mod_cast abs_ne_zero.mpr hξ
+    have hξ_ne : (|ξ| : ℂ) ≠ 0 := by exact_mod_cast (abs_ne_zero.mpr hξ)
     simp only [mul_zero, zero_mul, Complex.exp_zero, mul_one]
     field_simp [hξ_ne]
-    ring_nf
-    congr 2; ring
+    push_cast; ring
   have hKpi_zero : fourierHat (fun x : ℝ => (kernelK (Real.pi / 2) x : ℂ)) 0 = 0 := by
     unfold fourierHat
     simp only [Complex.ofReal_zero, mul_zero, zero_mul, Complex.exp_zero, mul_one]
@@ -986,7 +986,7 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
       ring
     have heq : (∫ x : ℝ, (kernelK (Real.pi / 2) x : ℂ)) = -(∫ x : ℝ, (kernelK (Real.pi / 2) x : ℂ)) := by
       calc (∫ x : ℝ, (kernelK (Real.pi / 2) x : ℂ))
-          = ∫ x : ℝ, (kernelK (Real.pi / 2) (-x) : ℂ) := (integral_neg_eq_self _).symm
+          = ∫ x : ℝ, (kernelK (Real.pi / 2) (-x) : ℂ) := (integral_neg_eq_self (fun x : ℝ => (kernelK (Real.pi / 2) x : ℂ))).symm
         _ = ∫ x : ℝ, -(kernelK (Real.pi / 2) x : ℂ) := by congr 1; ext x; rw [h_odd]; simp
         _ = -(∫ x : ℝ, (kernelK (Real.pi / 2) x : ℂ)) := integral_neg _
     have h2 : (2 : ℂ) * ∫ x : ℝ, (kernelK (Real.pi / 2) x : ℂ) = 0 := by
@@ -1001,12 +1001,13 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
         (fun u : ℝ => -Complex.I * (Real.pi : ℂ) * (if 0 < ξ then (1 : ℂ) else -1) *
           (Complex.exp (-2 * Real.pi * u * |ξ|) - Complex.exp (-2 * Real.pi * |ξ|))) (Set.Ioo 0 1) := by
       intro u hu
+      dsimp only
       rw [kernelK_pi_half_lorentz_fourier u hu.1 hu.2 ξ]
       by_cases hpos : 0 < ξ
       · simp [hpos]
       · have hneg : ξ < 0 := lt_of_le_of_ne (not_lt.mp hpos) hξ
         simp [hpos, hneg]
-    rw [← setIntegral_congr_set Ioo_ae_eq_Ioc.symm, setIntegral_congr_fun measurableSet_Ioo heq,
+    rw [← setIntegral_congr_set Ioo_ae_eq_Ioc, setIntegral_congr_fun measurableSet_Ioo heq,
       setIntegral_congr_set Ioo_ae_eq_Ioc, ← intervalIntegral.integral_of_le (by norm_num : (0 : ℝ) ≤ 1)]
     have hderiv : ∀ u ∈ Set.uIcc (0 : ℝ) 1,
         HasDerivAt (fun v : ℝ => -Complex.I * (Real.pi : ℂ) * (if 0 < ξ then (1 : ℂ) else -1) *
@@ -1021,9 +1022,9 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
       have hd3 := (hasDerivAt_id u).ofReal_comp.mul_const (Complex.exp (-2 * (Real.pi : ℂ) * |ξ|))
       have hd4 := (hd2.sub hd3).const_mul (-Complex.I * (Real.pi : ℂ) * (if 0 < ξ then (1 : ℂ) else -1))
       convert hd4 using 1
-      · ext v; congr 2; congr 1; ring
-      · have hξ_ne : (|ξ| : ℂ) ≠ 0 := by exact_mod_cast abs_ne_zero.mpr hξ
-        field_simp [Real.pi_ne_zero, hξ_ne]; ring
+      · ext v; congr 2; congr 1; push_cast; ring
+      · have hξ_ne : (|ξ| : ℂ) ≠ 0 := by exact_mod_cast (abs_ne_zero.mpr hξ)
+        field_simp [Real.pi_ne_zero, hξ_ne]; push_cast; ring
     rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv (by
       apply ContinuousOn.intervalIntegrable; exact Continuous.continuousOn (by fun_prop))]
     have hξ_ne : (ξ : ℂ) ≠ 0 := by exact_mod_cast hξ
@@ -1034,7 +1035,7 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
         rw [abs_of_neg hneg]; push_cast; field_simp [hξ_ne]
     simp only [mul_zero, zero_mul, Complex.exp_zero, mul_one, Complex.ofReal_zero, sub_zero,
       Complex.ofReal_one, one_mul]
-    have h_abs_ne : (|ξ| : ℂ) ≠ 0 := by exact_mod_cast abs_ne_zero.mpr hξ
+    have h_abs_ne : (|ξ| : ℂ) ≠ 0 := by exact_mod_cast (abs_ne_zero.mpr hξ)
     calc -Complex.I * ↑π * (if 0 < ξ then (1 : ℂ) else -1) *
           (-(1 / (2 * ↑π * ↑|ξ|)) * Complex.exp (-2 * ↑π * 1 * ↑|ξ|) - Complex.exp (-2 * ↑π * ↑|ξ|)) -
         -Complex.I * ↑π * (if 0 < ξ then (1 : ℂ) else -1) * -(1 / (2 * ↑π * ↑|ξ|))
@@ -1051,23 +1052,25 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
     intro ξ
     unfold fourierHat
     have h1 : Integrable (fun x : ℝ => (Real.cos θ : ℂ) * ((kernelK 0 x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x))) := by
-      refine (kernelK_integrable_zero.norm.const_mul |Real.cos θ|).mono (by fun_prop) ?_
+      refine (kernelK_integrable_zero.norm.const_mul |Real.cos θ|).mono
+        (((Complex.continuous_ofReal.comp_aestronglyMeasurable kernelK_integrable_zero.aestronglyMeasurable).mul (by fun_prop)).const_mul _) ?_
       filter_upwards with x
       have hn : ‖Complex.exp (-2 * Real.pi * Complex.I * ξ * x)‖ = 1 := by
         have : -2 * (Real.pi : ℂ) * Complex.I * ↑ξ * ↑x = ((-2 * Real.pi * ξ * x : ℝ) : ℂ) * Complex.I := by
           push_cast; ring
         rw [this, Complex.norm_exp_ofReal_mul_I]
       rw [norm_mul, norm_mul, Complex.norm_real, Complex.norm_real, hn, mul_one, Real.norm_eq_abs,
-        Real.norm_eq_abs, Real.norm_eq_abs]
+        Real.norm_eq_abs, Real.norm_of_nonneg (by positivity)]
     have h2 : Integrable (fun x : ℝ => (Real.sin θ : ℂ) * ((kernelK (Real.pi / 2) x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x))) := by
-      refine (kernelK_integrable_pi_half.norm.const_mul |Real.sin θ|).mono (by fun_prop) ?_
+      refine (kernelK_integrable_pi_half.norm.const_mul |Real.sin θ|).mono
+        (((Complex.continuous_ofReal.comp_aestronglyMeasurable kernelK_integrable_pi_half.aestronglyMeasurable).mul (by fun_prop)).const_mul _) ?_
       filter_upwards with x
       have hn : ‖Complex.exp (-2 * Real.pi * Complex.I * ξ * x)‖ = 1 := by
         have : -2 * (Real.pi : ℂ) * Complex.I * ↑ξ * ↑x = ((-2 * Real.pi * ξ * x : ℝ) : ℂ) * Complex.I := by
           push_cast; ring
         rw [this, Complex.norm_exp_ofReal_mul_I]
       rw [norm_mul, norm_mul, Complex.norm_real, Complex.norm_real, hn, mul_one, Real.norm_eq_abs,
-        Real.norm_eq_abs, Real.norm_eq_abs]
+        Real.norm_eq_abs, Real.norm_of_nonneg (by positivity)]
     rw [← integral_const_mul, ← integral_const_mul, ← integral_add h1 h2]
     congr 1; ext x
     unfold kernelK
