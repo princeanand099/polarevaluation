@@ -50,7 +50,9 @@ def HasExponentialType (M : ℂ → ℂ) (σ : ℝ) : Prop :=
 
 /-- Shifted-lattice Vaaler Hermite interpolant `M_α(y)` on `ℤ + α` from (3.3). -/
 def vaalerInterpolant (θ Δ α y : ℝ) : ℝ :=
-  (Real.sin (Real.pi * (y - α))) ^ 2 / Real.pi ^ 2 *
+  letI := Classical.propDecidable
+  if ∃ n : ℤ, y = n + α then rescaledF θ Δ y
+  else (Real.sin (Real.pi * (y - α))) ^ 2 / Real.pi ^ 2 *
     ∑' n : ℤ, (rescaledF θ Δ (n + α) / (y - n - α) ^ 2 +
       rescaledFDeriv θ Δ (n + α) / (y - n - α))
 
