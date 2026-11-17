@@ -189,6 +189,7 @@ theorem convex_domain_confinement (D : LFunctionData) :
           nlinarith
         linarith
   obtain ⟨s, hs_sub, hs_cov⟩ := hK_compact.elim_finite_subcover_image (fun θ _ => hU_open θ) hK_cover
+  -- Now handle s empty vs nonempty
   have h_main : ∃ Q_K ≥ 100, ∀ (q : ℕ) (hq : q ≥ 1) (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive),
       D.GRH q hq χ hχ → ∀ (t : ℝ), D.nonvanishing q χ t → analyticConductor q t ≥ Q_K →
       normalizedLogL D q χ t ∉ K := by
@@ -498,13 +499,13 @@ theorem corollary_1_3_ii (D : LFunctionData) :
     rw [h1, Real.exp_log (by norm_num), div_self (by norm_num), Real.arccos_one, zero_div]
   rwa [harc, zero_add] at hres
 
+/-- **Corollary 1.3(iii)**: In the `q`-aspect at `s = 1/2`, normalized `log L(1/2, χ)` lies in the
+`ε`-neighborhood of `Ω` for `q ≥ q₀(ε)`. -/
 lemma complex_norm_le_abs_re_add_abs_im (u : ℂ) : ‖u‖ ≤ |u.re| + |u.im| := by
   calc ‖u‖ = ‖(u.re : ℂ) + (u.im : ℂ) * Complex.I‖ := by rw [Complex.re_add_im]
     _ ≤ ‖(u.re : ℂ)‖ + ‖(u.im : ℂ) * Complex.I‖ := norm_add_le _ _
     _ = |u.re| + |u.im| := by simp
 
-/-- **Corollary 1.3(iii)**: In the `q`-aspect at `s = 1/2`, normalized `log L(1/2, χ)` lies in the
-`ε`-neighborhood of `Ω` for `q ≥ q₀(ε)`. -/
 theorem corollary_1_3_iii (D : LFunctionData) :
     ∀ ε > 0, ∃ q₀ : ℕ, q₀ ≥ 10 ∧
       ∀ (q : ℕ) (hq1 : q ≥ 1), q ≥ q₀ → ∀ (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive),
@@ -628,10 +629,10 @@ theorem corollary_1_3_iii (D : LFunctionData) :
   set z₂ := normalizedLogL D q χ 0
   have hzq_re : zq.re = c * z₂.re := by
     simp only [zq, z₂, normalizedLogL, c]
-    field_simp
+    rw [div_mul_div_cancel₀ hscale₂_pos.ne']
   have hzq_im : zq.im = c * z₂.im := by
     simp only [zq, z₂, normalizedLogL, c]
-    field_simp
+    rw [div_mul_div_cancel₀ hscale₂_pos.ne']
   have hre_bd : |z₂.re - w.re| < ε₁ := (Complex.abs_re_le_norm _).trans_lt hzw
   have him_bd : |z₂.im - w.im| < ε₁ := (Complex.abs_im_le_norm _).trans_lt hzw
   have hpi_le : Real.pi < 4 := Real.pi_lt_four
@@ -653,7 +654,7 @@ theorem corollary_1_3_iii (D : LFunctionData) :
         calc |c * (z₂.im - w.im) + (c - 1) * w.im|
             ≤ |c * (z₂.im - w.im)| + |(c - 1) * w.im| := abs_add_le _ _
           _ = c * |z₂.im - w.im| + (c - 1) * |w.im| := by
-              rw [abs_mul, abs_mul, abs_of_nonneg (by linarith), abs_of_nonneg (by linarith)]
+              rw [abs_mul, abs_mul, abs_of_pos (by linarith : 0 < c), abs_of_nonneg (by linarith : 0 ≤ c - 1)]
           _ ≤ (1 + ε₁) * ε₁ + ε₁ * (Real.pi / 4) := by
               gcongr
               · linarith
@@ -668,7 +669,7 @@ theorem corollary_1_3_iii (D : LFunctionData) :
       have h2w : 2 * w.re ≤ Real.log 2 := by
         rw [← Real.log_exp (2 * w.re)]
         exact Real.log_le_log (Real.exp_pos _) hexp
-      have hlog2_lt : Real.log 2 < 2 := Real.log_lt_sub_one_of_pos (by norm_num) |>.trans_le (by norm_num)
+      have hlog2_lt : Real.log 2 < 2 := (Real.log_lt_sub_one_of_pos (by norm_num) (by norm_num)).trans_le (by norm_num)
       linarith
     refine ⟨w, hw, ?_⟩
     have hnorm_le : ‖zq - w‖ ≤ |(zq - w).re| + |(zq - w).im| := complex_norm_le_abs_re_add_abs_im _
@@ -678,7 +679,7 @@ theorem corollary_1_3_iii (D : LFunctionData) :
       calc |c * (z₂.re - w.re) + (c - 1) * w.re|
           ≤ |c * (z₂.re - w.re)| + |(c - 1) * w.re| := abs_add_le _ _
         _ = c * |z₂.re - w.re| + (c - 1) * |w.re| := by
-            rw [abs_mul, abs_mul, abs_of_nonneg (by linarith), abs_of_nonneg (by linarith)]
+            rw [abs_mul, abs_mul, abs_of_pos (by linarith : 0 < c), abs_of_nonneg (by linarith : 0 ≤ c - 1)]
         _ ≤ (1 + ε₁) * ε₁ + ε₁ * 1 := by
             gcongr
             · linarith
@@ -690,7 +691,7 @@ theorem corollary_1_3_iii (D : LFunctionData) :
       calc |c * (z₂.im - w.im) + (c - 1) * w.im|
           ≤ |c * (z₂.im - w.im)| + |(c - 1) * w.im| := abs_add_le _ _
         _ = c * |z₂.im - w.im| + (c - 1) * |w.im| := by
-            rw [abs_mul, abs_mul, abs_of_nonneg (by linarith), abs_of_nonneg (by linarith)]
+            rw [abs_mul, abs_mul, abs_of_pos (by linarith : 0 < c), abs_of_nonneg (by linarith : 0 ≤ c - 1)]
         _ ≤ (1 + ε₁) * ε₁ + ε₁ * (Real.pi / 4) := by
             gcongr
             · linarith
