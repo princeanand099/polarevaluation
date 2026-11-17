@@ -82,38 +82,48 @@ lemma kernelK_integrable_zero : Integrable (fun x : ℝ => kernelK 0 x) := by
     simpa [hpre] using hcomp.comp_neg
   have h_Icc : IntegrableOn (fun x : ℝ => kernelK 0 x) (Set.Icc (-1 : ℝ) 1) := by
     have h_log_abs : IntegrableOn (fun x : ℝ => Real.log |x|) (Set.Icc (-1 : ℝ) 1) := by
-      have h01 : IntervalIntegrable Real.log volume 0 1 := intervalIntegrable_log
-      have h_pos : IntegrableOn (fun x : ℝ => Real.log |x|) (Set.Icc (0 : ℝ) 1) := by
-        refine (intervalIntegrable_iff_integrableOn_Icc_of_le (by norm_num : (0 : ℝ) ≤ 1)).mp ?_
-        refine h01.congr ?_
-        intro x hx
-        rw [Set.uIoc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at hx
-        dsimp only
-        rw [abs_of_pos hx.1]
+      have h01 : IntegrableOn (fun x : ℝ => Real.log |x|) (Set.Icc (0 : ℝ) 1) := by
+        have hrpow : IntegrableOn (fun x : ℝ => 2 * x ^ (-1 / 2 : ℝ)) (Set.Icc (0 : ℝ) 1) := by
+          refine ((intervalIntegrable_rpow' (by norm_num : (-1 : ℝ) < -1 / 2)).1.mono_set
+            Set.Ioc_subset_Ioc_self).integrableOn_Icc.const_mul 2
+        refine hrpow.mono' (AEStronglyMeasurable.restrict (by fun_prop)) ?_
+        filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
+        by_cases hx0 : x = 0
+        · subst hx0; simp
+        · have hx_pos : 0 < x := lt_of_le_of_ne hx.1 (Ne.symm hx0)
+          have h_inv : 0 < x ^ (-1 / 2 : ℝ) := Real.rpow_pos_of_pos hx_pos _
+          have hlog_neg : Real.log x ≤ 0 := Real.log_nonpos hx_pos.le hx.2
+          have hbound : -Real.log x ≤ 2 * x ^ (-1 / 2 : ℝ) := by
+            have h1 : Real.log (x ^ (-1 / 2 : ℝ)) ≤ x ^ (-1 / 2 : ℝ) - 1 :=
+              Real.log_le_sub_one_of_pos h_inv
+            rw [Real.log_rpow hx_pos] at h1
+            linarith
+          rw [Real.norm_eq_abs, abs_of_pos hx_pos, abs_of_nonpos hlog_neg]
+          exact hbound
       have h_neg : IntegrableOn (fun x : ℝ => Real.log |x|) (Set.Icc (-1 : ℝ) 0) := by
         have hpre : (fun x : ℝ => -x) ⁻¹' Set.Icc (0 : ℝ) 1 = Set.Icc (-1 : ℝ) 0 := by
           ext x; simp; constructor <;> intro h <;> linarith
-        simpa [abs_neg, hpre] using h_pos.comp_neg
+        simpa [abs_neg, hpre] using h01.comp_neg
       simpa [Set.Icc_union_Icc_eq_Icc (by norm_num : (-1 : ℝ) ≤ 0) (by norm_num : (0 : ℝ) ≤ 1)] using
-        h_neg.union h_pos
+        h_neg.union h01
     have h_log_sq : IntegrableOn (fun x : ℝ => Real.log (x ^ 2 + 1)) (Set.Icc (-1 : ℝ) 1) :=
       (Continuous.continuousOn (Continuous.log (by fun_prop) (fun x => by positivity))).integrableOn_Icc
     have h_comb : IntegrableOn (fun x : ℝ => -(1 / 2 : ℝ) * (Real.log (x ^ 2 + 1) - 2 * Real.log |x|))
         (Set.Icc (-1 : ℝ) 1) :=
       (h_log_sq.sub (h_log_abs.const_mul 2)).const_mul (-(1 / 2 : ℝ))
-    refine h_comb.congr_set_ae (ae_of_all _ ?_) |>.congr_fun_ae ?_
-    · exact Filter.EventuallyEq.rfl
-    · have hne : ∀ᵐ x ∂(volume.restrict (Set.Icc (-1 : ℝ) 1)), x ≠ 0 := by
-        rw [ae_iff]
-        have hsub : {a : ℝ | ¬a ≠ 0} ⊆ ({0} : Set ℝ) := fun a ha => by simpa using ha
-        exact measure_mono_null (Set.inter_subset_right.trans hsub) (by simp)
-      filter_upwards [hne] with x hx
-      unfold kernelK
-      simp only [Real.cos_zero, Real.sin_zero, zero_mul, add_zero]
-      have hx2 : x ^ 2 > 0 := sq_pos_of_ne_zero hx
-      rw [Real.log_div (by positivity) hx2.ne', show x ^ 2 = |x| ^ 2 by rw [sq_abs],
-        Real.log_pow, Nat.cast_ofNat]
-      ring
+    refine h_comb.congr_fun_ae ?_
+    have hne : ∀ᵐ x ∂(volume.restrict (Set.Icc (-1 : ℝ) 1)), x ≠ 0 := by
+      rw [ae_restrict_iff' measurableSet_Icc]
+      have hzero : volume ({0} : Set ℝ) = 0 := volume_singleton
+      filter_upwards [ae_iff.mpr (by simpa using hzero)] with x hx _
+      exact hx
+    filter_upwards [hne] with x hx
+    unfold kernelK
+    simp only [Real.cos_zero, Real.sin_zero, zero_mul, add_zero]
+    have hx2 : x ^ 2 > 0 := sq_pos_of_ne_zero hx
+    rw [Real.log_div (by positivity) hx2.ne', show x ^ 2 = |x| ^ 2 by rw [sq_abs],
+      Real.log_pow, Nat.cast_ofNat]
+    ring
   have huniv : Set.Iio (-1 : ℝ) ∪ Set.Icc (-1 : ℝ) 1 ∪ Set.Ioi (1 : ℝ) = Set.univ := by
     ext x; simp; by_cases h1 : x < -1 <;> by_cases h2 : x ≤ 1 <;> simp_all <;> linarith
   rw [← integrableOn_univ, ← huniv]
@@ -125,7 +135,7 @@ lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi /
     fun_prop
   have h_Icc : IntegrableOn (fun x : ℝ => kernelK (Real.pi / 2) x) (Set.Icc (-1 : ℝ) 1) := by
     have hconst : IntegrableOn (fun _ : ℝ => Real.pi / 2 + 1) (Set.Icc (-1 : ℝ) 1) :=
-      integrableOn_const.mpr (Or.inr measure_Icc_lt_top)
+      continuousOn_const.integrableOn_Icc
     refine hconst.mono' hmeas.restrict ?_
     filter_upwards [ae_restrict_mem measurableSet_Icc] with x hx
     unfold kernelK
@@ -155,9 +165,10 @@ lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi /
         · exact (continuous_id.sub Real.continuous_arctan).continuousOn
         · exact fun t _ => (differentiableAt_id.sub (Real.differentiableAt_arctan t)).differentiableWithinAt
         · intro t _
-          rw [deriv_sub differentiableAt_id (Real.differentiableAt_arctan t), deriv_id'',
-            Real.deriv_arctan]
-          have h1 : (1 + t ^ 2)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by linarith [sq_nonneg t])
+          have h1 : HasDerivAt (fun s : ℝ => s - Real.arctan s) (1 - (1 + t ^ 2)⁻¹) t := by
+            simpa [inv_eq_one_div] using (hasDerivAt_id t).sub (Real.hasDerivAt_arctan t)
+          rw [h1.deriv]
+          have hle : (1 + t ^ 2)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ (by linarith [sq_nonneg t])
           linarith
       have := hmono (by simp : (0 : ℝ) ∈ Set.Ici 0) hu_pos.le hu_pos.le
       simp only [sub_zero, Real.arctan_zero] at this
@@ -170,21 +181,18 @@ lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi /
           exact ((Real.differentiableAt_arctan t).sub
             (differentiableAt_id.sub ((differentiableAt_pow 2).div_const 2))).differentiableWithinAt
         · intro t ht
-          have ht0 : 0 ≤ t := by simpa using ht
-          have hderiv : deriv (fun s : ℝ => Real.arctan s - (s - s ^ 2 / 2)) t =
-              (1 + t ^ 2)⁻¹ - (1 - t) := by
-            have h1 : HasDerivAt (fun s : ℝ => Real.arctan s - (s - s ^ 2 / 2))
-                ((1 + t ^ 2)⁻¹ - (1 - t)) t := by
-              have ha := Real.hasDerivAt_arctan t
-              have hb := (hasDerivAt_id t).sub (((hasDerivAt_pow 2 t).div_const 2))
-              convert ha.sub hb using 1
-              ring
-            exact h1.deriv
-          rw [hderiv]
+          have ht0 : 0 ≤ t := interior_subset ht
+          have h1 : HasDerivAt (fun s : ℝ => Real.arctan s - (s - s ^ 2 / 2))
+              (1 / (1 + t ^ 2) - (1 - t)) t := by
+            have ha := Real.hasDerivAt_arctan t
+            have hb := (hasDerivAt_id t).sub ((hasDerivAt_pow 2 t).div_const 2)
+            convert ha.sub hb using 1
+            ring
+          rw [h1.deriv]
           have hpos : 0 ≤ t * (t ^ 2 - t + 1) := by
             have : t ^ 2 - t + 1 = (t - 1 / 2) ^ 2 + 3 / 4 := by ring
             nlinarith [sq_nonneg (t - 1 / 2)]
-          have heq : (1 + t ^ 2)⁻¹ - (1 - t) = t * (t ^ 2 - t + 1) / (1 + t ^ 2) := by
+          have heq : 1 / (1 + t ^ 2) - (1 - t) = t * (t ^ 2 - t + 1) / (1 + t ^ 2) := by
             field_simp; ring
           rw [heq]
           exact div_nonneg hpos (by positivity)
@@ -194,10 +202,13 @@ lemma kernelK_integrable_pi_half : Integrable (fun x : ℝ => kernelK (Real.pi /
       linarith
     have hdiff1 : |Real.arctan (1 / x) - 1 / x| ≤ 1 / x ^ 2 := by
       rw [abs_le]
-      constructor <;> linarith [show (1 / x) ^ 2 / 2 ≤ 1 / x ^ 2 by ring_nf; positivity]
+      have hhalf : (1 / x) ^ 2 / 2 ≤ 1 / x ^ 2 := by
+        rw [div_pow, one_pow, div_div]
+        exact div_le_div_of_nonneg_left zero_le_one (by positivity) (by linarith [sq_pos_of_pos hx_pos])
+      constructor <;> linarith
     have hdiff2 : |1 / x - x / (x ^ 2 + 1)| ≤ 1 / x ^ 2 := by
       have heq : 1 / x - x / (x ^ 2 + 1) = 1 / (x * (x ^ 2 + 1)) := by field_simp; ring
-      rw [heq, abs_of_pos (by positivity)]
+      rw [heq, abs_of_pos (div_pos one_pos (mul_pos hx_pos (by positivity)))]
       have hden : x ^ 2 ≤ x * (x ^ 2 + 1) := by nlinarith
       exact one_div_le_one_div_of_le (sq_pos_of_pos hx_pos) hden
     unfold kernelK
@@ -277,8 +288,9 @@ theorem majorant_fourier_decay (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2
       linarith
     have h_exp_pos : 0 < Real.exp (-2 * Real.pi * |ξ|) := Real.exp_pos _
     have h_cexp_eq : Complex.exp (-2 * Real.pi * |ξ|) = (Real.exp (-2 * Real.pi * |ξ|) : ℂ) := by
-      rw [← Complex.ofReal_exp]
-      congr 1; push_cast; ring
+      have : (-2 * (Real.pi : ℂ) * ↑|ξ| : ℂ) = ((-2 * Real.pi * |ξ| : ℝ) : ℂ) := by
+        push_cast; ring
+      rw [this, ← Complex.ofReal_exp]
     have h_one_sub : ‖(1 : ℂ) - Complex.exp (-2 * Real.pi * |ξ|)‖ ≤ 1 := by
       rw [h_cexp_eq, ← Complex.ofReal_one, ← Complex.ofReal_sub, Complex.norm_real,
         Real.norm_eq_abs, abs_of_nonneg (by linarith)]
@@ -314,7 +326,8 @@ theorem majorant_fourier_decay (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2
         have hsin : |Real.sin θ| ≤ 1 := Real.abs_sin_le_one θ
         have h2a : ‖(1 - Complex.exp (-2 * Real.pi * |ξ|)) / (2 * ξ)‖ ≤ 1 / (2 * |ξ|) := by
           rw [norm_div, show (2 : ℂ) * ↑ξ = ((2 * ξ : ℝ) : ℂ) by push_cast; ring,
-            Complex.norm_real, Real.norm_eq_abs, abs_mul, abs_of_pos two_pos]
+            Complex.norm_real, Real.norm_eq_abs, abs_mul,
+            abs_of_pos (by norm_num : (0 : ℝ) < 2)]
           exact div_le_div_of_nonneg_right h_one_sub (by positivity)
         have h2b : ‖(Real.pi : ℂ) * (if 0 < ξ then (1 : ℂ) else -1) * Complex.exp (-2 * Real.pi * |ξ|)‖ ≤
             1 / (2 * |ξ|) := by
@@ -344,11 +357,11 @@ theorem majorant_fourier_decay (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2
       have hM_c : Integrable (fun x : ℝ => (M x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x)) := by
         refine (hM_int.norm).mono (by fun_prop) ?_
         filter_upwards with x
-        rw [norm_mul, Complex.norm_real, hexp_norm x, mul_one]
+        rw [norm_mul, Complex.norm_real, hexp_norm x, mul_one, norm_norm]
       have hK_c : Integrable (fun x : ℝ => (kernelK θ x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x)) := by
         refine (hK_int.norm).mono (by fun_prop) ?_
         filter_upwards with x
-        rw [norm_mul, Complex.norm_real, hexp_norm x, mul_one]
+        rw [norm_mul, Complex.norm_real, hexp_norm x, mul_one, norm_norm]
       unfold fourierHat
       rw [← integral_sub hM_c hK_c]
       calc ‖∫ x : ℝ, ((M x : ℂ) * Complex.exp (-2 * Real.pi * Complex.I * ξ * x) -
