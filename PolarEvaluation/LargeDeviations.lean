@@ -14,7 +14,7 @@ This module formalizes Section 6 of the manuscript:
 
 noncomputable section
 
-open Real Complex MeasureTheory
+open Real Complex MeasureTheory Classical
 
 namespace PolarEvaluation
 

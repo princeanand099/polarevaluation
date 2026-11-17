@@ -34,9 +34,9 @@ theorem contour_representation (θ : ℝ) (hθ : θ ∈ Set.Ioo (-Real.pi / 2) (
       Real.sin (Real.pi * (y - α)) ^ 2 *
         ((∫ v in Set.Ioo 0 Δ,
           (Complex.exp (-Complex.I * θ) /
-            (Complex.sin (Complex.pi * (Complex.I * v - α)) ^ 2 * (y - Complex.I * v))).im) -
+            (Complex.sin ((Real.pi : ℂ) * (Complex.I * v - α)) ^ 2 * (y - Complex.I * v))).im) -
           (Δ * Real.sin θ /
-            (Complex.sin (Complex.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ - y))).re) := by
+            (Complex.sin ((Real.pi : ℂ) * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ - y))).re) := by
   sorry
 
 /-- **Lemma 3.3 (Positivity of `J(y, θ)`).** -/
