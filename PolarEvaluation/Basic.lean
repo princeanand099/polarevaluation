@@ -3,17 +3,21 @@ import Mathlib
 /-!
 # Foundational Definitions for the Polar Envelope and Large Deviations of `log L(1/2 + it, χ)`
 
-This module defines the analytic conductor, the mixed logarithmic-argument kernel `K_θ`,
-the directional envelope constant `C(θ)`, the universal convex domain `Ω`, the rescaled
-kernel `F_{θ,Δ}`, the shifted-lattice Vaaler Hermite interpolant `M_α`, and the
-limiting integral `J(y, θ)`.
+This module defines the analytic conductor, the Fourier transform `fourierHat`,
+the mixed logarithmic-argument kernel `K_θ`, the directional envelope constant `C(θ)`,
+the universal convex domain `Ω`, the rescaled kernel `F_{θ,Δ}`, the shifted-lattice
+Vaaler Hermite interpolant `M_α`, and the limiting integral `J(y, θ)`.
 -/
 
 noncomputable section
 
-open Real Complex
+open Real Complex MeasureTheory
 
 namespace PolarEvaluation
+
+/-- Fourier transform `f̂(ξ) := ∫ f(x) exp(-2π i ξ x) dx`. -/
+def fourierHat (f : ℝ → ℂ) (ξ : ℝ) : ℂ :=
+  ∫ x : ℝ, f x * Complex.exp (-2 * Real.pi * Complex.I * ξ * x)
 
 /-- Analytic conductor `q(|t| + 2)` for a character modulo `q` at height `t`. -/
 def analyticConductor (q : ℕ) (t : ℝ) : ℝ :=

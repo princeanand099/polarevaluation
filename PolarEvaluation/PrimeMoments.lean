@@ -21,10 +21,10 @@ def primePowerSum (M : ℝ → ℝ) (X : ℝ) (q : ℕ) (χ : DirichletCharacter
   (1 / (2 * Real.pi : ℂ)) *
     ∑' n : ℕ, if 2 ≤ n ∧ (n : ℝ) ≤ X then
       ((ArithmeticFunction.vonMangoldt n : ℂ) / Real.sqrt n) *
-        (χ n * (fourierIntegral (fun x : ℝ => (M x : ℂ)) (-Real.log n / (2 * Real.pi))) *
+        (χ n * (fourierHat (fun x : ℝ => (M x : ℂ)) (-Real.log n / (2 * Real.pi))) *
             (n : ℂ) ^ (-Complex.I * t) +
           starRingEnd ℂ (χ n) *
-            (fourierIntegral (fun x : ℝ => (M x : ℂ)) (Real.log n / (2 * Real.pi))) *
+            (fourierHat (fun x : ℝ => (M x : ℂ)) (Real.log n / (2 * Real.pi))) *
             (n : ℂ) ^ (Complex.I * t))
     else 0
 
@@ -33,10 +33,10 @@ def primeSum1 (M : ℝ → ℝ) (X : ℝ) (q : ℕ) (χ : DirichletCharacter ℂ
   (1 / (2 * Real.pi : ℂ)) *
     ∑ p ∈ Finset.filter Nat.Prime (Finset.Icc 2 (Nat.floor X)),
       ((Real.log p : ℂ) / Real.sqrt p) *
-        (χ p * (fourierIntegral (fun x : ℝ => (M x : ℂ)) (-Real.log p / (2 * Real.pi))) *
+        (χ p * (fourierHat (fun x : ℝ => (M x : ℂ)) (-Real.log p / (2 * Real.pi))) *
             (p : ℂ) ^ (-Complex.I * t) +
           starRingEnd ℂ (χ p) *
-            (fourierIntegral (fun x : ℝ => (M x : ℂ)) (Real.log p / (2 * Real.pi))) *
+            (fourierHat (fun x : ℝ => (M x : ℂ)) (Real.log p / (2 * Real.pi))) *
             (p : ℂ) ^ (Complex.I * t))
 
 /-- **Lemma 5.1 (Prime-square and higher-power sums).** -/

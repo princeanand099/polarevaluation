@@ -42,10 +42,10 @@ axiom guinand_weil_external (D : LFunctionData) (q : ℕ) (hq : q ≥ 1)
           (1 / (2 * Real.pi)) *
             ∑' n : ℕ, if 2 ≤ n ∧ (n : ℝ) ≤ Real.exp (2 * Real.pi * Δ) then
               ((ArithmeticFunction.vonMangoldt n : ℂ) / Real.sqrt n) *
-                (χ n * (fourierIntegral (fun x : ℝ => h x) (-Real.log n / (2 * Real.pi))) *
+                (χ n * (fourierHat (fun x : ℝ => h x) (-Real.log n / (2 * Real.pi))) *
                     (n : ℂ) ^ (-Complex.I * t) +
                   starRingEnd ℂ (χ n) *
-                    (fourierIntegral (fun x : ℝ => h x) (Real.log n / (2 * Real.pi))) *
+                    (fourierHat (fun x : ℝ => h x) (Real.log n / (2 * Real.pi))) *
                     (n : ℂ) ^ (Complex.I * t))
             else 0)‖ ≤
         C_gw * (M + (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * M else 0))

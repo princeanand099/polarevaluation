@@ -41,10 +41,10 @@ theorem guinand_weil_bandlimited (D : LFunctionData) (q : ℕ) (hq : q ≥ 1)
           (1 / (2 * Real.pi)) *
             ∑' n : ℕ, if 2 ≤ n ∧ (n : ℝ) ≤ Real.exp (2 * Real.pi * Δ) then
               ((ArithmeticFunction.vonMangoldt n : ℂ) / Real.sqrt n) *
-                (χ n * (fourierIntegral (fun x : ℝ => h x) (-Real.log n / (2 * Real.pi))) *
+                (χ n * (fourierHat (fun x : ℝ => h x) (-Real.log n / (2 * Real.pi))) *
                     (n : ℂ) ^ (-Complex.I * t) +
                   starRingEnd ℂ (χ n) *
-                    (fourierIntegral (fun x : ℝ => h x) (Real.log n / (2 * Real.pi))) *
+                    (fourierHat (fun x : ℝ => h x) (Real.log n / (2 * Real.pi))) *
                     (n : ℂ) ^ (Complex.I * t))
             else 0)‖ ≤
         C_gw * (M + (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * M else 0)) :=
@@ -53,7 +53,7 @@ theorem guinand_weil_bandlimited (D : LFunctionData) (q : ℕ) (hq : q ≥ 1)
 /-- **Lemma 2.3 (Fourier transform of `K_θ`).** -/
 theorem kernelK_fourier (θ : ℝ) (hθ : θ ∈ Set.Icc (-Real.pi / 2) (Real.pi / 2))
     (ξ : ℝ) (hξ : ξ ≠ 0) :
-    fourierIntegral (fun x : ℝ => (kernelK θ x : ℂ)) ξ =
+    fourierHat (fun x : ℝ => (kernelK θ x : ℂ)) ξ =
       -(Real.cos θ : ℂ) * ((1 - Real.exp (-2 * Real.pi * |ξ|)) / (2 * |ξ|)) -
         Complex.I * Real.sin θ *
           (((1 - Real.exp (-2 * Real.pi * |ξ|)) / (2 * ξ)) -
@@ -65,9 +65,9 @@ theorem majorant_fourier_decay (θ : ℝ) (hθ : θ ∈ Set.Icc (-Real.pi / 2) (
     (Δ₀ : ℝ) (hΔ₀ : Δ₀ ≥ 1) (M : ℝ → ℝ → ℝ)
     (hL1 : ∃ C > 0, ∀ Δ ≥ Δ₀, ∫ x : ℝ, |M Δ x - kernelK θ x| ≤ C / Δ) :
     ∃ C_dec > 0, ∀ Δ ≥ Δ₀, ∀ p : ℕ, Nat.Prime p →
-      ‖fourierIntegral (fun x : ℝ => (M Δ x : ℂ)) (Real.log p / (2 * Real.pi))‖ ≤
+      ‖fourierHat (fun x : ℝ => (M Δ x : ℂ)) (Real.log p / (2 * Real.pi))‖ ≤
         C_dec * (1 / Real.log p + 1 / Δ) ∧
-      ‖fourierIntegral (fun x : ℝ => (M Δ x : ℂ)) (-Real.log p / (2 * Real.pi))‖ ≤
+      ‖fourierHat (fun x : ℝ => (M Δ x : ℂ)) (-Real.log p / (2 * Real.pi))‖ ≤
         C_dec * (1 / Real.log p + 1 / Δ) := by
   sorry
 
