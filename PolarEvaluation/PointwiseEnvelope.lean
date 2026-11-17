@@ -188,7 +188,15 @@ theorem convex_domain_confinement (D : LFunctionData) :
         have h2 : (1 / 2 : ℝ) * ((Real.pi / 2 - δ) * Real.cos δ) < |z.im| * Real.cos δ := by
           nlinarith
         linarith
-  obtain ⟨s, hs_sub, hs_cov⟩ := hK_compact.elim_finite_subcover_image (fun θ _ => hU_open θ) hK_cover
+  obtain ⟨s_set, hs_sub_set, hs_fin, hs_cov⟩ := hK_compact.elim_finite_subcover_image (fun θ _ => hU_open θ) hK_cover
+  let s : Finset ℝ := hs_fin.toFinset
+  have hs_sub : (s : Set ℝ) ⊆ Set.Ioo (-Real.pi / 2) (Real.pi / 2) := by
+    intro θ hθ
+    exact hs_sub_set (hs_fin.mem_toFinset.mp hθ)
+  have hs_cov' : K ⊆ ⋃ θ ∈ s, U θ := by
+    intro z hz
+    obtain ⟨θ, hθ_mem, hzU⟩ := Set.mem_iUnion₂.mp (hs_cov hz)
+    exact Set.mem_iUnion₂.mpr ⟨θ, hs_fin.mem_toFinset.mpr hθ_mem, hzU⟩
   -- Now handle s empty vs nonempty
   have h_main : ∃ Q_K ≥ 100, ∀ (q : ℕ) (hq : q ≥ 1) (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive),
       D.GRH q hq χ hχ → ∀ (t : ℝ), D.nonvanishing q χ t → analyticConductor q t ≥ Q_K →
@@ -205,7 +213,7 @@ theorem convex_domain_confinement (D : LFunctionData) :
             (Complex.continuous_im.mul continuous_const)).sub continuous_const
         obtain ⟨z_min, hz_min, hz_isMin⟩ := hK_compact.exists_isMinOn hKne hg_cont.continuousOn
         have hg_pos : 0 < g z_min := by
-          have hmem := hs_cov hz_min
+          have hmem := hs_cov' hz_min
           simp only [Set.mem_iUnion, exists_prop] at hmem
           obtain ⟨θ, hθs, hθU⟩ := hmem
           have hlt : 0 < z_min.re * Real.cos θ + z_min.im * Real.sin θ - envelopeC θ := by
@@ -227,7 +235,7 @@ theorem convex_domain_confinement (D : LFunctionData) :
                 envelopeC θ + δ₀ := by
           intro θ hθs
           have hθ_mem := hs_sub hθs
-          have hθ_abs : |θ| < Real.pi / 2 := abs_lt.mpr hθ_mem
+          have hθ_abs : |θ| < Real.pi / 2 := abs_lt.mpr ⟨by linarith [hθ_mem.1], hθ_mem.2⟩
           obtain ⟨Q_θ, C_θ, hQ_θ, hC_θ, hdir_θ⟩ := directional_envelope_bound D θ hθ_abs
           obtain ⟨Q_θ', hQ_θ', hlll_θ⟩ := logloglog_div_loglog_lt (δ₀ / C_θ) (by positivity)
           refine ⟨max Q_θ Q_θ', le_trans hQ_θ (le_max_left _ _),
@@ -260,7 +268,7 @@ theorem convex_domain_confinement (D : LFunctionData) :
         linarith
       · refine ⟨100, le_rfl, fun q hq χ hχ hGRH t ht hcond hzK => hKne ⟨_, hzK⟩⟩
     · refine ⟨100, le_rfl, fun q hq χ hχ hGRH t ht hcond hzK => ?_⟩
-      have hmem := hs_cov hzK
+      have hmem := hs_cov' hzK
       simp only [Set.mem_iUnion, exists_prop] at hmem
       obtain ⟨θ, hθs, _⟩ := hmem
       exact hs_ne ⟨θ, hθs⟩
@@ -280,12 +288,12 @@ theorem convex_domain_confinement (D : LFunctionData) :
             (Real.log (analyticConductor q t) / Real.log (Real.log (analyticConductor q t)))) := by
           gcongr
       _ = c * (Real.log (analyticConductor q t) / Real.log (Real.log (analyticConductor q t))) := by
-          dsimp only [c]; field_simp [Real.pi_ne_zero]; ring
+          dsimp only [c]; field_simp [Real.pi_ne_zero]
   have h_re_le : (normalizedLogL D q χ t).re ≤ b := by
     have h0 := hdir0 q hq χ hχ hGRH t ht (le_trans (le_max_left _ _) (le_trans (le_max_right _ _) hcond))
     have hlll := (hlll0 (analyticConductor q t) (le_trans (le_max_right _ _) (le_trans (le_max_right _ _) hcond))).2
     have hC0 : envelopeC 0 = Real.log 2 / 2 := by
-      simp [envelopeC, Real.cos_zero, Real.sin_zero]
+      simp [envelopeC, Real.cos_zero, Real.sin_zero]; ring
     have hpol : polarLogL D q χ t 0 = D.logAbsL q χ t := by
       simp [polarLogL, Real.cos_zero, Real.sin_zero]
     have hC_lt : C_err0 * Real.log (Real.log (Real.log (analyticConductor q t))) /
@@ -418,6 +426,7 @@ theorem modulus_argument_tradeoff (D : LFunctionData) (α : ℝ) (hα : α ≤ R
   have harccos_le : Real.arccos (Real.cos (2 * w.im)) ≤ f (α - η / 3 - ε₁) := by
     apply Real.arccos_le_arccos
     · have : 0 ≤ min 1 (Real.exp (2 * (α - η / 3 - ε₁)) / 2) := le_min (by norm_num) (by positivity)
+      linarith
     · exact hcos_ge
     · exact Real.cos_le_one _
   have hdist : dist (α - η / 3 - ε₁) α < η := by
@@ -520,7 +529,7 @@ theorem corollary_1_3_iii (D : LFunctionData) :
   have hε₁_le2 : ε₁ ≤ 1 / 2 := min_le_right _ _
   obtain ⟨Q₀, hQ₀, hconf⟩ := convex_domain_confinement D ε₁ hε₁_pos
   set q_exp := Nat.ceil (Real.exp (Real.log 2 / ε₁)) + 100
-  refine ⟨max (Nat.ceil Q₀) q_exp, le_trans (by norm_num) (le_max_right _ _),
+  refine ⟨max (Nat.ceil Q₀) q_exp, le_trans (by dsimp only [q_exp]; omega) (le_max_right _ _),
     fun q hq1 hq χ hχ hGRH hnv => ?_⟩
   have hq_ge_Q₀ : Q₀ ≤ (q : ℝ) :=
     (Nat.le_ceil Q₀).trans (by exact_mod_cast le_trans (le_max_left _ _) hq)
@@ -547,21 +556,23 @@ theorem corollary_1_3_iii (D : LFunctionData) :
     have hu : Real.exp 1 ≤ Real.log (q : ℝ) := by
       have h100 : Real.exp (Real.exp 1) ≤ 100 := by
         have he : Real.exp 1 < 3 := Real.exp_one_lt_d9.trans (by norm_num)
-        calc Real.exp (Real.exp 1) < Real.exp 3 := Real.exp_lt_exp.mpr he
+        exact (calc Real.exp (Real.exp 1) < Real.exp 3 := Real.exp_lt_exp.mpr he
           _ = Real.exp 1 * Real.exp 1 * Real.exp 1 := by rw [← Real.exp_add, ← Real.exp_add]; ring_nf
           _ ≤ 3 * 3 * 3 := by gcongr
-          _ ≤ 100 := by norm_num
+          _ ≤ 100 := by norm_num).le
       rw [← Real.log_exp (Real.exp 1)]
       exact Real.log_le_log (Real.exp_pos _) (h100.trans hq_ge_100)
     have hv : Real.log (q : ℝ) ≤ Real.log (analyticConductor q 0) :=
       Real.log_le_log (by linarith) (by linarith)
     have hmono : MonotoneOn (fun t : ℝ => t / Real.log t) (Set.Ici (Real.exp 1)) := by
       apply monotoneOn_of_deriv_nonneg (convex_Ici (Real.exp 1))
-      · refine continuousOn_id.div (Real.continuous_log.continuousOn) ?_
-        intro t ht
-        have : Real.exp 1 ≤ t := ht
-        have : 1 < t := lt_of_lt_of_le (Real.one_lt_exp_iff.mpr one_pos) this
-        exact (Real.log_pos this).ne'
+      · refine continuousOn_id.div (Real.continuousOn_log.mono fun t ht => ?_) ?_
+        · have : Real.exp 1 ≤ t := ht
+          linarith [Real.exp_pos 1]
+        · intro t ht
+          have : Real.exp 1 ≤ t := ht
+          have : 1 < t := lt_of_lt_of_le (Real.one_lt_exp_iff.mpr one_pos) this
+          exact (Real.log_pos this).ne'
       · intro t ht
         have ht_ge : Real.exp 1 < t := by
           simpa [interior_Ici] using ht
@@ -569,7 +580,8 @@ theorem corollary_1_3_iii (D : LFunctionData) :
         have hlog_gt : 1 < Real.log t := by
           rw [← Real.log_exp 1]
           exact Real.log_lt_log (Real.exp_pos 1) ht_ge
-        exact ((differentiableAt_id).div (Real.differentiableAt_log ht_pos.ne') hlog_gt.ne').differentiableWithinAt
+        have hlog_ne : Real.log t ≠ 0 := by linarith
+        exact ((differentiableAt_id).div (Real.differentiableAt_log ht_pos.ne') hlog_ne).differentiableWithinAt
       · intro t ht
         have ht_ge : Real.exp 1 < t := by
           simpa [interior_Ici] using ht
@@ -577,12 +589,13 @@ theorem corollary_1_3_iii (D : LFunctionData) :
         have hlog_gt : 1 < Real.log t := by
           rw [← Real.log_exp 1]
           exact Real.log_lt_log (Real.exp_pos 1) ht_ge
+        have hlog_ne : Real.log t ≠ 0 := by linarith
         have hder : HasDerivAt (fun s : ℝ => s / Real.log s)
-            ((1 * Real.log t - t * (1 / t)) / (Real.log t) ^ 2) t :=
-          (hasDerivAt_id t).div (Real.hasDerivAt_log ht_pos.ne') hlog_gt.ne'
+            ((1 * Real.log t - t * t⁻¹) / (Real.log t) ^ 2) t :=
+          (hasDerivAt_id t).div (Real.hasDerivAt_log ht_pos.ne') hlog_ne
         rw [hder.deriv]
-        have hnum : 0 ≤ 1 * Real.log t - t * (1 / t) := by
-          rw [mul_one, mul_one_div_cancel ht_pos.ne']; linarith
+        have hnum : 0 ≤ 1 * Real.log t - t * t⁻¹ := by
+          rw [one_mul, mul_inv_cancel₀ ht_pos.ne']; linarith
         exact div_nonneg hnum (sq_nonneg _)
     exact hmono hu (hu.trans hv) hv
   have hc_le : c ≤ 1 + ε₁ := by
@@ -592,17 +605,17 @@ theorem corollary_1_3_iii (D : LFunctionData) :
       have : Real.exp 1 ≤ Real.log (q : ℝ) := by
         have h100 : Real.exp (Real.exp 1) ≤ 100 := by
           have he : Real.exp 1 < 3 := Real.exp_one_lt_d9.trans (by norm_num)
-          calc Real.exp (Real.exp 1) < Real.exp 3 := Real.exp_lt_exp.mpr he
+          exact (calc Real.exp (Real.exp 1) < Real.exp 3 := Real.exp_lt_exp.mpr he
             _ = Real.exp 1 * Real.exp 1 * Real.exp 1 := by rw [← Real.exp_add, ← Real.exp_add]; ring_nf
             _ ≤ 3 * 3 * 3 := by gcongr
-            _ ≤ 100 := by norm_num
+            _ ≤ 100 := by norm_num).le
         rw [← Real.log_exp (Real.exp 1)]
         exact Real.log_le_log (Real.exp_pos _) (h100.trans hq_ge_100)
       linarith [Real.one_lt_exp_iff.mpr one_pos]
     have hloglog_le : Real.log (Real.log (q : ℝ)) ≤ Real.log (Real.log (analyticConductor q 0)) :=
-      Real.log_le_log hloglogq_pos (Real.log_le_log (by linarith) (by linarith))
+      Real.log_le_log hlogq_pos (Real.log_le_log (by linarith) (by linarith))
     have hdiv_le : Real.log (Real.log (q : ℝ)) / Real.log (Real.log (analyticConductor q 0)) ≤ 1 :=
-      div_le_one_of_le₀ hloglog_le (by positivity)
+      div_le_one_of_le₀ hloglog_le (hloglogq_pos.le.trans hloglog_le)
     have hlog2_le : Real.log 2 / Real.log (q : ℝ) ≤ ε₁ := by
       have h1 : Real.log 2 / ε₁ ≤ Real.log (q : ℝ) := by
         rw [← Real.log_exp (Real.log 2 / ε₁)]
@@ -628,14 +641,16 @@ theorem corollary_1_3_iii (D : LFunctionData) :
   set zq : ℂ := ⟨D.logAbsL q χ 0 / scale₁, (Real.pi * D.S_val q χ 0) / scale₁⟩
   set z₂ := normalizedLogL D q χ 0
   have hzq_re : zq.re = c * z₂.re := by
-    simp only [zq, z₂, normalizedLogL, c]
-    rw [div_mul_div_cancel₀ hscale₂_pos.ne']
+    dsimp only [zq, z₂, normalizedLogL, c, scale₂, scale₁]
+    field_simp [hscale₁_pos.ne', hscale₂_pos.ne']
   have hzq_im : zq.im = c * z₂.im := by
-    simp only [zq, z₂, normalizedLogL, c]
-    rw [div_mul_div_cancel₀ hscale₂_pos.ne']
+    dsimp only [zq, z₂, normalizedLogL, c, scale₂, scale₁]
+    field_simp [hscale₁_pos.ne', hscale₂_pos.ne']
   have hre_bd : |z₂.re - w.re| < ε₁ := (Complex.abs_re_le_norm _).trans_lt hzw
   have him_bd : |z₂.im - w.im| < ε₁ := (Complex.abs_im_le_norm _).trans_lt hzw
   have hpi_le : Real.pi < 4 := Real.pi_lt_four
+  have hc_pos : 0 < c := by linarith
+  have hc1_nonneg : 0 ≤ c - 1 := by linarith
   by_cases hw_nonpos : w.re ≤ 0
   · let w' : ℂ := ⟨c * w.re, w.im⟩
     refine ⟨w', ⟨hw.1, ?_⟩, ?_⟩
@@ -651,14 +666,13 @@ theorem corollary_1_3_iii (D : LFunctionData) :
       have hd_im : |(zq - w').im| ≤ (1 + ε₁) * ε₁ + ε₁ * (Real.pi / 4) := by
         have : (zq - w').im = c * (z₂.im - w.im) + (c - 1) * w.im := by simp [w', hzq_im]; ring
         rw [this]
-        calc |c * (z₂.im - w.im) + (c - 1) * w.im|
-            ≤ |c * (z₂.im - w.im)| + |(c - 1) * w.im| := abs_add_le _ _
-          _ = c * |z₂.im - w.im| + (c - 1) * |w.im| := by
-              rw [abs_mul, abs_mul, abs_of_pos (by linarith : 0 < c), abs_of_nonneg (by linarith : 0 ≤ c - 1)]
-          _ ≤ (1 + ε₁) * ε₁ + ε₁ * (Real.pi / 4) := by
-              gcongr
-              · linarith
-              · exact hw.1.le
+        have h1 : |c * (z₂.im - w.im)| ≤ (1 + ε₁) * ε₁ := by
+          rw [abs_mul, abs_of_pos hc_pos]
+          exact mul_le_mul hc_le him_bd.le (abs_nonneg _) (by linarith)
+        have h2 : |(c - 1) * w.im| ≤ ε₁ * (Real.pi / 4) := by
+          rw [abs_mul, abs_of_nonneg hc1_nonneg]
+          exact mul_le_mul (by linarith) hw.1.le (abs_nonneg _) (by linarith)
+        exact (abs_add_le _ _).trans (add_le_add h1 h2)
       nlinarith
   · have hw_pos : 0 < w.re := not_le.mp hw_nonpos
     have hw_le : w.re ≤ 1 := by
@@ -669,33 +683,31 @@ theorem corollary_1_3_iii (D : LFunctionData) :
       have h2w : 2 * w.re ≤ Real.log 2 := by
         rw [← Real.log_exp (2 * w.re)]
         exact Real.log_le_log (Real.exp_pos _) hexp
-      have hlog2_lt : Real.log 2 < 2 := (Real.log_lt_sub_one_of_pos (by norm_num) (by norm_num)).trans_le (by norm_num)
+      have hlog2_lt : Real.log 2 < 2 := (Real.log_lt_sub_one_of_pos (by norm_num : (0 : ℝ) < 2) (by norm_num)).trans_le (by norm_num)
       linarith
     refine ⟨w, hw, ?_⟩
     have hnorm_le : ‖zq - w‖ ≤ |(zq - w).re| + |(zq - w).im| := complex_norm_le_abs_re_add_abs_im _
     have hd_re : |(zq - w).re| ≤ (1 + ε₁) * ε₁ + ε₁ := by
       have : (zq - w).re = c * (z₂.re - w.re) + (c - 1) * w.re := by simp [hzq_re]; ring
       rw [this]
-      calc |c * (z₂.re - w.re) + (c - 1) * w.re|
-          ≤ |c * (z₂.re - w.re)| + |(c - 1) * w.re| := abs_add_le _ _
-        _ = c * |z₂.re - w.re| + (c - 1) * |w.re| := by
-            rw [abs_mul, abs_mul, abs_of_pos (by linarith : 0 < c), abs_of_nonneg (by linarith : 0 ≤ c - 1)]
-        _ ≤ (1 + ε₁) * ε₁ + ε₁ * 1 := by
-            gcongr
-            · linarith
-            · rw [abs_of_pos hw_pos]; exact hw_le
-        _ = (1 + ε₁) * ε₁ + ε₁ := by ring
+      have h1 : |c * (z₂.re - w.re)| ≤ (1 + ε₁) * ε₁ := by
+        rw [abs_mul, abs_of_pos hc_pos]
+        exact mul_le_mul hc_le hre_bd.le (abs_nonneg _) (by linarith)
+      have h2 : |(c - 1) * w.re| ≤ ε₁ := by
+        rw [abs_mul, abs_of_nonneg hc1_nonneg, abs_of_pos hw_pos]
+        calc (c - 1) * w.re ≤ ε₁ * 1 := mul_le_mul (by linarith) hw_le hw_pos.le (by linarith)
+          _ = ε₁ := mul_one _
+      exact (abs_add_le _ _).trans (add_le_add h1 h2)
     have hd_im : |(zq - w).im| ≤ (1 + ε₁) * ε₁ + ε₁ * (Real.pi / 4) := by
       have : (zq - w).im = c * (z₂.im - w.im) + (c - 1) * w.im := by simp [hzq_im]; ring
       rw [this]
-      calc |c * (z₂.im - w.im) + (c - 1) * w.im|
-          ≤ |c * (z₂.im - w.im)| + |(c - 1) * w.im| := abs_add_le _ _
-        _ = c * |z₂.im - w.im| + (c - 1) * |w.im| := by
-            rw [abs_mul, abs_mul, abs_of_pos (by linarith : 0 < c), abs_of_nonneg (by linarith : 0 ≤ c - 1)]
-        _ ≤ (1 + ε₁) * ε₁ + ε₁ * (Real.pi / 4) := by
-            gcongr
-            · linarith
-            · exact hw.1.le
+      have h1 : |c * (z₂.im - w.im)| ≤ (1 + ε₁) * ε₁ := by
+        rw [abs_mul, abs_of_pos hc_pos]
+        exact mul_le_mul hc_le him_bd.le (abs_nonneg _) (by linarith)
+      have h2 : |(c - 1) * w.im| ≤ ε₁ * (Real.pi / 4) := by
+        rw [abs_mul, abs_of_nonneg hc1_nonneg]
+        exact mul_le_mul (by linarith) hw.1.le (abs_nonneg _) (by linarith)
+      exact (abs_add_le _ _).trans (add_le_add h1 h2)
     nlinarith
 
 end PolarEvaluation
