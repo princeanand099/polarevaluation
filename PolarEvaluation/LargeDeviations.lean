@@ -36,7 +36,7 @@ theorem t_aspect_large_deviation (D : LFunctionData)
 theorem q_aspect_large_deviation (D : LFunctionData) (t₀ : ℝ)
     (θ : ℝ) (hθ : θ ∈ Set.Ioo (-Real.pi / 2) (Real.pi / 2)) :
     ∃ c_θ A_θ : ℝ, ∃ q₀ : ℕ, c_θ > 0 ∧ A_θ > 1 ∧ q₀ ≥ 3 ∧
-      ∀ q ≥ q₀,
+      ∀ (q : ℕ) (hq : q ≥ q₀),
         (∀ χ : DirichletCharacter ℂ q, ∀ hχ : χ.IsPrimitive, D.GRH q (by omega) χ hχ) →
         let phiStar := (Finset.univ.filter (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive)).card
         phiStar ≥ 1 →
@@ -58,6 +58,20 @@ theorem S_large_deviation_t (D : LFunctionData)
         D.L q χ (1 / 2 + Complex.I * t) ≠ 0 ∧
         |D.S q χ t| > α * Real.sqrt (Real.log T * Real.log (Real.log T))}).toReal ≤
         Real.exp (-c * α * Real.sqrt (Real.log T) * (Real.log (Real.log T)) ^ ((3 : ℝ) / 2)) := by
+  sorry
+
+/-- **Corollary 1.6(ii): `q`-aspect large-deviation bound for `|S(t₀, χ)|`.** -/
+theorem S_large_deviation_q (D : LFunctionData) (t₀ : ℝ) (α : ℝ) (hα : α > 0) :
+    ∃ c > 0, ∃ q₀ : ℕ, q₀ ≥ 3 ∧
+      ∀ (q : ℕ) (hq : q ≥ q₀),
+        (∀ χ : DirichletCharacter ℂ q, ∀ hχ : χ.IsPrimitive, D.GRH q (by omega) χ hχ) →
+        let phiStar := (Finset.univ.filter (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive)).card
+        phiStar ≥ 1 →
+        ((Finset.univ.filter (fun χ : DirichletCharacter ℂ q =>
+          χ.IsPrimitive ∧ D.L q χ (1 / 2 + Complex.I * t₀) ≠ 0 ∧
+          |D.S q χ t₀| > α * Real.sqrt (Real.log q * Real.log (Real.log q)))).card : ℝ) /
+          (phiStar : ℝ) ≤
+          Real.exp (-c * α * Real.sqrt (Real.log q) * (Real.log (Real.log q)) ^ ((3 : ℝ) / 2)) := by
   sorry
 
 end PolarEvaluation
