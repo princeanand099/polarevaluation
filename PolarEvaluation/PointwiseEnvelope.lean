@@ -41,7 +41,8 @@ lemma logloglog_div_loglog_lt (δ : ℝ) (hδ : 0 < δ) :
         div_le_div_of_nonneg_right hlog_le hloglog_pos.le
     _ = 2 / Real.sqrt (Real.log (Real.log x)) := by
         have hs : 0 < Real.sqrt (Real.log (Real.log x)) := Real.sqrt_pos.mpr hloglog_pos
-        rw [← Real.mul_self_sqrt hloglog_pos.le]
+        have hsq : Real.sqrt (Real.log (Real.log x)) * Real.sqrt (Real.log (Real.log x)) = Real.log (Real.log x) := Real.mul_self_sqrt hloglog_pos.le
+        conv_lhs => rhs; rw [← hsq]
         field_simp [hs.ne']
     _ < 2 / (2 / δ) := div_lt_div_of_pos_left two_pos (by positivity) hsqrt_gt
     _ = δ := by field_simp [hδ.ne']
@@ -95,9 +96,10 @@ theorem convex_domain_confinement (D : LFunctionData) :
   set a : ℝ := (1 / 2) * Real.log (2 * Real.cos (Real.pi / 2 - ε' / 2))
   set b : ℝ := Real.log 2 / 2 + ε' / 2
   set c : ℝ := Real.pi / 4 + ε' / 4
+  have hpi : 2 ≤ Real.pi := Real.two_le_pi
   have hcos_pos : 0 < Real.cos (Real.pi / 2 - ε' / 2) := by
     apply Real.cos_pos_of_mem_Ioo
-    constructor <;> linarith [Real.pi_pos]
+    constructor <;> linarith
   let R : Set ℂ := { z : ℂ | a ≤ z.re ∧ z.re ≤ b ∧ -c ≤ z.im ∧ z.im ≤ c }
   have hR_compact : IsCompact R := by
     have hprod : IsCompact (Set.Icc a b ×ˢ Set.Icc (-c) c) := isCompact_Icc.prod isCompact_Icc
@@ -107,7 +109,7 @@ theorem convex_domain_confinement (D : LFunctionData) :
       constructor
       · intro hz
         refine ⟨z.re, z.im, ⟨⟨hz.1, hz.2.1⟩, ⟨hz.2.2.1, hz.2.2.2⟩⟩, ?_⟩
-        ext <;> simp
+        apply Complex.ext <;> simp
       · rintro ⟨x, y, ⟨⟨hx1, hx2⟩, ⟨hy1, hy2⟩⟩, rfl⟩
         simp [hx1, hx2, hy1, hy2]
     rw [heq]
@@ -162,17 +164,16 @@ theorem convex_domain_confinement (D : LFunctionData) :
       · simp only [U, Set.mem_setOf_eq, envelopeC]
         have hcos_eq : Real.cos θ = Real.sin δ := by
           by_cases hs : 0 ≤ z.im
-          · simp [θ, sgn, if_pos hs, Real.cos_pi_div_two_sub]
-          · simp [θ, sgn, if_neg hs, Real.cos_neg, Real.cos_pi_div_two_sub]
+          · dsimp only [θ, sgn]; rw [if_pos hs, one_mul, Real.cos_pi_div_two_sub]
+          · dsimp only [θ, sgn]; rw [if_neg hs, neg_one_mul, Real.cos_neg, Real.cos_pi_div_two_sub]
         have hsin_eq : z.im * Real.sin θ = |z.im| * Real.cos δ := by
           by_cases hs : 0 ≤ z.im
-          · simp [θ, sgn, if_pos hs, Real.sin_pi_div_two_sub, abs_of_nonneg hs]
-          · simp [θ, sgn, if_neg hs, Real.sin_neg, Real.sin_pi_div_two_sub,
-              abs_of_neg (not_le.mp hs)]; ring
+          · dsimp only [θ, sgn]; rw [if_pos hs, one_mul, Real.sin_pi_div_two_sub, abs_of_nonneg hs]
+          · dsimp only [θ, sgn]; rw [if_neg hs, neg_one_mul, Real.sin_neg, Real.sin_pi_div_two_sub, abs_of_neg (not_le.mp hs)]; ring
         have hθsin_eq : θ * Real.sin θ = (Real.pi / 2 - δ) * Real.cos δ := by
           by_cases hs : 0 ≤ z.im
-          · simp [θ, sgn, if_pos hs, Real.sin_pi_div_two_sub]
-          · simp [θ, sgn, if_neg hs, Real.sin_neg, Real.sin_pi_div_two_sub]; ring
+          · dsimp only [θ, sgn]; rw [if_pos hs, one_mul, Real.sin_pi_div_two_sub]
+          · dsimp only [θ, sgn]; rw [if_neg hs, neg_one_mul, Real.sin_neg, Real.sin_pi_div_two_sub]; ring
         have hsin_pos : 0 < Real.sin δ := Real.sin_pos_of_pos_of_lt_pi hδ_pos (by linarith [Real.pi_pos])
         have hcosδ_pos : 0 < Real.cos δ := Real.cos_pos_of_mem_Ioo (by constructor <;> linarith [Real.pi_pos])
         have hsin_le : Real.sin δ ≤ δ := Real.sin_le hδ_pos.le
@@ -186,7 +187,7 @@ theorem convex_domain_confinement (D : LFunctionData) :
         have h2 : (1 / 2 : ℝ) * ((Real.pi / 2 - δ) * Real.cos δ) < |z.im| * Real.cos δ := by
           nlinarith
         linarith
-  obtain ⟨s, hs_sub, hs_cov⟩ := hK_compact.elim_finite_subcover U hU_open hK_cover
+  obtain ⟨s, hs_sub, hs_cov⟩ := hK_compact.elim_finite_subcover_image (fun θ _ => hU_open θ) hK_cover
   have h_main : ∃ Q_K ≥ 100, ∀ (q : ℕ) (hq : q ≥ 1) (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive),
       D.GRH q hq χ hχ → ∀ (t : ℝ), D.nonvanishing q χ t → analyticConductor q t ≥ Q_K →
       normalizedLogL D q χ t ∉ K := by
@@ -353,7 +354,7 @@ theorem convex_domain_confinement (D : LFunctionData) :
             have him_ge : -(Real.pi / 4 + ε' / 4) ≤ z.im := (abs_le.mp hS_im).1
             rw [abs_le]; constructor <;> linarith
         have hdiff : z - w = ((z.im - y₀ : ℝ) : ℂ) * Complex.I := by
-          ext <;> simp [w]
+          apply Complex.ext <;> simp [w]
         rw [hdiff, norm_mul, Complex.norm_I, mul_one, Complex.norm_real, Real.norm_eq_abs]
         linarith
 
@@ -473,7 +474,6 @@ theorem corollary_1_3_i (D : LFunctionData) :
     have hcos : Real.cos (Real.pi / 3) = 1 / 2 := Real.cos_pi_div_three
     rw [← hcos, Real.arccos_cos (by positivity) (by linarith [Real.pi_pos])]
     field_simp [Real.pi_ne_zero]
-    ring
   rwa [harc] at hres
 
 /-- **Corollary 1.3(ii)**: Whenever `log|L(1/2 + it, χ)| ≥ ((log 2)/2 - δ) log q / log log q`,
