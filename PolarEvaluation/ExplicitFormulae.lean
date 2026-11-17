@@ -258,20 +258,20 @@ lemma fourierHat_eq_fourier (f : ℝ → ℂ) (ξ : ℝ) :
   unfold fourierHat
   rw [Real.fourier_eq]
   congr 1; ext x
-  rw [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, mul_comm]
+  rw [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, mul_comm, real_inner_eq_mul]
   congr 1
   push_cast
-  ring_nf
+  ring
 
 lemma fourierInv_eq_fourierHat_neg (f : ℝ → ℂ) (ξ : ℝ) :
     𝓕⁻ f ξ = fourierHat f (-ξ) := by
   unfold fourierHat
   rw [Real.fourierInv_eq]
   congr 1; ext x
-  rw [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, mul_comm]
+  rw [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, mul_comm, real_inner_eq_mul]
   congr 1
   push_cast
-  ring_nf
+  ring
 
 lemma integral_Iio_zero_eq_Ioi (F : ℝ → ℂ) :
     (∫ y in Set.Iio (0 : ℝ), F y) = ∫ y in Set.Ioi (0 : ℝ), F (-y) := by
@@ -378,6 +378,7 @@ lemma kernelK_zero_lorentz_fourier (u : ℝ) (hu : 0 < u) (ξ : ℝ) :
       intro h; have := congr_arg Complex.re h; simp at this; linarith
     have hden' : (u ^ 2 + x ^ 2 : ℂ) ≠ 0 := by norm_cast; positivity
     field_simp [Real.pi_ne_zero, hc₁_ne, hc₂_ne, hden, hden']
+    simp only [Complex.I_sq]
     field_simp [hc₁', hc₂', hden, hden']
     push_cast; ring
   have hFg_int : Integrable (𝓕 g) := by
@@ -578,7 +579,6 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
       rw [this]; exact hden
     field_simp [Real.pi_ne_zero, hcu1_ne, hcu2_ne, hc11_ne, hc12_ne, hden, d1, d2, d3, d4]
     field_simp [d1, d2, d3, d4, hden, hden_exp]
-    simp only [Complex.I_sq]
     push_cast; ring
   have hFg_int : Integrable (𝓕 g) := by
     have heq : 𝓕 g = fun x : ℝ => -((x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1)) : ℝ) : ℂ) := funext hFg
@@ -857,7 +857,7 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
                 simpa [div_eq_mul_inv] using tendsto_const_nhds.add (tendsto_const_nhds.mul hinv)
               have hden : Tendsto (fun x : ℝ => 1 + 1 / x ^ 2) atTop (nhds (1 + 0)) :=
                 tendsto_const_nhds.add hinv
-              simpa [one_div, Pi.div_apply] using Tendsto.div hnum hden (by norm_num)
+              simpa using (Tendsto.div hnum hden (by norm_num)).congr (fun x => by simp [one_div])
             have hlog_lim := (Real.continuousAt_log (by norm_num : (1 : ℝ) ≠ 0)).tendsto.comp hlim
             simpa [G, Real.log_one] using tendsto_const_nhds.mul hlog_lim
           have hres := integral_Ioi_of_hasDerivAt_of_tendsto' hG_deriv h_Ioi_int hG_tend
@@ -1088,8 +1088,7 @@ theorem kernelK_fourier (θ : ℝ) (hθ : |θ| ≤ Real.pi / 2) :
         -Complex.I * ↑π * (if 0 < ξ then (1 : ℂ) else -1) * -(1 / (2 * ↑π * ↑|ξ|))
         = -Complex.I * ((1 - Complex.exp (-2 * ↑π * ↑|ξ|)) / 2 * ((if 0 < ξ then (1 : ℂ) else -1) / ↑|ξ|) -
             ↑π * (if 0 < ξ then (1 : ℂ) else -1) * Complex.exp (-2 * ↑π * ↑|ξ|)) := by
-          field_simp [Real.pi_ne_zero, h_abs_ne]
-          congr 2 <;> ring
+          split_ifs <;> field_simp [Real.pi_ne_zero, h_abs_ne] <;> ring
       _ = -Complex.I * ((1 - Complex.exp (-2 * ↑π * ↑|ξ|)) / (2 * ↑ξ) -
             ↑π * (if 0 < ξ then (1 : ℂ) else -1) * Complex.exp (-2 * ↑π * ↑|ξ|)) := by
           rw [habs_eq]; ring
