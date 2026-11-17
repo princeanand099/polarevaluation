@@ -626,7 +626,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
       have hlogp_pos : 0 < Real.log p := Real.log_pos (by exact_mod_cast hp.2.one_lt)
       have hξ_pos : 0 < Real.log (p ^ 2) / (2 * Real.pi) := by
         have : Real.log ((p : ℝ) ^ 2) = 2 * Real.log p := by rw [Real.log_pow]; norm_num
-        rw [Nat.cast_pow, this]
+        rw [this]
         positivity
       have hdec1 := h_dec Δ M hΔ hInt hL1 (Real.log (p ^ 2) / (2 * Real.pi)) hξ_pos.ne'
       have hdec2 := h_dec Δ M hΔ hInt hL1 (-(Real.log (p ^ 2) / (2 * Real.pi))) (neg_ne_zero.mpr hξ_pos.ne')
@@ -664,7 +664,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
               ‖χ (p ^ 2)‖ * ‖h_hat (Real.log (p ^ 2) / (2 * Real.pi))‖ * 1 := by
               rw [norm_mul, norm_mul, norm_mul, norm_mul, he1, he2, norm_star]
           _ ≤ 1 * (C_dec * (1 / Real.log p + 1 / Δ)) * 1 + 1 * (C_dec * (1 / Real.log p + 1 / Δ)) * 1 := by
-              gcongr <;> exact hchi_le _
+              gcongr <;> simpa [Nat.cast_pow] using hchi_le (p ^ 2)
           _ = 2 * C_dec * (1 / Real.log p + 1 / Δ) := by ring
       rw [abs_mul, abs_of_nonneg (div_nonneg hlogp_pos.le hp_pos.le)]
       calc (Real.log p / (p : ℝ)) *
@@ -679,10 +679,19 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
              star (χ (p ^ 2)) * h_hat (Real.log (p ^ 2) / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log (p ^ 2))).re| ≤
         2 * C_dec * (∑ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime, (1 : ℝ) / p +
           (1 / Δ) * ∑ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime, Real.log p / p) := by
-      calc |∑ p ∈ _, _|
-          ≤ ∑ p ∈ _, |_| := Finset.abs_sum_le_sum_abs _ _
-        _ ≤ ∑ p ∈ _, 2 * C_dec * (1 / (p : ℝ) + (1 / Δ) * (Real.log p / (p : ℝ))) := Finset.sum_le_sum h_term
-        _ = 2 * C_dec * (∑ p ∈ _, (1 : ℝ) / p + (1 / Δ) * ∑ p ∈ _, Real.log p / p) := by
+      calc |∑ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime,
+              (Real.log p / (p : ℝ)) *
+                (χ (p ^ 2) * h_hat (-(Real.log (p ^ 2) / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log (p ^ 2)) +
+                 star (χ (p ^ 2)) * h_hat (Real.log (p ^ 2) / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log (p ^ 2))).re|
+          ≤ ∑ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime,
+              |(Real.log p / (p : ℝ)) *
+                (χ (p ^ 2) * h_hat (-(Real.log (p ^ 2) / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log (p ^ 2)) +
+                 star (χ (p ^ 2)) * h_hat (Real.log (p ^ 2) / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log (p ^ 2))).re| :=
+            Finset.abs_sum_le_sum_abs _ _
+        _ ≤ ∑ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime,
+              2 * C_dec * (1 / (p : ℝ) + (1 / Δ) * (Real.log p / (p : ℝ))) := Finset.sum_le_sum h_term
+        _ = 2 * C_dec * (∑ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime, (1 : ℝ) / p +
+              (1 / Δ) * ∑ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime, Real.log p / p) := by
             rw [← Finset.mul_sum, Finset.sum_add_distrib, ← Finset.mul_sum]
     have hN₂_le_X : (N₂ : ℝ) ≤ X := by
       have h1 : (N₂ : ℝ) ≤ Real.sqrt X := Nat.floor_le (Real.sqrt_nonneg X)
@@ -708,7 +717,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
         rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; norm_num; linarith
       have hΔ_pos : 0 < Δ := by linarith
       have hpi_lt : Real.pi < 4 := Real.pi_lt_four
-      calc (1 / Δ) * ∑ p ∈ _, Real.log p / p
+      calc (1 / Δ) * ∑ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime, Real.log p / p
           ≤ (1 / Δ) * (Real.log 4 * (Real.log N₂ + 1)) := by gcongr
         _ ≤ (1 / Δ) * (2 * (2 * Real.pi * Δ + 1)) := by gcongr
         _ = 4 * Real.pi + 2 / Δ := by field_simp [hΔ_pos.ne']; ring
@@ -718,7 +727,10 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
     rw [abs_mul, abs_of_pos (by positivity : 0 < 1 / (2 * Real.pi))]
     have h2pi_ge : 1 / (2 * Real.pi) ≤ 1 := by
       rw [div_le_one (by positivity)]; linarith [Real.two_le_pi]
-    calc (1 / (2 * Real.pi)) * |∑ p ∈ _, _|
+    calc (1 / (2 * Real.pi)) * |∑ p ∈ (Finset.Icc 2 N₂).filter Nat.Prime,
+          (Real.log p / (p : ℝ)) *
+            (χ (p ^ 2) * h_hat (-(Real.log (p ^ 2) / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log (p ^ 2)) +
+             star (χ (p ^ 2)) * h_hat (Real.log (p ^ 2) / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log (p ^ 2))).re|
         ≤ 1 * (2 * C_dec * (30 * Real.log (Real.log X) + 20 * Real.log (Real.log X))) := by
           gcongr
       _ = 100 * C_dec * Real.log (Real.log X) := by ring
@@ -757,8 +769,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
           ArithmeticFunction.vonMangoldt_apply_prime hp.2]
       have hsq : Real.sqrt ((p ^ 2 : ℕ) : ℝ) = (p : ℝ) := by
         rw [Nat.cast_pow, Real.sqrt_sq (Nat.cast_nonneg p)]
-      rw [hv, hsq]
-      ring
+      rw [hv, hsq]; push_cast; ring
     have hP_all : (1 / (2 * Real.pi)) * ∑ n ∈ Finset.Icc 2 N,
           ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) *
             (χ n * h_hat (-(Real.log n / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log n) +
@@ -935,7 +946,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
               Real.rpow_mul (Nat.cast_nonneg p), Real.rpow_natCast]
           rw [ArithmeticFunction.vonMangoldt_apply_pow (by omega : k ≠ 0),
             ArithmeticFunction.vonMangoldt_apply_prime hp.2,
-            hsqrt_pow, one_div, inv_pow, div_eq_mul_inv]
+            Nat.cast_pow, hsqrt_pow, one_div, inv_pow, div_eq_mul_inv]
       _ ≤ max C_L1 1 * ∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, 16 * (p : ℝ) ^ (-5 / 4 : ℝ) := by
           refine mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun p hp => ?_) (by positivity)
           simp only [Finset.mem_filter, Finset.mem_Icc] at hp
