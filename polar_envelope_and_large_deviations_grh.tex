@@ -1,0 +1,739 @@
+\documentclass[11pt,a4paper]{amsart}
+\usepackage[a4paper,margin=24mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  citecolor=blue!50!black,
+  urlcolor=blue!50!black
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\numberwithin{equation}{section}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\q}{\mathfrak{q}}
+\DeclareMathOperator{\meas}{meas}
+\DeclareMathOperator{\sgn}{sgn}
+\DeclareMathOperator{\Res}{Res}
+
+\title[Polar Envelope and Large Deviations of $\log L(\frac{1}{2}+it,\chi)$]{The Polar Envelope and Large Deviations of $\log L(\frac{1}{2}+it,\chi)$ on the Generalized Riemann Hypothesis}
+
+\author{Prince Anand}
+
+\begin{document}
+
+\begin{abstract}
+Assuming the Generalized Riemann Hypothesis, we determine the sharp pointwise directional upper bound for $\operatorname{Re}(e^{-i\theta}\log L(\frac{1}{2}+it,\chi)) = \cos(\theta)\log|L(\frac{1}{2}+it,\chi)| + \sin(\theta)\pi S(t,\chi)$ for every primitive Dirichlet character $\chi \pmod q$ ($q \ge 1$) and $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$, proving that it is at most $(C(\theta)+o(1))\frac{\log\q}{\log\log\q}$ with $C(\theta)=\frac{1}{2}(\cos(\theta)\log(2\cos\theta)+\theta\sin\theta)$. Dualizing over $\theta$ confines the normalized values of $\log L(\frac{1}{2}+it,\chi)$ to the convex domain $\Omega = \{x+iy \in \C : |y|<\frac{\pi}{4},\, e^{2x} \le 2\cos(2y)\}$. The proof solves the asymmetric Beurling--Selberg majorization problem for the mixed kernel $K_\theta$ via Vaaler Hermite interpolation on a $\theta$-shifted lattice $\Delta^{-1}(\Z+\alpha_\Delta)$. Combining these majorants with high-moment estimates for prime sums yields exponential large-deviation bounds in both the $t$-aspect and the $q$-aspect down to the $\sqrt{\log\q\log\log\q}$ scale, including for $|S(t,\chi)|$.
+\end{abstract}
+
+\maketitle
+
+\section{Introduction and Main Results}
+
+Let $\chi \pmod q$ ($q \ge 1$) be a primitive Dirichlet character, where $q = 1$ corresponds to the Riemann zeta-function $\zeta(s)$, and let $L(s,\chi)$ denote the associated Dirichlet $L$-function. Define the analytic conductor at height $t \in \R$ by
+\[
+  \q = \q(t,\chi) := q(|t|+2).
+\]
+For $t \in \R$ such that $L(\frac{1}{2}+it,\chi) \neq 0$, let $\pi S(t,\chi) := \arg L(\frac{1}{2}+it,\chi)$ be defined by continuous variation along the horizontal half-line from $\infty+it$ to $\frac{1}{2}+it$, normalized by $\arg L(\infty+it,\chi) = 0$. Understanding the joint extreme values of the real and imaginary parts of
+\[
+  \log L(\tfrac{1}{2}+it,\chi) = \log|L(\tfrac{1}{2}+it,\chi)| + i\pi S(t,\chi)
+\]
+in terms of $\q$ is a central problem in analytic number theory.
+
+Assuming the Riemann Hypothesis (RH) for $\zeta(s)$, Littlewood~\cite{Littlewood1924} proved that $\log|\zeta(\frac{1}{2}+it)| \ll \frac{\log t}{\log\log t}$ and $S(t) \ll \frac{\log t}{\log\log t}$. Using the Guinand--Weil explicit formula together with Beurling--Selberg extremal functions~\cite{Vaaler1985}, Chandee and Soundararajan~\cite{ChandeeSoundararajan2011} established the sharp bound
+\begin{equation}\label{eq:CS_bound}
+  \log|\zeta(\tfrac{1}{2}+it)| \le \left(\frac{\log 2}{2} + o(1)\right)\frac{\log t}{\log\log t},
+\end{equation}
+and Carneiro, Chandee, and Milinovich~\cite{CCM2013,CCM2015} established the corresponding sharp bound for the argument, extended to $L$-functions on the Generalized Riemann Hypothesis (GRH):
+\begin{equation}\label{eq:CCM_bound}
+  |S(t,\chi)| \le \left(\frac{1}{4} + o(1)\right)\frac{\log\q}{\log\log\q},
+  \qquad\text{or equivalently}\qquad
+  |\pi S(t,\chi)| \le \left(\frac{\pi}{4} + o(1)\right)\frac{\log\q}{\log\log\q}.
+\end{equation}
+The same method yields $\log|L(\frac{1}{2}+it,\chi)| \le (\frac{\log 2}{2}+o(1))\frac{\log\q}{\log\log\q}$ under GRH~\cite{Chandee2009,ChandeeSoundararajan2011}. Both constants $\frac{\log 2}{2}$ and $\frac{\pi}{4}$ are optimal within the bandlimited explicit-formula framework~\cite{CarneiroVaaler2010,CarneiroLittmann2013}.
+
+Combining~\eqref{eq:CS_bound} and~\eqref{eq:CCM_bound} via the triangle inequality gives, for any angle $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$,
+\[
+  \cos(\theta)\log|L(\tfrac{1}{2}+it,\chi)| + \sin(\theta)\pi S(t,\chi)
+  \le \left(\cos(\theta)\frac{\log 2}{2} + |\sin\theta|\frac{\pi}{4} + o(1)\right)\frac{\log\q}{\log\log\q}.
+\]
+Our first main result shows that this bound is never sharp away from the coordinate axes $\theta = 0$ and $\theta = \pm\frac{\pi}{2}$, and determines the exact directional envelope of $\log L(\frac{1}{2}+it,\chi)$ within the bandlimited framework.
+
+\begin{theorem}[Pointwise directional envelope]\label{thm:directional_bound}
+Assume GRH for $L(s,\chi)$, where $\chi \pmod q$ is a primitive Dirichlet character ($q \ge 1$). For every $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$, as $\q = q(|t|+2) \to \infty$ through values $t \in \R$ with $L(\frac{1}{2}+it,\chi) \neq 0$, we have
+\begin{equation}\label{eq:directional_bound}
+  \cos(\theta)\log|L(\tfrac{1}{2}+it,\chi)| + \sin(\theta)\pi S(t,\chi)
+  \le \left(C(\theta) + O_\theta\!\left(\frac{\log\log\log\q}{\log\log\q}\right)\right)\frac{\log\q}{\log\log\q},
+\end{equation}
+where
+\begin{equation}\label{eq:C_theta}
+  C(\theta) := \frac{1}{2}\Bigl(\cos(\theta)\log(2\cos\theta) + \theta\sin\theta\Bigr).
+\end{equation}
+\end{theorem}
+
+Letting $\theta \to 0$ recovers~\eqref{eq:CS_bound} ($C(0) = \frac{\log 2}{2}$), and letting $\theta \to \pm\frac{\pi}{2}$ recovers~\eqref{eq:CCM_bound} ($C(\pm\frac{\pi}{2}) = \frac{\pi}{4}$). For every $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})\setminus\{0\}$, since $\cos\theta < 1$ and $|\theta| < \frac{\pi}{2}$, we have $C(\theta) < \cos(\theta)\frac{\log 2}{2} + |\sin\theta|\frac{\pi}{4}$; at $\theta = \pm\frac{\pi}{4}$, for instance, $C(\pm\frac{\pi}{4}) = \frac{\log 2 + \pi/2}{4\sqrt{2}}$, saving a factor of $2$ over the triangle inequality.
+
+Dualizing the family of half-plane bounds~\eqref{eq:directional_bound} over $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$ characterizes the universal convex region containing the normalized values of $\log L(\frac{1}{2}+it,\chi)$.
+
+\begin{theorem}[Universal convex domain]\label{thm:convex_domain}
+Assume GRH. Define the closed convex domain
+\[
+  \Omega := \left\{x + iy \in \C : |y| < \frac{\pi}{4},\; e^{2x} \le 2\cos(2y)\right\}
+  = \left\{z \in \C : |\operatorname{Im} z| < \frac{\pi}{4},\; \operatorname{Re}(e^{-2z}) \ge \frac{1}{2}\right\}.
+\]
+For every $\varepsilon > 0$, there exists $\q_0(\varepsilon) > 0$ such that for every primitive Dirichlet character $\chi \pmod q$ and $t \in \R$ with $\q = q(|t|+2) \ge \q_0(\varepsilon)$ and $L(\frac{1}{2}+it,\chi) \neq 0$, the normalized point
+\[
+  z(t,\chi) := \frac{\log L(\frac{1}{2}+it,\chi)}{(\log\q)/\log\log\q}
+\]
+lies in the $\varepsilon$-neighborhood of $\Omega$. In particular, for any $\alpha \le \frac{\log 2}{2}$, whenever $\log|L(\frac{1}{2}+it,\chi)| \ge (\alpha+o(1))\frac{\log\q}{\log\log\q}$ as $\q \to \infty$, we have
+\begin{equation}\label{eq:tradeoff}
+  |S(t,\chi)| \le \left(\frac{1}{2\pi}\arccos\!\left(\frac{e^{2\alpha}}{2}\right) + o(1)\right)\frac{\log\q}{\log\log\q}.
+\end{equation}
+\end{theorem}
+
+Theorem~\ref{thm:convex_domain} shows that extreme values of $|L(\frac{1}{2}+it,\chi)|$ and $|S(t,\chi)|$ are mutually exclusive.
+
+\begin{corollary}\label{cor:tradeoff_cases}
+Assume GRH.
+\begin{enumerate}
+  \item[(i)] Whenever $|L(\frac{1}{2}+it,\chi)| \ge 1$, we have $|S(t,\chi)| \le (\frac{1}{6}+o(1))\frac{\log\q}{\log\log\q}$ as $\q \to \infty$.
+  \item[(ii)] Along any sequence of pairs $(t_k,\chi_k)$ with $\q_k \to \infty$ and $\log|L(\frac{1}{2}+it_k,\chi_k)| = (\frac{\log 2}{2}+o(1))\frac{\log\q_k}{\log\log\q_k}$, we have $S(t_k,\chi_k) = o\bigl(\frac{\log\q_k}{\log\log\q_k}\bigr)$.
+  \item[(iii)] In the $q$-aspect at the central point $s = \frac{1}{2}$, for primitive characters $\chi \pmod q$ with $L(\frac{1}{2},\chi) \neq 0$, the normalized points $\frac{\log L(1/2,\chi)}{(\log q)/\log\log q}$ lie in the $o(1)$-neighborhood of $\Omega$ as $q \to \infty$.
+\end{enumerate}
+\end{corollary}
+
+While Theorem~\ref{thm:directional_bound} represents the limit of pointwise bandlimited methods when the prime sum is estimated trivially, random matrix heuristics of Farmer, Gonek, and Hughes~\cite{FGH2007} predict that the true maximal order of $\log|L(\frac{1}{2}+it,\chi)|$ and $|S(t,\chi)|$ is $\asymp \sqrt{\log\q\log\log\q}$. For $\log|\zeta(\frac{1}{2}+it)|$ ($\theta = 0$, $q = 1$), Soundararajan~\cite{Soundararajan2009} established Gaussian and sub-Gaussian large-deviation bounds on RH reaching the $\sqrt{\log T\log\log T}$ scale outside an exceptional set of small measure, subsequently sharpened in the moment and central-limit regimes by Radziwi\l\l{}~\cite{Radziwill2011} and Harper~\cite{Harper2013}. Our second main contribution combines the asymmetric Beurling--Selberg majorant of Theorem~\ref{thm:majorant} with high-moment estimates for prime sums to establish uniform large-deviation bounds for the entire polar family $\operatorname{Re}(e^{-i\theta}\log L(\frac{1}{2}+it,\chi))$---and for $|S(t,\chi)|$---in both the $t$-aspect and the $q$-aspect.
+
+\begin{theorem}[$t$-aspect large-deviation bound]\label{thm:t_large_dev}
+Let $q \ge 1$ be fixed, let $\chi \pmod q$ be a primitive Dirichlet character, and assume GRH for $L(s,\chi)$. Let $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$. There exist constants $c_\theta, c'_\theta > 0$, $A_\theta > 1$, and $T_0(\theta,q) > 0$ such that for all $T \ge T_0(\theta,q)$ and all $V$ satisfying $A_\theta\log\log T \le V \le \frac{\log T}{\log\log T}$,
+\[
+  \frac{1}{T}\meas\left\{t \in [T,2T] : L(\tfrac{1}{2}+it,\chi) \neq 0,\; \operatorname{Re}\!\left(e^{-i\theta}\log L(\tfrac{1}{2}+it,\chi)\right) \ge V\right\}
+  \le \exp\!\left(-c_\theta V\log\!\left(\frac{V}{\log\log T}\right)\right).
+\]
+In particular, for any $\alpha > 0$, setting $V = \alpha\sqrt{\log T\log\log T}$ shows that $\operatorname{Re}(e^{-i\theta}\log L(\frac{1}{2}+it,\chi)) \le \alpha\sqrt{\log T\log\log T}$ holds for all $t \in [T,2T]$ outside an exceptional set of measure at most $T\exp\bigl(-c'_\theta \alpha\sqrt{\log T}(\log\log T)^{3/2}\bigr)$.
+\end{theorem}
+
+\begin{theorem}[$q$-aspect large-deviation bound]\label{thm:q_large_dev}
+Let $t_0 \in \R$ be fixed, let $q \ge 3$ be an integer with $\phi^*(q) \ge 1$, and assume GRH for all primitive Dirichlet characters $\chi \pmod q$. Let $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$. There exist constants $c_\theta, c'_\theta > 0$, $A_\theta > 1$, and $q_0(\theta,t_0) > 0$ such that for all $q \ge q_0(\theta,t_0)$ and all $V$ satisfying $A_\theta\log\log q \le V \le \frac{\log q}{\log\log q}$,
+\[
+  \frac{1}{\phi^*(q)}\#\left\{\chi \pmod q \text{ primitive} : L(\tfrac{1}{2}+it_0,\chi) \neq 0,\; \operatorname{Re}\!\left(e^{-i\theta}\log L(\tfrac{1}{2}+it_0,\chi)\right) \ge V\right\}
+  \le \exp\!\left(-c_\theta V\log\!\left(\frac{V}{\log\log q}\right)\right),
+\]
+where $\phi^*(q)$ denotes the number of primitive characters modulo $q$. In particular, for any $\alpha > 0$, at $V = \alpha\sqrt{\log q\log\log q}$ the bound holds for all but a proportion at most $\exp\bigl(-c'_\theta \alpha\sqrt{\log q}(\log\log q)^{3/2}\bigr)$ of primitive characters modulo $q$.
+\end{theorem}
+
+Applying the same moment framework to $\pm\pi S(t,\chi)$ with the odd Beurling--Selberg majorant and minorant of Carneiro, Chandee, and Milinovich~\cite{CCM2013} yields the corresponding bound for $|S(t,\chi)|$.
+
+\begin{corollary}\label{cor:S_large_dev}
+Assume GRH. For any $\alpha > 0$, there exists $c > 0$ such that $|S(t,\chi)| \le \alpha\sqrt{\log\q\log\log\q}$ holds:
+\begin{enumerate}
+  \item[(i)] in the $t$-aspect (fixed $q \ge 1$, $T \to \infty$), for all $t \in [T,2T]$ outside a set of measure at most $T\exp\bigl(-c\alpha\sqrt{\log T}(\log\log T)^{3/2}\bigr)$;
+  \item[(ii)] in the $q$-aspect (fixed $t_0 \in \R$, $q \to \infty$ with $\phi^*(q) \ge 1$), for all primitive characters $\chi \pmod q$ outside a proportion at most $\exp\bigl(-c\alpha\sqrt{\log q}(\log\log q)^{3/2}\bigr)$.
+\end{enumerate}
+\end{corollary}
+
+The analytic engine underlying all of these results is the solution to the Beurling--Selberg extremal majorization problem for the asymmetric mixed logarithmic--argument kernel
+\begin{equation}\label{eq:K_theta}
+  K_\theta(x) := -\frac{\cos\theta}{2}\log\!\left(\frac{x^2+1}{x^2}\right) + \sin(\theta)\left(\arctan\!\left(\frac{1}{x}\right) - \frac{x}{x^2+1}\right)
+  \qquad (x \in \R\setminus\{0\}).
+\end{equation}
+Unlike the pure modulus kernel $K_0$ (which is even, with interpolation at $\Z+\frac{1}{2}$) and the pure argument kernel $K_{\pm\pi/2}$ (which is odd, with interpolation at $\Z$), the mixed kernel $K_\theta$ has no parity symmetry and combines a logarithmic singularity with a jump-type oscillation at $x = 0$. To ensure integrability of the Vaaler Hermite interpolant, the interpolation lattice must shift continuously with $\theta$ as $\Delta^{-1}(\Z + \alpha_\Delta)$, where $\alpha_\Delta \to \frac{1}{2} - \frac{\theta}{\pi}$.
+
+\begin{theorem}[Asymmetric Beurling--Selberg majorant]\label{thm:majorant}
+Let $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$ and let $K_\theta$ be defined by~\eqref{eq:K_theta}. There exists $\Delta_0(\theta) \ge 1$ such that for every $\Delta \ge \Delta_0(\theta)$, there is a unique $\alpha_\Delta \in (0,1)$ satisfying
+\[
+  \alpha_\Delta = \frac{1}{2} - \frac{\theta}{\pi} + O_\theta\!\left(\Delta e^{-2\pi\Delta}\right)
+\]
+for which the Vaaler Hermite interpolant $M_{\theta,\Delta}(x)$ of $K_\theta$ at $\Delta^{-1}(\Z + \alpha_\Delta)$ is an entire function of exponential type $2\pi\Delta$ satisfying $M_{\theta,\Delta} - K_\theta \in L^1(\R)$,
+\[
+  \sup_{x \in \R}\bigl((1+x^2)|M_{\theta,\Delta}(x)|\bigr) = O_\theta(\log\Delta),
+  \qquad
+  \|M_{\theta,\Delta}\|_{L^1(\R)} = O_\theta(1),
+\]
+and
+\[
+  M_{\theta,\Delta}(x) \ge K_\theta(x) \qquad \text{for all } x \in \R\setminus\{0\}.
+\]
+Moreover, its $L^1$ excess satisfies
+\begin{equation}\label{eq:L1_excess}
+  \int_{-\infty}^\infty \bigl(M_{\theta,\Delta}(x) - K_\theta(x)\bigr)\,dx
+  = \frac{\cos(\theta)\log(2\cos\theta) + \theta\sin\theta}{\Delta} + O_\theta\!\left(e^{-2\pi\Delta}\right).
+\end{equation}
+\end{theorem}
+
+\subsection*{Organization of the paper}
+Section~\ref{sec:prelim} records the horizontal zero-sum representation of $\operatorname{Re}(e^{-i\theta}\log L(\frac{1}{2}+it,\chi))$, the bandlimited Guinand--Weil explicit formula, and the Fourier transform and decay of $K_\theta$. Section~\ref{sec:extremal} constructs the shifted-lattice Vaaler majorant $M_{\theta,\Delta}$ and proves Theorem~\ref{thm:majorant}. Section~\ref{sec:pointwise} deduces Theorems~\ref{thm:directional_bound} and~\ref{thm:convex_domain} and Corollary~\ref{cor:tradeoff_cases}. Section~\ref{sec:moments} establishes $2k$-th moment bounds for the resulting prime sums, and Section~\ref{sec:large_dev} combines these ingredients to prove Theorems~\ref{thm:t_large_dev} and~\ref{thm:q_large_dev} and Corollary~\ref{cor:S_large_dev}.
+
+\section{Explicit Formulae and Fourier Analysis of the Kernel}\label{sec:prelim}
+
+Throughout, $\Lambda(n)$ denotes the von Mangoldt function, and we normalize the Fourier transform of $f \in L^1(\R)$ by
+\[
+  \widehat{f}(\xi) := \int_{-\infty}^\infty f(x)e^{-2\pi i\xi x}\,dx.
+\]
+An entire function $M : \C \to \C$ has exponential type at most $2\pi\Delta$ if for every $\varepsilon > 0$ there exists $C_\varepsilon > 0$ such that $|M(z)| \le C_\varepsilon e^{(2\pi\Delta+\varepsilon)|z|}$ for all $z \in \C$. By the Paley--Wiener theorem, if $M \in L^1(\R)$ has exponential type at most $2\pi\Delta$, then $\widehat{M}$ is continuous and supported on $[-\Delta,\Delta]$.
+
+We first express $\operatorname{Re}(e^{-i\theta}\log L(\frac{1}{2}+it,\chi))$ in terms of the nontrivial zeros of $L(s,\chi)$.
+
+\begin{lemma}[Horizontal zero-sum representation]\label{lem:horizontal}
+Let $\chi \pmod q$ be a primitive Dirichlet character ($q \ge 1$), assume GRH for $L(s,\chi)$, and let $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$. For any $t \in \R$ with $L(\frac{1}{2}+it,\chi) \neq 0$ (and $|t| \ge 10$ if $q = 1$), we have
+\begin{equation}\label{eq:horizontal}
+  \operatorname{Re}\!\left(e^{-i\theta}\log L(\tfrac{1}{2}+it,\chi)\right)
+  = \frac{\cos\theta}{2}\log\q + \sum_\gamma K_\theta(t-\gamma) + O(1),
+\end{equation}
+where the sum runs over all nontrivial zeros $\rho = \frac{1}{2}+i\gamma$ of $L(s,\chi)$ counted with multiplicity, and the implied constant is absolute.
+\end{lemma}
+
+\begin{proof}
+For $q = 1$, this follows by integrating the partial-fraction expansion of $\frac{\zeta'}{\zeta}(s)$ from $\frac{3}{2}+it$ to $\frac{1}{2}+it$ (see~\cite[Chapter~12]{Davenport2000}). For $q > 1$, let $\kappa \in \{0,1\}$ satisfy $\chi(-1) = (-1)^\kappa$, and let $\Lambda(s,\chi) = q^{s/2}\pi^{-(s+\kappa)/2}\Gamma(\frac{s+\kappa}{2})L(s,\chi)$ be the completed $L$-function. By Hadamard factorization and the functional equation $\Lambda(s,\chi) = \varepsilon(\chi)\Lambda(1-s,\overline{\chi})$ with $|\varepsilon(\chi)| = 1$ (see~\cite[Chapter~12]{Davenport2000}),
+\[
+  \frac{L'}{L}(s,\chi) = -\frac{1}{2}\log\frac{q}{\pi} - \frac{1}{2}\frac{\Gamma'}{\Gamma}\!\left(\frac{s+\kappa}{2}\right) + B(\chi) + \sum_\rho \left(\frac{1}{s-\rho} + \frac{1}{\rho}\right),
+\]
+where $\operatorname{Re} B(\chi) = -\sum_\rho \operatorname{Re}(\frac{1}{\rho})$ converges absolutely. For $s = \sigma + it$ with $\frac{1}{2} < \sigma \le \frac{3}{2}$, Stirling's formula gives
+\[
+  \operatorname{Re}\frac{\Gamma'}{\Gamma}\!\left(\frac{\sigma+\kappa+it}{2}\right) = \log(|t|+2) + O(1),
+  \qquad
+  \operatorname{Im}\frac{\Gamma'}{\Gamma}\!\left(\frac{\sigma+\kappa+it}{2}\right) = O(1),
+\]
+uniformly in $\sigma \in [\frac{1}{2},\frac{3}{2}]$, $t \in \R$, and $\kappa \in \{0,1\}$. Taking the real part yields
+\[
+  \operatorname{Re}\frac{L'}{L}(\sigma+it,\chi) = -\frac{1}{2}\log\q + \sum_\gamma \frac{\sigma-\frac{1}{2}}{(\sigma-\frac{1}{2})^2 + (t-\gamma)^2} + O(1).
+\]
+For the imaginary part, we subtract $\frac{L'}{L}(\frac{3}{2}+it,\chi)$ before taking limits so that $B(\chi) + \sum_\rho \frac{1}{\rho}$ cancels termwise:
+\[
+  \frac{L'}{L}(\sigma+it,\chi) - \frac{L'}{L}(\tfrac{3}{2}+it,\chi)
+  = \sum_\gamma \left(\frac{1}{\sigma-\frac{1}{2}+i(t-\gamma)} - \frac{1}{1+i(t-\gamma)}\right)
+  - \frac{1}{2}\left[\frac{\Gamma'}{\Gamma}\!\left(\frac{\sigma+\kappa+it}{2}\right) - \frac{\Gamma'}{\Gamma}\!\left(\frac{\frac{3}{2}+\kappa+it}{2}\right)\right].
+\]
+Since $|\frac{L'}{L}(\frac{3}{2}+it,\chi)| \le -\frac{\zeta'}{\zeta}(\frac{3}{2}) = O(1)$, taking the imaginary part gives
+\[
+  \operatorname{Im}\frac{L'}{L}(\sigma+it,\chi) = -\sum_\gamma \left(\frac{t-\gamma}{(\sigma-\frac{1}{2})^2+(t-\gamma)^2} - \frac{t-\gamma}{1+(t-\gamma)^2}\right) + O(1),
+\]
+where the sum over $\gamma$ converges absolutely for $\sigma > \frac{1}{2}$ (with summands $O((1+(t-\gamma)^2)^{-1})$). Integrating $\frac{L'}{L}(\sigma+it,\chi)$ along the horizontal segment from $\frac{3}{2}+it$ to $\frac{1}{2}+it$ (justified by dominated convergence since each summand is integrable on $(\frac{1}{2},\frac{3}{2}]$ with integral $O((1+(t-\gamma)^2)^{-1})$) and using $|\log L(\frac{3}{2}+it,\chi)| \le \log\zeta(\frac{3}{2}) = O(1)$, we obtain
+\[
+  \log L(\tfrac{1}{2}+it,\chi) = \frac{1}{2}\log\q + \sum_\gamma \left[-\frac{1}{2}\log\frac{(t-\gamma)^2+1}{(t-\gamma)^2} + i\left(\arctan\!\left(\frac{1}{t-\gamma}\right) - \frac{t-\gamma}{1+(t-\gamma)^2}\right)\right] + O(1).
+\]
+Multiplying by $e^{-i\theta}$ and taking the real part yields~\eqref{eq:horizontal}.
+\end{proof}
+
+Next, we record the Guinand--Weil explicit formula for bandlimited test functions.
+
+\begin{lemma}[Guinand--Weil Explicit Formula]\label{lem:guinand_weil}
+Let $\chi \pmod q$ be a primitive Dirichlet character ($q \ge 1$) and assume GRH for $L(s,\chi)$. Let $h : \C \to \C$ be an entire function of exponential type $2\pi\Delta$ ($\Delta \ge 1$) such that $h(x) = O((1+x^2)^{-1})$ for $x \in \R$. Then for all $t \in \R$ (with $|t| \ge 10$ if $q = 1$),
+\begin{align*}
+  \sum_\gamma h(t-\gamma) &= \frac{\log\q}{2\pi}\int_{-\infty}^\infty h(x)\,dx
+  - \frac{1}{2\pi}\sum_{n=2}^\infty \frac{\Lambda(n)}{\sqrt{n}}\left(\chi(n)\widehat{h}\!\left(-\frac{\log n}{2\pi}\right)n^{-it} + \overline{\chi(n)}\widehat{h}\!\left(\frac{\log n}{2\pi}\right)n^{it}\right) \\
+  &\quad + O\!\left(\sup_{x \in \R}\bigl((1+x^2)|h(x)|\bigr) + \delta_{q,1}\frac{e^{\pi\Delta}}{t^2}\sup_{x \in \R}\bigl((1+x^2)|h(x)|\bigr)\right),
+\end{align*}
+where the sum over $n$ is supported on $2 \le n \le e^{2\pi\Delta}$, and $\delta_{q,1} = 1$ if $q=1$ and $0$ otherwise.
+\end{lemma}
+
+\begin{proof}
+We apply the Guinand--Weil explicit formula for Dirichlet $L$-functions (see~\cite[Lemma~5]{CCM2013} and~\cite{CCM2015}) to $g(z) := h(t-z)$, whose Fourier transform is $\widehat{g}(\xi) = e^{-2\pi i\xi t}\widehat{h}(-\xi)$. Thus $\chi(n)$ pairs with $\widehat{g}(\frac{\log n}{2\pi}) = n^{-it}\widehat{h}(-\frac{\log n}{2\pi})$ and $\overline{\chi(n)}$ pairs with $\widehat{g}(-\frac{\log n}{2\pi}) = n^{it}\widehat{h}(\frac{\log n}{2\pi})$, and by Paley--Wiener these vanish for $n > e^{2\pi\Delta}$.
+
+When $q > 1$, $L(s,\chi)$ has no pole at $s = 1$, so the boundary term $h(t \pm i/2)$ is absent. When $q = 1$, set $M := \sup_{x\in\R}((1+x^2)|h(x)|)$. Applying the Phragm\'en--Lindel\"of principle in the upper half-plane to $e^{2\pi i\Delta z}(z+i)^2 h(z)$ (which is bounded by $M$ on $\R$ and has exponential type) gives $|h(x+iy)| \le M e^{2\pi\Delta y}/(x^2+(y+1)^2)$ for $y \ge 0$; similarly, using $(z-i)^2 e^{-2\pi i\Delta z}h(z)$ in the lower half-plane gives $|h(t \pm i/2)| \le M e^{\pi\Delta}/t^2$. Finally, for the archimedean integral, Stirling's formula gives $\operatorname{Re}\frac{\Gamma'}{\Gamma}(\frac{1}{4}+\frac{\kappa}{2}+\frac{i(t-x)}{2}) = \log(|t|+2) + O(1 + \log(1+|x|))$, and $\int_{-\infty}^\infty |h(x)|\log(1+|x|)\,dx = O(M)$.
+\end{proof}
+
+We also compute the Fourier transform of $K_\theta$ explicitly; its $|\xi|^{-1}$ decay will be essential for the high-moment estimates in Section~\ref{sec:moments}.
+
+\begin{lemma}[Fourier transform and decay of $K_\theta$]\label{lem:K_fourier}
+Let $\theta \in [-\frac{\pi}{2},\frac{\pi}{2}]$. For all $\xi \in \R\setminus\{0\}$,
+\begin{equation}\label{eq:K_hat}
+  \widehat{K_\theta}(\xi) = -\cos(\theta)\frac{1-e^{-2\pi|\xi|}}{2|\xi|} - i\sin(\theta)\left(\frac{1-e^{-2\pi|\xi|}}{2\xi} - \pi\sgn(\xi)e^{-2\pi|\xi|}\right),
+\end{equation}
+with $\widehat{K_\theta}(0) = -\pi\cos\theta$, and in particular $|\widehat{K_\theta}(\xi)| \ll |\xi|^{-1}$ for all $|\xi| \ge \frac{\log 2}{2\pi}$. Consequently, if $M_{\theta,\Delta}$ ($\Delta \ge \Delta_0(\theta)$) is any bandlimited majorant of $K_\theta$ of exponential type $2\pi\Delta$ satisfying $\|M_{\theta,\Delta} - K_\theta\|_{L^1(\R)} = O_\theta(\Delta^{-1})$, then for all primes $p \ge 2$,
+\begin{equation}\label{eq:M_hat_decay}
+  \left|\widehat{M_{\theta,\Delta}}\!\left(\pm\frac{\log p}{2\pi}\right)\right| \ll_\theta \frac{1}{\log p} + \frac{1}{\Delta}.
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+For the even part $K_0(x) = -\frac{1}{2}\log\frac{x^2+1}{x^2} = -\int_0^1 \frac{u}{x^2+u^2}\,du$, applying Fubini's theorem together with $\int_{-\infty}^\infty \frac{u}{x^2+u^2}e^{-2\pi i\xi x}\,dx = \pi e^{-2\pi u|\xi|}$ ($u > 0$) gives
+\[
+  \widehat{K_0}(\xi) = -\pi\int_0^1 e^{-2\pi u|\xi|}\,du = -\frac{1-e^{-2\pi|\xi|}}{2|\xi|},
+\]
+with $\widehat{K_0}(0) = -\pi$. For the odd part $K_{\pi/2}(x) = \arctan(1/x) - \frac{x}{x^2+1}$, note that $K_{\pi/2} \in L^1(\R)$ since $K_{\pi/2}(x) = O(x^{-3})$ as $|x|\to\infty$, $K_{\pi/2}(0^\pm) = \pm\frac{\pi}{2}$, and $K'_{\pi/2}(x) = -\frac{2}{(x^2+1)^2}$ for $x \neq 0$. Splitting the integral at $x = 0$ and integrating by parts yields
+\[
+  \widehat{K_{\pi/2}}(\xi) = \frac{1}{2i\xi} - \frac{1}{\pi i\xi}\int_{-\infty}^\infty \frac{e^{-2\pi i\xi x}}{(x^2+1)^2}\,dx.
+\]
+By residue calculus at $x = \mp i\sgn(\xi)$, $\int_{-\infty}^\infty \frac{e^{-2\pi i\xi x}}{(x^2+1)^2}\,dx = \frac{\pi}{2}(1+2\pi|\xi|)e^{-2\pi|\xi|}$. Using $\frac{1}{i} = -i$, we obtain
+\[
+  \widehat{K_{\pi/2}}(\xi) = \frac{1}{2i\xi}\bigl(1 - (1+2\pi|\xi|)e^{-2\pi|\xi|}\bigr) = -i\left(\frac{1-e^{-2\pi|\xi|}}{2\xi} - \pi\sgn(\xi)e^{-2\pi|\xi|}\right),
+\]
+with $\widehat{K_{\pi/2}}(0) = 0$. Combining the two parts gives~\eqref{eq:K_hat}. Finally, $|\widehat{M_{\theta,\Delta}}(\xi) - \widehat{K_\theta}(\xi)| \le \|M_{\theta,\Delta} - K_\theta\|_{L^1(\R)} = O_\theta(\Delta^{-1})$, and evaluating at $\xi = \pm\frac{\log p}{2\pi}$ (where $|\xi| \ge \frac{\log 2}{2\pi}$) gives~\eqref{eq:M_hat_decay}.
+\end{proof}
+
+\section{The Asymmetric Mixed Beurling--Selberg Problem}\label{sec:extremal}
+
+In this section we construct the majorant $M_{\theta,\Delta}$ and prove Theorem~\ref{thm:majorant}. For $\Delta \ge 1$ and $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$, define the rescaled kernel
+\begin{equation}\label{eq:F_def}
+  F_{\theta,\Delta}(y) := K_\theta\!\left(\frac{y}{\Delta}\right) = -\frac{\cos\theta}{2}\log\!\left(\frac{y^2+\Delta^2}{y^2}\right) + \sin(\theta)\left(\arctan\!\left(\frac{\Delta}{y}\right) - \frac{\Delta y}{y^2+\Delta^2}\right)
+\end{equation}
+for $y \in \R\setminus\{0\}$. For $z \in \C\setminus[-i\Delta, i\Delta]$, $F_{\theta,\Delta}$ extends holomorphically as
+\begin{equation}\label{eq:F_holo}
+  F_{\theta,\Delta}(z) = \frac{e^{-i\theta}}{2}\log\!\left(\frac{z}{z-i\Delta}\right) + \frac{e^{i\theta}}{2}\log\!\left(\frac{z}{z+i\Delta}\right) - \sin(\theta)\frac{\Delta z}{z^2+\Delta^2},
+\end{equation}
+where $\log$ denotes the principal branch (so $\log\frac{z}{z-i\Delta}$ has its branch cut along $[0,i\Delta]$ and $\log\frac{z}{z+i\Delta}$ has its branch cut along $[-i\Delta,0]$). Moreover, by Lemma~\ref{lem:K_fourier}, $\int_{-\infty}^\infty F_{\theta,\Delta}(y)\,dy = \Delta\widehat{K_\theta}(0) = -\pi\Delta\cos\theta$.
+
+\subsection{The shifted-lattice Vaaler interpolant}
+For $\alpha \in (0,1)$, consider the formal Vaaler Hermite interpolant of $F_{\theta,\Delta}$ on $\Z + \alpha$:
+\begin{equation}\label{eq:M_alpha_def}
+  M_\alpha(y) := \frac{\sin^2(\pi(y-\alpha))}{\pi^2}\sum_{n \in \Z}\left[\frac{F_{\theta,\Delta}(n+\alpha)}{(y-n-\alpha)^2} + \frac{F'_{\theta,\Delta}(n+\alpha)}{y-n-\alpha}\right].
+\end{equation}
+Since $F_{\theta,\Delta}(y) = O_\Delta(y^{-2})$ and $F'_{\theta,\Delta}(y) = O_\Delta(y^{-3})$ as $|y|\to\infty$, the series~\eqref{eq:M_alpha_def} converges uniformly on compact subsets of $\C$ and defines an entire function of exponential type $2\pi$ satisfying $M_\alpha(n+\alpha) = F_{\theta,\Delta}(n+\alpha)$ and $M'_\alpha(n+\alpha) = F'_{\theta,\Delta}(n+\alpha)$ for all $n \in \Z$. However, because $\sum_{n\in\Z} \frac{F'_{\theta,\Delta}(n+\alpha)}{y-n-\alpha} = \frac{1}{y}\sum_{n\in\Z} F'_{\theta,\Delta}(n+\alpha) + O_\Delta(y^{-2})$ as $|y|\to\infty$, we have $M_\alpha \in L^1(\R)$ if and only if the $1/y$ tail vanishes.
+
+\begin{lemma}[Optimal lattice shift]\label{lem:alpha_Delta}
+Let $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$. For all sufficiently large $\Delta \ge \Delta_1(\theta)$, there exists a unique $\alpha_\Delta \in (0,1)$ satisfying
+\begin{equation}\label{eq:alpha_Delta}
+  \alpha_\Delta = \frac{1}{2} - \frac{\theta}{\pi} + O_\theta\!\left(\Delta e^{-2\pi\Delta}\right)
+\end{equation}
+such that $\sum_{n\in\Z} F'_{\theta,\Delta}(n+\alpha_\Delta) = 0$.
+\end{lemma}
+
+\begin{proof}
+Differentiating~\eqref{eq:F_def} gives
+\[
+  F'_{\theta,\Delta}(y) = \cos(\theta)\left(\frac{1}{y} - \frac{y}{y^2+\Delta^2}\right) - \sin(\theta)\frac{2\Delta^3}{(y^2+\Delta^2)^2}.
+\]
+Using the classical partial-fraction identities (with symmetric pairing of $\pm n$ for $1/(n+\alpha)$),
+\[
+  \sum_{n\in\Z}\frac{1}{n+\alpha} = \pi\cot(\pi\alpha),
+  \qquad
+  \sum_{n\in\Z}\frac{n+\alpha}{(n+\alpha)^2+\Delta^2} = \frac{\pi\sin(2\pi\alpha)}{\cosh(2\pi\Delta)-\cos(2\pi\alpha)}.
+\]
+Since $\cosh(2\pi\Delta) - \cos(2\pi\alpha) \ge \cosh(2\pi\Delta) - 1$ for all $\alpha \in (0,1)$, the second sum and its $\alpha$-derivative are $O(e^{-2\pi\Delta})$ uniformly on $(0,1)$. Likewise, from
+\[
+  \sum_{n\in\Z}\frac{\Delta}{(n+\alpha)^2+\Delta^2} = \frac{\pi\sinh(2\pi\Delta)}{\cosh(2\pi\Delta)-\cos(2\pi\alpha)} = \pi + O(e^{-2\pi\Delta})
+\]
+uniformly on $(0,1)$, differentiating with respect to $\Delta$ gives $\sum_{n\in\Z} \frac{(n+\alpha)^2-\Delta^2}{((n+\alpha)^2+\Delta^2)^2} = O(e^{-2\pi\Delta})$ (with $\alpha$-derivative $O(e^{-2\pi\Delta})$ uniformly on $(0,1)$). Writing
+\[
+  \frac{2\Delta^3}{((n+\alpha)^2+\Delta^2)^2} = \frac{\Delta}{(n+\alpha)^2+\Delta^2} - \Delta\frac{(n+\alpha)^2-\Delta^2}{((n+\alpha)^2+\Delta^2)^2},
+\]
+we obtain
+\begin{equation}\label{eq:sum_F_prime}
+  \sum_{n\in\Z} F'_{\theta,\Delta}(n+\alpha) = \pi\bigl(\cos(\theta)\cot(\pi\alpha) - \sin\theta\bigr) + E_\Delta(\alpha),
+\end{equation}
+where both $E_\Delta(\alpha)$ and $E'_\Delta(\alpha)$ are $O(\Delta e^{-2\pi\Delta})$ uniformly on all of $(0,1)$. At $\alpha_0 := \frac{1}{2}-\frac{\theta}{\pi} \in (0,1)$, we have $\cot(\pi\alpha_0) = \tan\theta$, so the leading term vanishes. Since $\frac{d}{d\alpha}\bigl(\pi\cos(\theta)\cot(\pi\alpha)\bigr) = -\pi^2\cos(\theta)\csc^2(\pi\alpha) \le -\pi^2\cos\theta < 0$ on $(0,1)$, for all sufficiently large $\Delta$ the sum $\sum_{n\in\Z} F'_{\theta,\Delta}(n+\alpha)$ is strictly decreasing from $+\infty$ to $-\infty$ on $(0,1)$, yielding a unique root $\alpha_\Delta \in (0,1)$ satisfying~\eqref{eq:alpha_Delta}.
+\end{proof}
+
+\subsection{Contour integral representation}
+To establish $M_{\alpha_\Delta}(y) \ge F_{\theta,\Delta}(y)$ on $\R\setminus\{0\}$, we express $M_\alpha(y) - F_{\theta,\Delta}(y)$ as a contour integral around $[-i\Delta, i\Delta]$.
+
+\begin{lemma}[Contour representation]\label{lem:contour}
+Let $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$, $\Delta \ge 1$, and $\alpha \in (0,1)$. For every $y \in \R\setminus\{0\}$,
+\begin{equation}\label{eq:contour_rep}
+  M_\alpha(y) - F_{\theta,\Delta}(y) = \sin^2(\pi(y-\alpha))\left[\int_0^\Delta \operatorname{Im}\!\left(\frac{e^{-i\theta}}{\sin^2(\pi(iv-\alpha))(y-iv)}\right)dv - R_{\theta,\Delta,\alpha}(y)\right],
+\end{equation}
+where
+\[
+  R_{\theta,\Delta,\alpha}(y) := \operatorname{Re}\!\left(\frac{\Delta\sin\theta}{\sin^2(\pi(i\Delta-\alpha))(i\Delta-y)}\right).
+\]
+\end{lemma}
+
+\begin{proof}
+Fix $y \in \R\setminus(\{0\}\cup(\Z+\alpha))$ and consider the meromorphic function on $\C\setminus[-i\Delta, i\Delta]$:
+\[
+  H(z) := \frac{\sin^2(\pi(y-\alpha))}{\sin^2(\pi(z-\alpha))}\cdot\frac{F_{\theta,\Delta}(z)}{z-y}.
+\]
+At $z = y$, $H$ has a simple pole with $\Res_{z=y} H(z) = F_{\theta,\Delta}(y)$. At each $z = n+\alpha$ ($n \in \Z$), $\sin^{-2}(\pi(z-\alpha)) = \pi^{-2}(z-n-\alpha)^{-2} + O(1)$, so $H$ has a double pole with residue
+\[
+  \Res_{z=n+\alpha} H(z) = -\frac{\sin^2(\pi(y-\alpha))}{\pi^2}\left[\frac{F_{\theta,\Delta}(n+\alpha)}{(y-n-\alpha)^2} + \frac{F'_{\theta,\Delta}(n+\alpha)}{y-n-\alpha}\right].
+\]
+Along the boundary of the rectangle $|\operatorname{Re} z| \le N + \frac{1}{2} + \alpha$, $|\operatorname{Im} z| \le R$, we have $|\sin(\pi(z-\alpha))| \gg e^{\pi|\operatorname{Im} z|}$ and $F_{\theta,\Delta}(z) = O(|z|^{-2})$, so the integral of $H(z)$ over the outer boundary tends to $0$ as $N, R \to \infty$. By Cauchy's residue theorem,
+\[
+  F_{\theta,\Delta}(y) - M_\alpha(y) = -\frac{1}{2\pi i}\oint_{\mathcal{C}} H(z)\,dz,
+\]
+where $\mathcal{C}$ is a positively oriented contour closely encircling $[-i\Delta, i\Delta]$.
+
+Collapsing $\mathcal{C}$ onto $[-i\Delta, i\Delta]$, consider first the upper segment $(0, i\Delta)$. For $z = iv + \varepsilon$ ($\varepsilon \to 0^+$) with $0 < v < \Delta$, $\frac{z}{z-i\Delta} = \frac{-v}{\Delta-v} + i\frac{\varepsilon\Delta}{(\Delta-v)^2}$ lies in the upper half-plane (argument $+\pi$), whereas for $z = iv-\varepsilon$ it lies in the lower half-plane (argument $-\pi$). Since $\log\frac{z}{z+i\Delta}$ is continuous across $(0, i\Delta)$ and $\mathcal{C}$ traverses the right side upward and the left side downward, the jump $F_{\theta,\Delta}(iv+\varepsilon) - F_{\theta,\Delta}(iv-\varepsilon) = \pi i e^{-i\theta}$ with $dz = i\,dv$ contributes
+\[
+  -\frac{1}{2\pi i}\int_0^\Delta \frac{\sin^2(\pi(y-\alpha))}{\sin^2(\pi(iv-\alpha))}\cdot\frac{\pi i e^{-i\theta}}{iv-y}(i\,dv)
+  = -\frac{\sin^2(\pi(y-\alpha))}{2i}\int_0^\Delta \frac{e^{-i\theta}}{\sin^2(\pi(iv-\alpha))(y-iv)}\,dv
+\]
+to $F_{\theta,\Delta}(y) - M_\alpha(y)$. By reflection symmetry $F_{\theta,\Delta}(\bar{z}) = \overline{F_{\theta,\Delta}(z)}$, the contribution from $(-i\Delta,0)$ is the complex conjugate of the contribution from $(0, i\Delta)$. Adding the two yields
+\[
+  -\sin^2(\pi(y-\alpha))\int_0^\Delta \operatorname{Im}\!\left(\frac{e^{-i\theta}}{\sin^2(\pi(iv-\alpha))(y-iv)}\right)dv.
+\]
+Finally, the logarithmic terms in~\eqref{eq:F_holo} are integrable at $z = \pm i\Delta$, while the simple poles of $-\sin(\theta)\frac{\Delta z}{z^2+\Delta^2}$ at $z = \pm i\Delta$ have residues $-\frac{\Delta\sin\theta}{2}$, contributing (from $-\sum\Res H$)
+\[
+  +\sin^2(\pi(y-\alpha))\operatorname{Re}\!\left(\frac{\Delta\sin\theta}{\sin^2(\pi(i\Delta-\alpha))(i\Delta-y)}\right)
+\]
+to $F_{\theta,\Delta}(y) - M_\alpha(y)$. Negating both sides gives~\eqref{eq:contour_rep} for $y \notin \Z+\alpha$, and by continuity for $y \in \Z+\alpha$ as well.
+\end{proof}
+
+\subsection{Positivity and asymptotics of the limiting kernel}
+At the limiting shift $\alpha = \alpha_0 = \frac{1}{2}-\frac{\theta}{\pi}$, we have $\sin(\pi(iv-\alpha_0)) = -\cos(\theta+i\pi v)$, so the integral in~\eqref{eq:contour_rep} tends to
+\begin{equation}\label{eq:J_def}
+  J(y,\theta) := \int_0^\infty \operatorname{Im}\!\left(\frac{e^{-i\theta}}{\cos^2(\theta+i\pi v)(y-iv)}\right)dv \qquad (y \in \R\setminus\{0\}).
+\end{equation}
+
+\begin{lemma}[Positivity and asymptotics of $J$]\label{lem:J_pos}
+For every $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$ and every $y \in \R\setminus\{0\}$, we have $J(y,\theta) > 0$. Moreover,
+\begin{equation}\label{eq:J_zero}
+  J(y,\theta) = \frac{1}{\cos\theta}\log\frac{1}{|y|} + O_\theta(1) \qquad (0 < |y| \le 1),
+\end{equation}
+and as $|y| \to \infty$,
+\begin{equation}\label{eq:J_inf}
+  J(y,\theta) = \frac{\cos(\theta)\log(2\cos\theta) + \theta\sin\theta}{\pi^2 y^2} + O_\theta\!\left(\frac{1}{|y|^3}\right).
+\end{equation}
+\end{lemma}
+
+\begin{proof}
+Since $J(-y,-\theta) = J(y,\theta)$, we may assume $\theta \in [0,\frac{\pi}{2})$. Write
+\[
+  \frac{e^{-i\theta}}{\cos^2(\theta+i\pi v)} = A_\theta(v) + iB_\theta(v), \qquad A_\theta(v), B_\theta(v) \in \R,
+\]
+so that for $y \neq 0$,
+\begin{equation}\label{eq:J_AB}
+  J(y,\theta) = \int_0^\infty \frac{vA_\theta(v) + yB_\theta(v)}{y^2+v^2}\,dv.
+\end{equation}
+Observe that the antiderivative of $\frac{e^{-i\theta}}{\cos^2(\theta+i\pi v)}$ vanishing at $\infty$ is $-u_\theta(v)$, where
+\begin{equation}\label{eq:u_theta}
+  u_\theta(v) := \frac{e^{-i\theta}(i-\tan(\theta+i\pi v))}{i\pi} = \frac{e^{-\pi v}}{\pi\cos(\theta+i\pi v)}.
+\end{equation}
+Since $u_\theta(0) = \frac{1}{\pi\cos\theta} \in \R$, we have $\int_0^\infty B_\theta(v)\,dv = \operatorname{Im}(u_\theta(0)) = 0$. Moreover, $A_\theta(0) = \frac{1}{\cos\theta}$ and $A_\theta(v), B_\theta(v)$ are smooth and exponentially decaying as $v\to\infty$, so~\eqref{eq:J_AB} gives
+\[
+  J(y,\theta) = \int_0^1 \frac{v A_\theta(0)}{y^2+v^2}\,dv + O_\theta(1) = \frac{1}{\cos\theta}\log\frac{1}{|y|} + O_\theta(1) \qquad (0 < |y| \le 1),
+\]
+proving~\eqref{eq:J_zero}.
+
+\emph{Case 1: $y < 0$.} Expanding $\cos(\theta+i\pi v) = \cos\theta\cosh(\pi v) - i\sin\theta\sinh(\pi v)$, we compute
+\[
+  A_\theta(v) = \frac{\cos\theta\bigl[\cos^2\theta\cosh^2(\pi v) + \sin^2\theta\bigl(2\sinh(\pi v)\cosh(\pi v) - \sinh^2(\pi v)\bigr)\bigr]}{\bigl(\sinh^2(\pi v)+\cos^2\theta\bigr)^2} > 0
+\]
+for all $v \ge 0$, since $2\sinh(\pi v)\cosh(\pi v) - \sinh^2(\pi v) = \sinh(\pi v)(2\cosh(\pi v)-\sinh(\pi v)) > 0$ for $v > 0$. Similarly,
+\[
+  B_\theta(v) = \frac{\sin\theta\bigl[-\cos^2\theta\cosh^2(\pi v) + \sin^2\theta\sinh^2(\pi v) + 2\cos^2\theta\sinh(\pi v)\cosh(\pi v)\bigr]}{\bigl(\sinh^2(\pi v)+\cos^2\theta\bigr)^2}.
+\]
+For $\theta = 0$, $B_0(v) \equiv 0$ and~\eqref{eq:J_AB} is strictly positive for all $y \neq 0$. For $\theta \in (0,\frac{\pi}{2})$, dividing the bracket in $B_\theta(v)$ by $\cosh^2(\pi v)$ yields $-\cos^2\theta + \sin^2\theta\tanh^2(\pi v) + 2\cos^2\theta\tanh(\pi v)$, which is strictly increasing in $v > 0$ from $-\cos^2\theta < 0$ at $v = 0$ to $1 > 0$ as $v\to\infty$. Thus $B_\theta(v)$ changes sign exactly once on $(0,\infty)$, at some $v_0 > 0$, from negative to positive. Since $\frac{1}{y^2+v^2}$ is strictly decreasing in $v > 0$ and $\int_0^\infty B_\theta(v)\,dv = 0$, we obtain
+\[
+  \int_0^\infty \frac{B_\theta(v)}{y^2+v^2}\,dv = \int_0^\infty B_\theta(v)\left(\frac{1}{y^2+v^2} - \frac{1}{y^2+v_0^2}\right)dv < 0.
+\]
+Hence $y\int_0^\infty \frac{B_\theta(v)}{y^2+v^2}\,dv > 0$ for all $y < 0$, and therefore $J(y,\theta) > 0$.
+
+\emph{Case 2: $y > 0$.} Using $\frac{1}{y-iv} = \int_0^\infty e^{-sy}e^{isv}\,ds$ and Fubini's theorem, we write
+\[
+  J(y,\theta) = \int_0^\infty e^{-sy}\Psi_\theta(s)\,ds, \qquad \Psi_\theta(s) := \operatorname{Im}\int_0^\infty \frac{e^{-i\theta}e^{isv}}{\cos^2(\theta+i\pi v)}\,dv.
+\]
+Integrating by parts with~\eqref{eq:u_theta} and using $u_\theta(0) \in \R$ gives
+\[
+  \Psi_\theta(s) = s\operatorname{Re}\int_0^\infty \frac{e^{-\pi v}e^{isv}}{\pi\cos(\theta+i\pi v)}\,dv.
+\]
+Substituting $x = 2\pi v$ and $p = \frac{s}{2\pi} > 0$, we have $\frac{e^{-\pi v}}{\cos(\theta+i\pi v)} = \frac{e^{-x/2}}{\cosh(x/2-i\theta)}$. Since $\overline{\cosh(|x|/2+i\theta)} = \cosh(-|x|/2-i\theta)$, extending the integral to $x < 0$ yields
+\[
+  \Psi_\theta(s) = \frac{s}{4\pi^2}\int_{-\infty}^\infty \frac{e^{-|x|/2}}{\cosh(x/2-i\theta)}e^{ipx}\,dx.
+\]
+For $|\theta| < \frac{\pi}{2}$, the function $z \mapsto \frac{e^{i\omega z}}{\cosh(z/2)}$ is analytic in the strip $|\operatorname{Im} z| < \pi$, so shifting the contour from $\R$ to $\R - 2i\theta$ gives
+\[
+  \int_{-\infty}^\infty \frac{e^{i\omega x}}{\cosh(x/2-i\theta)}\,dx = e^{-2\theta\omega}\int_{-\infty}^\infty \frac{e^{i\omega u}}{\cosh(u/2)}\,du = \frac{2\pi e^{-2\theta\omega}}{\cosh(\pi\omega)} > 0.
+\]
+Combined with $\int_{-\infty}^\infty e^{-|x|/2}e^{i\omega x}\,dx = (\frac{1}{4}+\omega^2)^{-1} > 0$, Plancherel's theorem ($\int f(x)g(x)\,dx = \frac{1}{2\pi}\int \widehat{f}(-\frac{\omega}{2\pi})\widehat{g}(\frac{\omega}{2\pi})\,d\omega$) yields
+\[
+  \Psi_\theta(s) = \frac{s}{4\pi^2}\int_{-\infty}^\infty \frac{e^{-2\theta\omega}}{\cosh(\pi\omega)}\cdot\frac{1}{\frac{1}{4}+(p-\omega)^2}\,d\omega > 0 \qquad \text{for all } s > 0.
+\]
+Consequently, $J(y,\theta) > 0$ for all $y > 0$.
+
+\emph{Asymptotics as $|y| \to \infty$.} Expanding $(y-iv)^{-1} = y^{-1} + ivy^{-2} + O(v^2|y|^{-3})$ and using $\int_0^\infty B_\theta(v)\,dv = 0$, we obtain
+\[
+  J(y,\theta) = \frac{1}{y^2}\int_0^\infty vA_\theta(v)\,dv + O_\theta\!\left(\frac{1}{|y|^3}\right).
+\]
+Integrating by parts with~\eqref{eq:u_theta} and substituting $w = e^{-2\pi v}$ gives
+\[
+  \int_0^\infty v\frac{e^{-i\theta}}{\cos^2(\theta+i\pi v)}\,dv = \int_0^\infty u_\theta(v)\,dv = \frac{1}{\pi^2}\int_0^1 \frac{e^{i\theta}}{1+e^{2i\theta}w}\,dw = \frac{e^{-i\theta}\log(1+e^{2i\theta})}{\pi^2}.
+\]
+Since $1 + e^{2i\theta} = 2\cos(\theta)e^{i\theta}$, taking the real part establishes~\eqref{eq:J_inf}.
+\end{proof}
+
+\subsection{Proof of Theorem~\ref{thm:majorant}}
+
+\begin{proof}[Proof of Theorem~\ref{thm:majorant}]
+Fix $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$. For sufficiently large $\Delta$, let $\alpha_\Delta \in (0,1)$ be given by Lemma~\ref{lem:alpha_Delta}, and let $M_{\alpha_\Delta}$ be as in~\eqref{eq:M_alpha_def}. Since $\sum_{n\in\Z} F'_{\theta,\Delta}(n+\alpha_\Delta) = 0$, we have
+\[
+  \sum_{n\in\Z}\frac{F'_{\theta,\Delta}(n+\alpha_\Delta)}{y-n-\alpha_\Delta} = \frac{1}{y}\sum_{n\in\Z}\frac{(n+\alpha_\Delta)F'_{\theta,\Delta}(n+\alpha_\Delta)}{y-n-\alpha_\Delta} = O_\Delta\!\left(\frac{1}{y^2}\right)
+\]
+as $|y|\to\infty$, so $M_{\alpha_\Delta}(y) = O_\Delta((1+y^2)^{-1})$ and $M_{\alpha_\Delta} - F_{\theta,\Delta} \in L^1(\R)$.
+
+\emph{Step 1: Positivity on $0 < |y| < 1$.} By Lemma~\ref{lem:J_pos}, there exist constants $c_\theta, c'_\theta > 0$ such that
+\[
+  J(y,\theta) \ge \frac{c_\theta}{1+y^2} + c'_\theta\log_+\!\left(\frac{1}{|y|}\right) \qquad \text{for all } y \in \R\setminus\{0\},
+\]
+where $\log_+(u) := \max(\log u, 0)$. For $0 < |y| < 1$, comparing~\eqref{eq:contour_rep} at $\alpha = \alpha_\Delta$ with $J(y,\theta)$ gives
+\[
+  M_{\alpha_\Delta}(y) - F_{\theta,\Delta}(y) = \sin^2(\pi(y-\alpha_\Delta))\Bigl[J(y,\theta) + O_\theta\bigl(\Delta e^{-2\pi\Delta}\log(2+1/|y|)\bigr)\Bigr],
+\]
+because $|\sin^{-2}(\pi(iv-\alpha_\Delta)) - \cos^{-2}(\theta+i\pi v)| \ll_\theta \Delta e^{-2\pi\Delta}e^{-2\pi v}$ and $\int_0^1 |y-iv|^{-1}\,dv \ll \log(2+1/|y|)$, while the tail $\int_\Delta^\infty$ and $R_{\theta,\Delta,\alpha_\Delta}(y)$ are $O_\theta(\Delta e^{-2\pi\Delta})$. For $\Delta$ sufficiently large, $J(y,\theta)$ dominates this error uniformly on $0 < |y| < 1$.
+
+\emph{Step 2: Positivity on $|y| \ge 1$.} Since $M_{\alpha_\Delta}(y) - F_{\theta,\Delta}(y) = O_\Delta(y^{-2})$ as $|y|\to\infty$, the $1/y$ coefficient of the bracket in~\eqref{eq:contour_rep} at $\alpha = \alpha_\Delta$ vanishes identically:
+\[
+  I_0 + R_0 := \int_0^\Delta \operatorname{Im}\!\left(\frac{e^{-i\theta}}{\sin^2(\pi(iv-\alpha_\Delta))}\right)dv + \operatorname{Re}\!\left(\frac{\Delta\sin\theta}{\sin^2(\pi(i\Delta-\alpha_\Delta))}\right) = 0.
+\]
+Subtracting $\frac{1}{y}(I_0+R_0) = 0$ from the bracket in~\eqref{eq:contour_rep} and using $\int_0^\infty B_\theta(v)\,dv = 0$, the bracket for all $|y| \ge 1$ equals
+\begin{align*}
+  J(y,\theta) &+ \int_0^\Delta \operatorname{Im}\!\left(\left[\frac{e^{-i\theta}}{\sin^2(\pi(iv-\alpha_\Delta))} - \frac{e^{-i\theta}}{\cos^2(\theta+i\pi v)}\right]\frac{iv}{y(y-iv)}\right)dv \\
+  &- \int_\Delta^\infty \operatorname{Im}\!\left(\frac{e^{-i\theta}}{\cos^2(\theta+i\pi v)}\frac{iv}{y(y-iv)}\right)dv - \operatorname{Re}\!\left(\frac{i\Delta^2\sin\theta}{\sin^2(\pi(i\Delta-\alpha_\Delta))y(i\Delta-y)}\right).
+\end{align*}
+Since $|\frac{iv}{y(y-iv)}| \le \frac{v}{y^2}$ and $|\frac{i\Delta^2}{y(i\Delta-y)}| \le \frac{\Delta^2}{y^2}$, the last three terms are bounded in absolute value by $O_\theta(\Delta^2 e^{-2\pi\Delta}/y^2)$ uniformly for all $|y| \ge 1$. For $\Delta \ge \Delta_0(\theta)$ sufficiently large, this is strictly smaller than $J(y,\theta) \ge \frac{c_\theta}{1+y^2}$, proving $M_{\alpha_\Delta}(y) \ge F_{\theta,\Delta}(y)$ for all $y \in \R\setminus\{0\}$.
+
+\emph{Step 3: $L^1$ excess.} Define $M_{\theta,\Delta}(x) := M_{\alpha_\Delta}(\Delta x)$. Then $M_{\theta,\Delta}$ has exponential type $2\pi\Delta$ and $M_{\theta,\Delta}(x) \ge F_{\theta,\Delta}(\Delta x) = K_\theta(x)$ for all $x \in \R\setminus\{0\}$. By Poisson summation applied to $M_{\alpha_\Delta} \in L^1(\R)$ (whose Fourier transform is continuous and supported in $[-1,1]$),
+\[
+  \int_{-\infty}^\infty M_{\alpha_\Delta}(y)\,dy = \widehat{M_{\alpha_\Delta}}(0) = \sum_{n\in\Z} M_{\alpha_\Delta}(n+\alpha_\Delta) = \sum_{n\in\Z} F_{\theta,\Delta}(n+\alpha_\Delta).
+\]
+We evaluate the two components of $\sum_{n\in\Z} F_{\theta,\Delta}(n+\alpha)$ at $\alpha = \alpha_\Delta$:
+\begin{enumerate}
+  \item From $\prod_{n\in\Z}\bigl(1 + \frac{\Delta^2}{(n+\alpha)^2}\bigr) = \frac{\cosh(2\pi\Delta)-\cos(2\pi\alpha)}{2\sin^2(\pi\alpha)}$, we obtain
+    \[
+      -\frac{1}{2}\sum_{n\in\Z}\log\!\left(\frac{(n+\alpha)^2+\Delta^2}{(n+\alpha)^2}\right) + \pi\Delta = \log\bigl(2\sin(\pi\alpha)\bigr) + O_\theta(e^{-2\pi\Delta}).
+    \]
+  \item Using $\sum_{n\in\Z}\frac{n+\alpha}{(n+\alpha)^2+u^2} = \frac{\pi\sin(2\pi\alpha)}{\cosh(2\pi u)-\cos(2\pi\alpha)}$ and integrating $u$ from $0$ to $\Delta$ (with $w = e^{-2\pi u}$), we find
+    \[
+      \sum_{n\in\Z}\arctan\!\left(\frac{\Delta}{n+\alpha}\right) = \int_0^\Delta \frac{\pi\sin(2\pi\alpha)}{\cosh(2\pi u)-\cos(2\pi\alpha)}\,du = \pi\left(\frac{1}{2}-\alpha\right) + O_\theta(e^{-2\pi\Delta}),
+    \]
+    while $\sum_{n\in\Z}\frac{\Delta(n+\alpha)}{(n+\alpha)^2+\Delta^2} = O_\theta(\Delta e^{-2\pi\Delta})$.
+\end{enumerate}
+Substituting $\alpha = \alpha_\Delta = \frac{1}{2}-\frac{\theta}{\pi} + O_\theta(\Delta e^{-2\pi\Delta})$ gives $\sin(\pi\alpha_\Delta) = \cos\theta + O_\theta(\Delta e^{-2\pi\Delta})$ and $\pi(\frac{1}{2}-\alpha_\Delta) = \theta + O_\theta(\Delta e^{-2\pi\Delta})$, which yields~\eqref{eq:L1_excess}:
+\[
+  \int_{-\infty}^\infty \bigl(M_{\theta,\Delta}(x) - K_\theta(x)\bigr)\,dx = \frac{1}{\Delta}\left(\sum_{n\in\Z} F_{\theta,\Delta}(n+\alpha_\Delta) + \pi\Delta\cos\theta\right) = \frac{\cos(\theta)\log(2\cos\theta)+\theta\sin\theta}{\Delta} + O_\theta(e^{-2\pi\Delta}).
+\]
+
+\emph{Step 4: Uniform $L^1$ and pointwise growth bounds.} Since $M_{\theta,\Delta} - K_\theta \ge 0$ and $K_\theta \in L^1(\R)$, we have $\|M_{\theta,\Delta}\|_{L^1(\R)} \le \|K_\theta\|_{L^1(\R)} + \|M_{\theta,\Delta}-K_\theta\|_{L^1(\R)} = O_\theta(1)$. For $|x| \ge 1$, $|K_\theta(x)| = O((1+x^2)^{-1})$ and Step~2 gives
+\[
+  (1+x^2)\bigl(M_{\theta,\Delta}(x) - K_\theta(x)\bigr) = (1+x^2)\sin^2\bigl(\pi(\Delta x - \alpha_\Delta)\bigr)\left(J(\Delta x,\theta) + O_\theta\!\left(\frac{\Delta^2 e^{-2\pi\Delta}}{(\Delta x)^2}\right)\right) = O_\theta(\Delta^{-2}).
+\]
+For $|x| < 1$, set $y = \Delta x$. If $1 \le |y| < \Delta$, then $|K_\theta(x)| = O_\theta(\log\Delta)$ and $0 \le M_{\alpha_\Delta}(y) - F_{\theta,\Delta}(y) = O_\theta(1)$ by Lemmas~\ref{lem:contour} and~\ref{lem:J_pos}, giving $|M_{\theta,\Delta}(x)| = O_\theta(\log\Delta)$. If $|y| < 1$, we bound $M_{\alpha_\Delta}(y)$ directly from~\eqref{eq:M_alpha_def}: since $\alpha_\Delta \to \frac{1}{2}-\frac{\theta}{\pi} \in (0,1)$, we have $|F_{\theta,\Delta}(n+\alpha_\Delta)| = O_\theta(\log(2+\Delta/(1+|n|)))$ and $|F'_{\theta,\Delta}(n+\alpha_\Delta)| = O_\theta((1+|n|)^{-1})$ for all $n \in \Z$. Using $\sin^2(\pi(y-\alpha_\Delta)) = \sin^2(\pi(y-n-\alpha_\Delta)) \le \min(1, \pi^2(y-n-\alpha_\Delta)^2)$ for $|n| \le 2$ and $|y-n-\alpha_\Delta| \ge \frac{1}{3}|n|$ for $|n| \ge 3$ yields $|M_{\alpha_\Delta}(y)| = O_\theta(\log\Delta)$ uniformly on $|y| < 1$. Thus $\sup_{x\in\R}((1+x^2)|M_{\theta,\Delta}(x)|) = O_\theta(\log\Delta)$.
+\end{proof}
+
+\section{Pointwise Polar Envelope and Universal Convex Domain}\label{sec:pointwise}
+
+We now apply Theorem~\ref{thm:majorant} in the Guinand--Weil explicit formula to prove Theorems~\ref{thm:directional_bound} and~\ref{thm:convex_domain} and Corollary~\ref{cor:tradeoff_cases}.
+
+\begin{proof}[Proof of Theorem~\ref{thm:directional_bound}]
+Fix $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$. For $\q = q(|t|+2)$ sufficiently large with $L(\frac{1}{2}+it,\chi) \neq 0$, set
+\[
+  X := \frac{(\log\q)^2}{(\log\log\q)^4}, \qquad \Delta := \frac{\log X}{2\pi} = \frac{\log\log\q}{\pi}\left(1 + O\!\left(\frac{\log\log\log\q}{\log\log\q}\right)\right).
+\]
+For $\q$ large enough that $\Delta \ge \Delta_0(\theta)$ (and $|t| \ge 10$ if $q = 1$), let $M_{\theta,\Delta}$ be the majorant provided by Theorem~\ref{thm:majorant}. By Lemma~\ref{lem:horizontal},
+\[
+  \operatorname{Re}\!\left(e^{-i\theta}\log L(\tfrac{1}{2}+it,\chi)\right) \le \frac{\cos\theta}{2}\log\q + \sum_\gamma M_{\theta,\Delta}(t-\gamma) + O(1).
+\]
+Applying Lemma~\ref{lem:guinand_weil} to $h = M_{\theta,\Delta}$, and noting that $\sup_{x\in\R}((1+x^2)|M_{\theta,\Delta}(x)|) = O_\theta(\log\Delta) = O_\theta(\log\log\log\q)$ and (for $q = 1$, where $\q = |t|+2$) $\frac{e^{\pi\Delta}}{t^2}\log\Delta \ll \frac{\log t}{t^2}\log\log\log t = o(1)$, we obtain
+\begin{align*}
+  \sum_\gamma M_{\theta,\Delta}(t-\gamma) &= \frac{\log\q}{2\pi}\int_{-\infty}^\infty M_{\theta,\Delta}(x)\,dx \\
+  &\quad - \frac{1}{2\pi}\sum_{2\le n\le X} \frac{\Lambda(n)}{\sqrt{n}}\left(\chi(n)\widehat{M_{\theta,\Delta}}\!\left(-\frac{\log n}{2\pi}\right)n^{-it} + \overline{\chi(n)}\widehat{M_{\theta,\Delta}}\!\left(\frac{\log n}{2\pi}\right)n^{it}\right) + O_\theta(\log\log\log\q).
+\end{align*}
+Since $|\chi(n)| \le 1$ and $|\widehat{M_{\theta,\Delta}}(\xi)| \le \|M_{\theta,\Delta}\|_{L^1(\R)} = O_\theta(1)$, the prime sum is bounded trivially by $O_\theta(\sum_{n\le X}\frac{\Lambda(n)}{\sqrt{n}}) = O_\theta(\sqrt{X}) = O_\theta(\frac{\log\q}{(\log\log\q)^2})$. On the other hand, since $\int_{-\infty}^\infty K_\theta(x)\,dx = -\pi\cos\theta$, Theorem~\ref{thm:majorant} gives
+\[
+  \int_{-\infty}^\infty M_{\theta,\Delta}(x)\,dx = -\pi\cos\theta + \frac{2C(\theta)}{\Delta} + O_\theta(e^{-2\pi\Delta}).
+\]
+Combining this with $\frac{\cos\theta}{2}\log\q$ cancels the leading $\log\q$ term, leaving
+\[
+  \operatorname{Re}\!\left(e^{-i\theta}\log L(\tfrac{1}{2}+it,\chi)\right) \le \frac{\log\q}{2\pi}\cdot\frac{2C(\theta)}{\Delta} + O_\theta\!\left(\frac{\log\q}{(\log\log\q)^2}\right) = \left(C(\theta) + O_\theta\!\left(\frac{\log\log\log\q}{\log\log\q}\right)\right)\frac{\log\q}{\log\log\q},
+\]
+which proves~\eqref{eq:directional_bound}.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:convex_domain} and Corollary~\ref{cor:tradeoff_cases}]
+For $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$, let $H_\theta := \{x+iy \in \C : x\cos\theta + y\sin\theta \le C(\theta)\}$. Differentiating~\eqref{eq:C_theta} gives $C'(\theta) = \frac{1}{2}(-\sin(\theta)\log(2\cos\theta) + \theta\cos\theta)$, so the envelope of the supporting lines $x\cos\theta + y\sin\theta = C(\theta)$ is parametrized by
+\[
+  x(\theta) = C(\theta)\cos\theta - C'(\theta)\sin\theta = \frac{1}{2}\log(2\cos\theta), \qquad
+  y(\theta) = C(\theta)\sin\theta + C'(\theta)\cos\theta = \frac{\theta}{2}.
+\]
+Eliminating $\theta = 2y$ yields $e^{2x} = 2\cos(2y)$ for $|y| < \frac{\pi}{4}$. Since $x(y) = \frac{1}{2}\log(2\cos(2y))$ is strictly concave on $(-\frac{\pi}{4},\frac{\pi}{4})$ and $C(\pm\frac{\pi}{2}) = \frac{\pi}{4}$ (while for $y = \pm\frac{\pi}{4}$ and any $x \in \R$, $x\cos\theta + \frac{\pi}{4}|\sin\theta| > C(\theta)$ as $|\theta|\to\frac{\pi}{2}^-$), the intersection $\bigcap_{|\theta|<\pi/2} H_\theta$ is precisely $\Omega = \{x+iy \in \C : |y| < \frac{\pi}{4},\, e^{2x} \le 2\cos(2y)\}$.
+
+Fix $\varepsilon \in (0,\pi)$. By~\eqref{eq:CCM_bound} and Theorem~\ref{thm:directional_bound} at $\theta = 0$, for $\q$ sufficiently large any point $z(t,\chi) = x+iy$ satisfies $|y| \le \frac{\pi}{4}+\frac{\varepsilon}{2}$ and $x \le \frac{\log 2}{2}+\varepsilon$. Moreover, if $x \le \frac{1}{2}\log(2\cos(\frac{\pi}{2}-\frac{\varepsilon}{2}))$, then for $|y| \le \frac{\pi}{4}-\frac{\varepsilon}{4}$ we have $x+iy \in \Omega$, while for $\frac{\pi}{4}-\frac{\varepsilon}{4} < |y| \le \frac{\pi}{4}+\frac{\varepsilon}{2}$ the point $x + i\sgn(y)(\frac{\pi}{4}-\frac{\varepsilon}{4}) \in \Omega$ lies at distance at most $\frac{3\varepsilon}{4} < \varepsilon$ from $z(t,\chi)$. Thus, to confine $z(t,\chi)$ to the $\varepsilon$-neighborhood of $\Omega$, it suffices to exclude the compact subset
+\[
+  K_\varepsilon := \left\{x+iy \in \C : \frac{1}{2}\log\!\left(2\cos\!\left(\frac{\pi}{2}-\frac{\varepsilon}{2}\right)\right) \le x \le \frac{\log 2}{2}+\varepsilon,\; |y| \le \frac{\pi}{4}+\frac{\varepsilon}{2},\; \operatorname{dist}(x+iy,\Omega) \ge \varepsilon\right\}.
+\]
+Since $\Omega = \bigcap_{|\theta|<\pi/2} H_\theta$ is closed and convex, every $z = x+iy \in K_\varepsilon$ satisfies $x\cos\theta + y\sin\theta > C(\theta)$ for some $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$. By compactness of $K_\varepsilon$, there exist $\delta(\varepsilon) > 0$ and a finite subset $\Theta_\varepsilon \subset (-\frac{\pi}{2},\frac{\pi}{2})$ such that every $z \in K_\varepsilon$ violates $x\cos\theta + y\sin\theta \le C(\theta)+\delta(\varepsilon)$ for at least one $\theta \in \Theta_\varepsilon$. Applying Theorem~\ref{thm:directional_bound} to each $\theta \in \Theta_\varepsilon$ together with~\eqref{eq:CCM_bound} shows that $z(t,\chi)$ lies in the $\varepsilon$-neighborhood of $\Omega$ for all $\q \ge \q_0(\varepsilon)$.
+
+If $\log|L(\frac{1}{2}+it,\chi)| \ge (\alpha+o(1))\frac{\log\q}{\log\log\q}$ with $\alpha \le \frac{\log 2}{2}$, then $\operatorname{Re} z(t,\chi) \ge \alpha + o(1)$, so $2\cos(2\operatorname{Im} z(t,\chi)) \ge e^{2\alpha}+o(1)$, giving $|\operatorname{Im} z(t,\chi)| \le \frac{1}{2}\arccos(\frac{e^{2\alpha}}{2})+o(1)$ by uniform continuity of $\arccos$ on $[0,1]$, which proves~\eqref{eq:tradeoff}. Setting $\alpha = 0$ gives $|S(t,\chi)| \le (\frac{1}{2\pi}\arccos(\frac{1}{2})+o(1))\frac{\log\q}{\log\log\q} = (\frac{1}{6}+o(1))\frac{\log\q}{\log\log\q}$, and setting $\alpha = \frac{\log 2}{2}$ gives $S(t,\chi) = o\bigl(\frac{\log\q}{\log\log\q}\bigr)$. Specializing to $t = 0$ and $q \to \infty$ yields Corollary~\ref{cor:tradeoff_cases}(iii).
+\end{proof}
+
+\section{High-Moment Estimates for Prime Sums}\label{sec:moments}
+
+To pass from the pointwise $\frac{\log\q}{\log\log\q}$ barrier to large-deviation bounds at the $\sqrt{\log\q\log\log\q}$ scale, we exploit the $|\xi|^{-1}$ decay of $\widehat{K_\theta}(\xi)$ from Lemma~\ref{lem:K_fourier} together with high-moment estimates for prime sums. For $\Delta \ge \Delta_0(\theta)$ and $X = e^{2\pi\Delta}$, write the prime-power sum in Lemma~\ref{lem:guinand_weil} as
+\[
+  P_{\theta,\Delta}(t,\chi) := \frac{1}{2\pi}\sum_{2\le n\le X} \frac{\Lambda(n)}{\sqrt{n}}\left(\chi(n)\widehat{M_{\theta,\Delta}}\!\left(-\frac{\log n}{2\pi}\right)n^{-it} + \overline{\chi(n)}\widehat{M_{\theta,\Delta}}\!\left(\frac{\log n}{2\pi}\right)n^{it}\right).
+\]
+We decompose $P_{\theta,\Delta}(t,\chi) = P_{\theta,\Delta}^{(1)}(t,\chi) + P_{\theta,\Delta}^{(2)}(t,\chi) + P_{\theta,\Delta}^{(\ge 3)}(t,\chi)$ according to $n = p$, $n = p^2$, and $n = p^m$ ($m \ge 3$).
+
+\begin{lemma}[Prime-square and higher-power sums]\label{lem:prime_powers}
+Uniformly for all $t \in \R$ and all characters $\chi$,
+\[
+  |P_{\theta,\Delta}^{(2)}(t,\chi)| = O_\theta(\log\log X), \qquad |P_{\theta,\Delta}^{(\ge 3)}(t,\chi)| = O_\theta(1).
+\]
+\end{lemma}
+
+\begin{proof}
+Since $|\widehat{M_{\theta,\Delta}}(\xi)| \le \|M_{\theta,\Delta}\|_{L^1(\R)} = O_\theta(1)$, we have
+\[
+  |P_{\theta,\Delta}^{(\ge 3)}(t,\chi)| \ll_\theta \sum_{m\ge 3}\sum_p \frac{\log p}{p^{m/2}} = O_\theta(1).
+\]
+For $n = p^2 \le X$, Lemma~\ref{lem:K_fourier} at $\xi = \pm\frac{\log p}{\pi}$ gives $|\widehat{M_{\theta,\Delta}}(\pm\frac{\log p}{\pi})| \ll_\theta \frac{1}{\log p} + \frac{1}{\Delta}$, so
+\[
+  |P_{\theta,\Delta}^{(2)}(t,\chi)| \ll_\theta \sum_{p\le\sqrt{X}}\frac{\log p}{p}\left(\frac{1}{\log p}+\frac{1}{\Delta}\right) \ll_\theta \sum_{p\le\sqrt{X}}\frac{1}{p} + \frac{1}{\Delta}\sum_{p\le\sqrt{X}}\frac{\log p}{p} \ll_\theta \log\log X + 1,
+\]
+since $\sum_{p\le\sqrt{X}}\frac{\log p}{p} \ll \log\sqrt{X} = \pi\Delta$.
+\end{proof}
+
+Next, we bound the $2k$-th moments of $P_{\theta,\Delta}^{(1)}(t,\chi)$ in both the $t$-aspect and the $q$-aspect.
+
+\begin{lemma}[$2k$-th moment bounds]\label{lem:moments}
+Let $X = e^{2\pi\Delta}$ with $\Delta \ge \Delta_0(\theta)$ and $k \in \N$. Define $a_p^\pm := \frac{\log p}{\sqrt{p}}\widehat{M_{\theta,\Delta}}(\mp\frac{\log p}{2\pi})$. Then
+\begin{equation}\label{eq:a_p_l2}
+  \sum_{p\le X} |a_p^\pm|^2 \ll_\theta \log\log X.
+\end{equation}
+Consequently, there exists a constant $B_\theta > 0$ such that:
+\begin{enumerate}
+  \item[(i)] For fixed $q \ge 1$ and $X^k \le T$,
+    \[
+      \frac{1}{T}\int_T^{2T} |P_{\theta,\Delta}^{(1)}(t,\chi)|^{2k}\,dt \le (B_\theta k\log\log X)^k.
+    \]
+  \item[(ii)] For fixed $t_0 \in \R$ and $X^k < q$,
+    \[
+      \frac{1}{\phi^*(q)}\sideset{}{^*}\sum_{\chi \pmod q} |P_{\theta,\Delta}^{(1)}(t_0,\chi)|^{2k} \le \frac{\phi(q)}{\phi^*(q)}(B_\theta k\log\log X)^k,
+    \]
+    where $\sideset{}{^*}\sum$ restricts to primitive characters modulo $q$.
+\end{enumerate}
+\end{lemma}
+
+\begin{proof}
+By Lemma~\ref{lem:K_fourier}, $|a_p^\pm| \ll_\theta \frac{1}{\sqrt{p}} + \frac{\log p}{\Delta\sqrt{p}}$, so
+\[
+  \sum_{p\le X} |a_p^\pm|^2 \ll_\theta \sum_{p\le X}\frac{1}{p} + \frac{1}{\Delta^2}\sum_{p\le X}\frac{(\log p)^2}{p} \ll_\theta \log\log X + \frac{(\log X)^2}{\Delta^2} = \log\log X + (2\pi)^2 \ll_\theta \log\log X,
+\]
+proving~\eqref{eq:a_p_l2}. Notice that $P_{\theta,\Delta}^{(1)}(t,\chi) = \frac{1}{2\pi}\bigl(\sum_{p\le X} a_p^+ \chi(p)p^{-it} + \sum_{p\le X} a_p^- \overline{\chi(p)}p^{it}\bigr)$, and by complex conjugation
+\[
+  \left|\sum_{p\le X} a_p^- \overline{\chi(p)}p^{it}\right| = \left|\sum_{p\le X} \overline{a_p^-}\chi(p)p^{-it}\right|.
+\]
+Writing $c_p^+ := a_p^+$ and $c_p^- := \overline{a_p^-}$, we have $|c_p^\pm| = |a_p^\pm|$, and for any $k \in \N$,
+\[
+  \left(\sum_{p\le X} c_p^\pm \chi(p)p^{-it}\right)^k = \sum_{n\le X^k} b_k^\pm(n)\chi(n)n^{-it},
+  \qquad b_k^\pm(n) := \sum_{p_1\cdots p_k = n} c_{p_1}^\pm \cdots c_{p_k}^\pm.
+\]
+Since any integer $n$ has at most $k!$ ordered factorizations into $k$ primes, Cauchy--Schwarz gives
+\[
+  \sum_{n\le X^k} |b_k^\pm(n)|^2 \le k!\sum_{p_1,\dots,p_k \le X} |a_{p_1}^\pm|^2\cdots |a_{p_k}^\pm|^2 = k!\left(\sum_{p\le X} |a_p^\pm|^2\right)^k \le (C_\theta k\log\log X)^k.
+\]
+For part~(i), Montgomery--Vaughan's mean value theorem for Dirichlet polynomials~\cite{MontgomeryVaughan1974} yields
+\[
+  \int_T^{2T} \left|\sum_{n\le X^k} b_k^\pm(n)\chi(n)n^{-it}\right|^2 dt = \bigl(T + O(X^k)\bigr)\sum_{n\le X^k} |b_k^\pm(n)|^2 \ll T(C_\theta k\log\log X)^k
+\]
+whenever $X^k \le T$. Applying $|u+v|^{2k} \le 2^{2k}(|u|^{2k}+|v|^{2k})$ establishes part~(i).
+
+For part~(ii), extending the sum over all characters modulo $q$ and using character orthogonality gives
+\[
+  \sideset{}{^*}\sum_{\chi \pmod q}\left|\sum_{n\le X^k} b_k^\pm(n)\chi(n)n^{-it_0}\right|^2
+  \le \phi(q)\sum_{\substack{m,n \le X^k \\ m \equiv n \pmod q \\ (mn,q)=1}} b_k^\pm(m)\overline{b_k^\pm(n)}n^{it_0}m^{-it_0}.
+\]
+Since $X^k < q$, the congruence $m \equiv n \pmod q$ with $1 \le m, n \le X^k$ forces $m = n$, so the right-hand side equals $\phi(q)\sum_{n\le X^k} |b_k^\pm(n)|^2 \le \phi(q)(C_\theta k\log\log X)^k$, establishing part~(ii).
+\end{proof}
+
+\section{Large-Deviation Bounds in the $t$-Aspect and $q$-Aspect}\label{sec:large_dev}
+
+We now combine Theorem~\ref{thm:majorant} and Lemmas~\ref{lem:prime_powers}--\ref{lem:moments} to prove Theorems~\ref{thm:t_large_dev} and~\ref{thm:q_large_dev} and Corollary~\ref{cor:S_large_dev}.
+
+\begin{proof}[Proof of Theorem~\ref{thm:t_large_dev}]
+Fix $q \ge 1$ and $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$. For $T$ sufficiently large and $V$ satisfying $A_\theta\log\log T \le V \le \frac{\log T}{\log\log T}$, choose
+\[
+  \Delta := \frac{2C(\theta)\log\bigl(q(2T+2)\bigr)}{\pi V},
+  \qquad
+  X := e^{2\pi\Delta} = \exp\!\left(\frac{4C(\theta)\log\bigl(q(2T+2)\bigr)}{V}\right).
+\]
+Note that for $V \le \frac{\log T}{\log\log T}$ and $T$ large, $\Delta \ge \frac{2C(\theta)}{\pi}\log\log T \ge \Delta_0(\theta)$. Let $M_{\theta,\Delta}$ be the bandlimited majorant of $K_\theta$ given by Theorem~\ref{thm:majorant}.
+
+For any $t \in [T,2T]$ with $L(\frac{1}{2}+it,\chi) \neq 0$, combining Lemma~\ref{lem:horizontal} and Lemma~\ref{lem:guinand_weil} applied to $M_{\theta,\Delta}$ yields
+\begin{align*}
+  \operatorname{Re}\!\left(e^{-i\theta}\log L(\tfrac{1}{2}+it,\chi)\right)
+  &\le \frac{\cos\theta}{2}\log\q + \sum_\gamma M_{\theta,\Delta}(t-\gamma) + O(1) \\
+  &= \frac{\log\q}{2\pi}\bigl(\widehat{K_\theta}(0) + \|M_{\theta,\Delta}-K_\theta\|_{L^1(\R)}\bigr) + \frac{\cos\theta}{2}\log\q \\
+  &\quad - P_{\theta,\Delta}(t,\chi) + O_\theta\!\left(\log\Delta + 1 + \delta_{q,1}\frac{e^{\pi\Delta}}{t^2}\log\Delta\right) \\
+  &= \frac{C(\theta)\log\q}{\pi\Delta} + O_\theta\bigl(\log\q\cdot e^{-2\pi\Delta}\bigr) - P_{\theta,\Delta}(t,\chi) + O_\theta(\log\Delta + 1),
+\end{align*}
+where the $\frac{\cos\theta}{2}\log\q$ terms cancel because $\widehat{K_\theta}(0) = -\pi\cos\theta$ by Lemma~\ref{lem:K_fourier}, and $\delta_{q,1}\frac{e^{\pi\Delta}}{t^2}\log\Delta = o(1)$ on $[T,2T]$ since $2\pi\Delta \le \log T$ for $T$ large (when $V \ge A_\theta\log\log T$), so $e^{\pi\Delta} \le T^{1/2}$. By our choice of $\Delta$, $\frac{C(\theta)\log\q}{\pi\Delta} \le \frac{V}{2}$. Moreover, since $4C(\theta) \ge 4C(0) = 2\log 2 > 1$ for all $\theta \in (-\frac{\pi}{2},\frac{\pi}{2})$, we have $e^{2\pi\Delta} \ge (\log T)^{2\log 2 + o(1)}$, so $\log\q\cdot e^{-2\pi\Delta} = o(1)$. Also $\log\Delta = O_\theta(\log\log T)$, and by Lemma~\ref{lem:prime_powers}, $|P_{\theta,\Delta}^{(2)}(t,\chi)| + |P_{\theta,\Delta}^{(\ge 3)}(t,\chi)| = O_\theta(\log\log T)$. Choosing $A_\theta > 1$ sufficiently large so that all these $O_\theta(\log\log T)$ terms are at most $\frac{V}{4}$, any $t \in [T,2T]$ with $\operatorname{Re}(e^{-i\theta}\log L(\frac{1}{2}+it,\chi)) \ge V$ must satisfy $|P_{\theta,\Delta}^{(1)}(t,\chi)| \ge \frac{V}{4}$.
+
+Now set
+\[
+  k := \left\lfloor\frac{\log T}{\log X}\right\rfloor = \left\lfloor\frac{V}{4C(\theta)}\cdot\frac{\log T}{\log(q(2T+2))}\right\rfloor \asymp_\theta V,
+\]
+so that $X^k \le T$. By Markov's inequality and Lemma~\ref{lem:moments}(i) (using $\log\log X \le \log\log T$),
+\[
+  \frac{1}{T}\meas\left\{t \in [T,2T] : |P_{\theta,\Delta}^{(1)}(t,\chi)| \ge \frac{V}{4}\right\}
+  \le \left(\frac{4}{V}\right)^{2k}(B_\theta k\log\log X)^k
+  \le \left(\frac{C'_\theta V\log\log T}{V^2}\right)^k
+  = \left(\frac{C'_\theta\log\log T}{V}\right)^k.
+\]
+Increasing $A_\theta$ if necessary so that $A_\theta \ge e C'_\theta$, we obtain $\exp\bigl(-c_\theta V\log(\frac{V}{\log\log T})\bigr)$, completing the proof.
+\end{proof}
+
+\begin{proof}[Proof of Theorem~\ref{thm:q_large_dev} and Corollary~\ref{cor:S_large_dev}]
+The proof of Theorem~\ref{thm:q_large_dev} is identical to that of Theorem~\ref{thm:t_large_dev}, replacing $\log(q(2T+2))$ by $\log(q(|t_0|+2))$, setting $k := \lfloor\frac{\log q}{\log X}\rfloor - 1$ (so $X^k < q$), and applying Lemma~\ref{lem:moments}(ii) in place of Lemma~\ref{lem:moments}(i). For any $q \ge 3$ with $\phi^*(q) \ge 1$, writing $\phi(q) = q\prod_{p\mid q}(1-\frac{1}{p})$ and $\phi^*(q) = q\prod_{p\parallel q}(1-\frac{2}{p})\prod_{p^2\mid q}(1-\frac{1}{p})$ gives
+\[
+  \frac{\phi(q)}{\phi^*(q)} = \prod_{p\parallel q}\frac{p-1}{p-2}\prod_{p^2\mid q}\frac{p}{p-1} \le 2\prod_{\substack{p\mid q\\ p\ge 3}}\frac{p-1}{p-2} \ll \log\log q,
+\]
+since $\frac{p}{p-1} < \frac{p-1}{p-2}$ for all $p \ge 3$ and $\frac{2}{2-1} = 2$ if $4 \mid q$ (while $2 \nparallel q$ when $\phi^*(q) \ge 1$). This $\log\log q$ factor is absorbed into $B_\theta^k$ for $k \gg_\theta \log\log q$.
+
+Finally, Corollary~\ref{cor:S_large_dev} follows by applying the same argument directly to $\pm\pi S(t,\chi)$ using the odd Beurling--Selberg majorant and minorant $M_{\pi/2,\Delta}^\pm$ of $K_{\pi/2}(x) = \arctan(1/x) - \frac{x}{x^2+1}$ from~\cite{CCM2013}, which satisfy $\|M_{\pi/2,\Delta}^\pm - K_{\pi/2}\|_{L^1(\R)} = \frac{\pi}{2\Delta} + O(e^{-2\pi\Delta})$ and $\sup_{x\in\R}((1+x^2)|M_{\pi/2,\Delta}^\pm(x)|) = O(1)$. Since $\widehat{K_{\pi/2}}(0) = 0$ and $|\widehat{K_{\pi/2}}(\xi)| \ll |\xi|^{-1}$ for $|\xi| \ge \frac{\log 2}{2\pi}$ by Lemma~\ref{lem:K_fourier}, Lemmas~\ref{lem:K_fourier}, \ref{lem:prime_powers}, and~\ref{lem:moments} and the Markov moment bound hold verbatim, yielding Corollary~\ref{cor:S_large_dev}.
+\end{proof}
+
+\section*{Author Contributions and AI Disclosure}
+This manuscript is the result of a human--AI research collaboration between the author (Prince Anand) and Gemini 4. The author formulated the research objectives, directed the mathematical investigation, and independently verified all definitions, lemmas, proofs, asymptotic estimates, and final results for mathematical correctness and completeness, assuming full scholarly responsibility for the contents of the paper. Gemini 4 assisted in developing the analytical derivations, conducting symbolic and numerical checks, and drafting the manuscript in \LaTeX.
+
+\begin{thebibliography}{99}
+
+\bibitem{CCM2013}
+E. Carneiro, V. Chandee, and M. B. Milinovich, \emph{Bounding $S(t)$ and $S_1(t)$ on the Riemann hypothesis}, Math. Ann. \textbf{356} (2013), no.~3, 939--968.
+
+\bibitem{CCM2015}
+E. Carneiro, V. Chandee, and M. B. Milinovich, \emph{A note on the zeros of zeta and $L$-functions}, Math. Z. \textbf{281} (2015), 315--332.
+
+\bibitem{CarneiroLittmann2013}
+E. Carneiro and F. Littmann, \emph{Bandlimited approximations to the truncated Gaussian and applications}, Constr. Approx. \textbf{38} (2013), no.~1, 19--57.
+
+\bibitem{CarneiroVaaler2010}
+E. Carneiro and J. D. Vaaler, \emph{Some extremal functions in Fourier analysis. II}, Trans. Amer. Math. Soc. \textbf{362} (2010), no.~11, 5803--5843.
+
+\bibitem{Chandee2009}
+V. Chandee, \emph{Explicit upper bounds for $L$-functions on the critical line}, Proc. Amer. Math. Soc. \textbf{137} (2009), 4049--4063.
+
+\bibitem{ChandeeSoundararajan2011}
+V. Chandee and K. Soundararajan, \emph{Bounding $|\zeta(\frac{1}{2}+it)|$ on the Riemann hypothesis}, Bull. Lond. Math. Soc. \textbf{43} (2011), no.~2, 243--250.
+
+\bibitem{Davenport2000}
+H. Davenport, \emph{Multiplicative Number Theory}, 3rd ed., Graduate Texts in Mathematics, vol.~74, Springer, New York, 2000.
+
+\bibitem{FGH2007}
+D. W. Farmer, S. M. Gonek, and C. P. Hughes, \emph{The maximum size of $L$-functions}, J. Reine Angew. Math. \textbf{609} (2007), 215--236.
+
+\bibitem{Harper2013}
+A. J. Harper, \emph{Sharp conditional bounds for moments of the Riemann zeta function}, preprint (2013), arXiv:1305.4618.
+
+\bibitem{Littlewood1924}
+J. E. Littlewood, \emph{On the zeros of the Riemann zeta-function}, Proc. Cambridge Philos. Soc. \textbf{22} (1924), 295--318.
+
+\bibitem{MontgomeryVaughan1974}
+H. L. Montgomery and R. C. Vaughan, \emph{Hilbert's inequality}, J. London Math. Soc. (2) \textbf{8} (1974), 73--82.
+
+\bibitem{Radziwill2011}
+M. Radziwi\l\l{}, \emph{Large deviations in Selberg's central limit theorem}, preprint (2011), arXiv:1108.5092.
+
+\bibitem{Soundararajan2009}
+K. Soundararajan, \emph{Moments of the Riemann zeta function}, Ann. of Math. (2) \textbf{170} (2009), no.~2, 981--993.
+
+\bibitem{Vaaler1985}
+J. D. Vaaler, \emph{Some extremal functions in Fourier analysis}, Bull. Amer. Math. Soc. (N.S.) \textbf{12} (1985), no.~2, 183--216.
+
+\end{thebibliography}
+
+\end{document}
