@@ -704,7 +704,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
         have hlog2_le : Real.log 2 ≤ 1 := by
           have he : (2 : ℝ) ≤ Real.exp 1 := by linarith [Real.add_one_le_exp (1 : ℝ)]
           rw [← Real.log_exp 1]; exact Real.log_le_log (by norm_num) he
-        rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; linarith
+        rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; norm_num; linarith
       have hΔ_pos : 0 < Δ := by linarith
       have hpi_lt : Real.pi < 4 := Real.pi_lt_four
       calc (1 / Δ) * ∑ p ∈ _, Real.log p / p
@@ -839,7 +839,8 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
       rw [abs_mul, abs_mul, abs_of_pos (by positivity : 0 < 1 / (2 * Real.pi)),
         abs_of_nonneg (div_nonneg h_vm_nonneg (Real.sqrt_nonneg n))]
       calc (1 / (2 * Real.pi)) * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) * |(_).re|
-          ≤ (1 / (2 * Real.pi)) * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) * (2 * max C_L1 1) := by gcongr
+          ≤ (1 / (2 * Real.pi)) * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) * (2 * max C_L1 1) :=
+            mul_le_mul_of_nonneg_left h_re_bd (by positivity)
         _ = ((1 / (2 * Real.pi)) * 2) * max C_L1 1 * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) := by ring
         _ ≤ 1 * max C_L1 1 * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) := by gcongr
         _ = max C_L1 1 * ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) := one_mul _
@@ -875,9 +876,9 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
       refine Finset.mem_image.mpr ⟨(p, k), ?_, rfl⟩
       simp only [S_pk, Finset.mem_product, Finset.mem_filter, Finset.mem_Icc]
       exact ⟨⟨⟨hp.two_le, hp_le_N⟩, hp⟩, ⟨hk3, hk_le_N⟩⟩
-    have h_sum_img_le : ∀ {α β : Type*} [DecidableEq β] (s : Finset α) (φ : α → β) (g : β → ℝ),
+    have h_sum_img_le : ∀ {α β : Type*} [DecidableEq α] [DecidableEq β] (s : Finset α) (φ : α → β) (g : β → ℝ),
         (∀ x ∈ s, 0 ≤ g (φ x)) → ∑ y ∈ s.image φ, g y ≤ ∑ x ∈ s, g (φ x) := by
-      intro α β _ s φ g hg
+      intro α β _ _ s φ g hg
       induction s using Finset.induction_on with
       | empty => simp
       | @insert a s ha ih =>
@@ -919,7 +920,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
           simp only [Finset.mem_Icc] at hk
           dsimp only
           rw [ArithmeticFunction.vonMangoldt_apply_pow (by omega : k ≠ 0),
-            ArithmeticFunction.vonMangoldt_apply_prime hp.2, Nat.cast_pow,
+            ArithmeticFunction.vonMangoldt_apply_prime hp.2,
             Real.sqrt_pow (Nat.cast_nonneg p), one_div, inv_pow, div_eq_mul_inv]
       _ ≤ max C_L1 1 * ∑ p ∈ (Finset.Icc 2 N).filter Nat.Prime, 16 * (p : ℝ) ^ (-5 / 4 : ℝ) := by
           refine mul_le_mul_of_nonneg_left (Finset.sum_le_sum fun p hp => ?_) (by positivity)
@@ -1004,7 +1005,7 @@ lemma prime_tuple_fiber_card (S : Finset ℕ) (hS : ∀ p ∈ S, Nat.Prime p) (k
         have hp_prime : Nat.Prime p := Nat.prime_of_mem_primeFactors hp
         have hp_dvd_n : p ∣ n := Nat.dvd_of_mem_primeFactors hp
         have hp_dvd : p ∣ ∏ i : Fin (k + 1), f₀ i := by rw [hf₀.2]; exact hp_dvd_n
-        obtain ⟨i, _, hi⟩ := hp_prime.dvd_finset_prod_iff.mp hp_dvd
+        obtain ⟨i, _, hi⟩ := (Nat.prime_iff.mp hp_prime).dvd_finset_prod_iff.mp hp_dvd
         have hpeq : p = f₀ i := (Nat.prime_dvd_prime_iff_eq hp_prime (hS _ (hf₀.1 i))).mp hi
         exact Finset.mem_image.mpr ⟨i, Finset.mem_univ i, hpeq.symm⟩
       have hpf_card : n.primeFactors.card ≤ k + 1 :=
@@ -1015,7 +1016,7 @@ lemma prime_tuple_fiber_card (S : Finset ℕ) (hS : ∀ p ∈ S, Nat.Prime p) (k
         refine Finset.mem_biUnion.mpr ⟨f 0, ?_,
           Finset.mem_filter.mpr ⟨Finset.mem_filter.mpr ⟨Fintype.mem_piFinset.mpr hf.1, hf.2⟩, rfl⟩⟩
         rw [Nat.mem_primeFactors]
-        refine ⟨Nat.prime_iff.mp (hS _ (hf.1 0)), ?_, hn_pos.ne'⟩
+        refine ⟨hS _ (hf.1 0), ?_, hn_pos.ne'⟩
         rw [← hf.2]
         exact Finset.dvd_prod_of_mem f (Finset.mem_univ 0)
       have h_fiber : ∀ p ∈ n.primeFactors, (F.filter (fun f => f 0 = p)).card ≤ k.factorial := by
@@ -1032,9 +1033,9 @@ lemma prime_tuple_fiber_card (S : Finset ℕ) (hS : ∀ p ∈ S, Nat.Prime p) (k
             have hf2 : (∏ i, f i) = n := (Finset.mem_filter.mp hf.1).2
             refine ⟨fun i => hf1 i.succ, ?_⟩
             have hprod : p * ∏ i : Fin k, f i.succ = n := by
-              rw [← hf2, ← Fin.prod_univ_succ, hf.2]
+              rw [← hf2, Fin.prod_univ_succ, hf.2]
             have hp_pos : 0 < p := (Nat.prime_of_mem_primeFactors hp).pos
-            exact (Nat.eq_div_of_mul_eq_right hp_pos.ne' hprod).symm
+            dsimp only; exact (Nat.eq_div_of_mul_eq_right hp_pos.ne' hprod).symm
           · intro f₁ hf₁ f₂ hf₂ heq
             rw [Finset.mem_coe, Finset.mem_filter] at hf₁ hf₂
             funext i
@@ -1116,7 +1117,6 @@ lemma prime_l2_sum_bound (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2) (hΔ
           ≤ (Real.log p / Real.sqrt p) * (C_dec * (1 / Real.log p + 1 / Δ)) := by gcongr
         _ = C_dec * (1 / Real.sqrt p + Real.log p / (Δ * Real.sqrt p)) := by
             field_simp [hlogp_pos.ne', (Real.sqrt_pos.mpr hp_pos).ne', (by linarith : Δ ≠ 0)]
-            ring
     have h_sq_le : ∀ a b : ℝ, (a + b) ^ 2 ≤ 2 * (a ^ 2 + b ^ 2) := fun a b => by
       nlinarith [sq_nonneg (a - b)]
     calc ((Real.log p / Real.sqrt p) * max _ _) ^ 2
@@ -1158,7 +1158,7 @@ lemma prime_l2_sum_bound (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2) (hΔ
       have hlog2_le : Real.log 2 ≤ 1 := by
         have he : (2 : ℝ) ≤ Real.exp 1 := by linarith [Real.add_one_le_exp (1 : ℝ)]
         rw [← Real.log_exp 1]; exact Real.log_le_log (by norm_num) he
-      rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; linarith
+      rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.log_pow]; norm_num; linarith
     calc ∑ p ∈ (Finset.Icc 2 P).filter Nat.Prime, (Real.log p) ^ 2 / (Δ ^ 2 * p)
         ≤ ∑ p ∈ (Finset.Icc 2 P).filter Nat.Prime, (2 * Real.pi / Δ) * (Real.log p / p) :=
           Finset.sum_le_sum hterm1
@@ -1380,7 +1380,6 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
             exact le_max_left _ _
         _ ≤ max C₂ 1 * ((k : ℝ) ^ k * (C_l2 * Real.log (Real.log X)) ^ k) := by
             gcongr
-            exact Finset.sum_nonneg (fun _ _ => sq_nonneg _)
         _ ≤ (max C₂ 1) ^ k * ((k : ℝ) ^ k * (C_l2 * Real.log (Real.log X)) ^ k) := by
             have hloglogX_nonneg : 0 ≤ Real.log (Real.log X) := by
               rw [show Real.log X = 2 * Real.pi * Δ from Real.log_exp _]
@@ -1439,7 +1438,7 @@ theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2)
     calc (1 / T) * ∫ t in Set.Icc T (2 * T), |primeSum1 q χ h_hat X t| ^ (2 * k)
         ≤ (1 / T) * ∫ t in Set.Icc T (2 * T), 4 ^ k * (‖D₁ t‖ ^ (2 * k) + ‖D₂ t‖ ^ (2 * k)) := by
           gcongr
-          exact setIntegral_mono_on hP_int hRHS_int measurableSet_Icc.nullMeasurableSet (fun t _ => h_ptwise t)
+          exact setIntegral_mono_on hP_int hRHS_int measurableSet_Icc (fun t _ => h_ptwise t)
       _ = 4 ^ k * ((1 / T) * (∫ t in Set.Icc T (2 * T), ‖D₁ t‖ ^ (2 * k)) +
             (1 / T) * (∫ t in Set.Icc T (2 * T), ‖D₂ t‖ ^ (2 * k))) := by
           have hint_add : ∫ t in Set.Icc T (2 * T), (‖D₁ t‖ ^ (2 * k) + ‖D₂ t‖ ^ (2 * k)) =
