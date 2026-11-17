@@ -377,10 +377,10 @@ lemma kernelK_zero_lorentz_fourier (u : ℝ) (hu : 0 < u) (ξ : ℝ) :
     have hc₂' : (-↑u + Complex.I * ↑x : ℂ) ≠ 0 := by
       intro h; have := congr_arg Complex.re h; simp at this; linarith
     have hden' : (u ^ 2 + x ^ 2 : ℂ) ≠ 0 := by norm_cast; positivity
+    have hx_u : x ^ 2 + u ^ 2 ≠ 0 := by positivity
     field_simp [Real.pi_ne_zero, hc₁_ne, hc₂_ne, hden, hden']
-    field_simp [hc₁', hc₂', hden, hden']
-    simp_rw [Complex.I_sq]
-    push_cast; ring
+    apply Complex.ext <;> simp [Complex.div_re, Complex.div_im, Complex.inv_re, Complex.inv_im, Complex.normSq_apply] <;>
+      field_simp [hx_u] <;> ring
   have hFg_int : Integrable (𝓕 g) := by
     have heq : 𝓕 g = fun x : ℝ => ((u / (x ^ 2 + u ^ 2) : ℝ) : ℂ) := funext hFg
     rw [heq]
@@ -577,11 +577,11 @@ lemma kernelK_pi_half_lorentz_fourier (u : ℝ) (hu : 0 < u) (hu1 : u < 1) (ξ :
     have hden_exp : (x ^ 2 + x ^ 2 * u ^ 2 + x ^ 4 + u ^ 2 : ℂ) ≠ 0 := by
       have : (x ^ 2 + x ^ 2 * u ^ 2 + x ^ 4 + u ^ 2 : ℂ) = (x ^ 2 + u ^ 2) * (x ^ 2 + 1) := by ring
       rw [this]; exact hden
+    have hx_u : x ^ 2 + u ^ 2 ≠ 0 := by positivity
+    have hx_1 : x ^ 2 + 1 ≠ 0 := by positivity
     field_simp [Real.pi_ne_zero, hcu1_ne, hcu2_ne, hc11_ne, hc12_ne, hden, d1, d2, d3, d4]
-    field_simp [d1, d2, d3, d4, hden, hden_exp]
-    have hI3 : (Complex.I : ℂ) ^ 3 = -Complex.I := by rw [pow_succ, Complex.I_sq]; ring
-    simp_rw [Complex.I_sq, hI3]
-    push_cast; ring
+    apply Complex.ext <;> simp [Complex.div_re, Complex.div_im, Complex.inv_re, Complex.inv_im, Complex.normSq_apply] <;>
+      field_simp [hx_u, hx_1] <;> ring
   have hFg_int : Integrable (𝓕 g) := by
     have heq : 𝓕 g = fun x : ℝ => -((x * (1 - u ^ 2) / ((x ^ 2 + u ^ 2) * (x ^ 2 + 1)) : ℝ) : ℂ) := funext hFg
     rw [heq]
