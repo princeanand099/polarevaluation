@@ -65,6 +65,105 @@ lemma scale_pos_of_ge_100 {x : ℝ} (hx : 100 ≤ x) :
     linarith [Real.one_lt_exp_iff.mpr one_pos]
   positivity
 
+lemma sum_inv_sqrt_le (N : ℕ) :
+    ∑ n ∈ Finset.Icc 1 N, (1 : ℝ) / Real.sqrt n ≤ 2 * Real.sqrt N := by
+  induction N with
+  | zero => simp
+  | succ k ih =>
+    have hIcc : Finset.Icc 1 (k + 1) = insert (k + 1) (Finset.Icc 1 k) := by
+      ext m; simp only [Finset.mem_Icc, Finset.mem_insert]; omega
+    have hnot : k + 1 ∉ Finset.Icc 1 k := by simp
+    rw [hIcc, Finset.sum_insert hnot]
+    have hstep : (1 : ℝ) / Real.sqrt (k + 1 : ℕ) ≤ 2 * (Real.sqrt (k + 1 : ℕ) - Real.sqrt k) := by
+      have hk1 : (0 : ℝ) < Real.sqrt (k + 1 : ℕ) := Real.sqrt_pos.mpr (by positivity)
+      have hdiff : Real.sqrt (k + 1 : ℕ) ^ 2 - Real.sqrt k ^ 2 = 1 := by
+        rw [Real.sq_sqrt (by positivity), Real.sq_sqrt (by positivity)]
+        push_cast; ring
+      have hfac : (Real.sqrt (k + 1 : ℕ) - Real.sqrt k) * (Real.sqrt (k + 1 : ℕ) + Real.sqrt k) = 1 := by
+        linarith [hdiff]
+      have hsum_le : Real.sqrt (k + 1 : ℕ) + Real.sqrt k ≤ 2 * Real.sqrt (k + 1 : ℕ) := by
+        have : Real.sqrt k ≤ Real.sqrt (k + 1 : ℕ) := Real.sqrt_le_sqrt (by exact_mod_cast Nat.le_succ k)
+        linarith
+      have hsum_pos : 0 < Real.sqrt (k + 1 : ℕ) + Real.sqrt k := by positivity
+      calc (1 : ℝ) / Real.sqrt (k + 1 : ℕ)
+          ≤ 2 / (Real.sqrt (k + 1 : ℕ) + Real.sqrt k) := by
+            rw [div_le_div_iff₀ hk1 hsum_pos]; linarith
+        _ = 2 * (Real.sqrt (k + 1 : ℕ) - Real.sqrt k) := by
+            rw [← hfac]; field_simp [hsum_pos.ne']; ring
+    linarith
+
+lemma primePowerSum_abs_le (q : ℕ) [NeZero q] (χ : DirichletCharacter ℂ q) (h_hat : ℝ → ℂ)
+    (B X t : ℝ) (hB : 0 ≤ B) (hX : 2 ≤ X) (h_bd : ∀ ξ : ℝ, ‖h_hat ξ‖ ≤ B) :
+    |primePowerSum q χ h_hat X t| ≤ (2 * B / Real.pi) * Real.log X * Real.sqrt X := by
+  unfold primePowerSum
+  rw [abs_mul, abs_of_pos (by positivity : (0 : ℝ) < 1 / (2 * Real.pi))]
+  have hsum_le : |∑ n ∈ Finset.Icc 2 (Nat.floor X),
+      ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) *
+        (χ n * h_hat (-(Real.log n / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log n) +
+         star (χ n) * h_hat (Real.log n / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log n)).re| ≤
+      4 * B * Real.log X * Real.sqrt X := by
+    calc |∑ n ∈ Finset.Icc 2 (Nat.floor X), _|
+        ≤ ∑ n ∈ Finset.Icc 2 (Nat.floor X),
+            |((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) *
+              (χ n * h_hat (-(Real.log n / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log n) +
+               star (χ n) * h_hat (Real.log n / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log n)).re| :=
+          Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ n ∈ Finset.Icc 2 (Nat.floor X), (2 * B * Real.log X) * ((1 : ℝ) / Real.sqrt n) := by
+          refine Finset.sum_le_sum fun n hn => ?_
+          have hn2 : 2 ≤ n := (Finset.mem_Icc.mp hn).1
+          have hn_le : (n : ℝ) ≤ X := (Nat.le_floor_iff (by positivity)).mp (Finset.mem_Icc.mp hn).2
+          have hlog_le : Real.log n ≤ Real.log X := Real.log_le_log (by positivity) hn_le
+          have hvm_nonneg : 0 ≤ (ArithmeticFunction.vonMangoldt n : ℝ) := ArithmeticFunction.vonMangoldt_nonneg
+          have hvm_le : (ArithmeticFunction.vonMangoldt n : ℝ) ≤ Real.log X :=
+            ArithmeticFunction.vonMangoldt_le_log.trans hlog_le
+          have hχ_norm : ‖χ n‖ ≤ 1 := by
+            by_cases hunit : IsUnit (n : ZMod q)
+            · have h1 := χ.norm_eq_one_of_isUnit hunit
+              linarith
+            · rw [MulChar.map_nonunit _ hunit, norm_zero]
+              norm_num
+          have hexp1 : ‖Complex.exp (-Complex.I * t * Real.log n)‖ = 1 := by
+            have : -Complex.I * (t : ℂ) * Real.log n = ((-t * Real.log n : ℝ) : ℂ) * Complex.I := by
+              push_cast; ring
+            rw [this, Complex.norm_exp_ofReal_mul_I]
+          have hexp2 : ‖Complex.exp (Complex.I * t * Real.log n)‖ = 1 := by
+            have : Complex.I * (t : ℂ) * Real.log n = ((t * Real.log n : ℝ) : ℂ) * Complex.I := by
+              push_cast; ring
+            rw [this, Complex.norm_exp_ofReal_mul_I]
+          have hre_le : |(χ n * h_hat (-(Real.log n / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log n) +
+              star (χ n) * h_hat (Real.log n / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log n)).re| ≤ 2 * B := by
+            refine (Complex.abs_re_le_norm _).trans ?_
+            refine (norm_add_le _ _).trans ?_
+            have ht1 : ‖χ n * h_hat (-(Real.log n / (2 * Real.pi))) * Complex.exp (-Complex.I * t * Real.log n)‖ ≤ B := by
+              rw [norm_mul, norm_mul, hexp1, mul_one]
+              calc ‖χ n‖ * ‖h_hat _‖ ≤ 1 * B := mul_le_mul hχ_norm (h_bd _) (norm_nonneg _) zero_le_one
+                _ = B := one_mul B
+            have ht2 : ‖star (χ n) * h_hat (Real.log n / (2 * Real.pi)) * Complex.exp (Complex.I * t * Real.log n)‖ ≤ B := by
+              rw [norm_mul, norm_mul, hexp2, mul_one, norm_star]
+              calc ‖χ n‖ * ‖h_hat _‖ ≤ 1 * B := mul_le_mul hχ_norm (h_bd _) (norm_nonneg _) zero_le_one
+                _ = B := one_mul B
+            linarith
+          rw [abs_mul, abs_of_nonneg (div_nonneg hvm_nonneg (Real.sqrt_nonneg _))]
+          calc ((ArithmeticFunction.vonMangoldt n : ℝ) / Real.sqrt n) * |_.re|
+              ≤ (Real.log X / Real.sqrt n) * (2 * B) := by
+                gcongr
+            _ = (2 * B * Real.log X) * ((1 : ℝ) / Real.sqrt n) := by ring
+      _ = (2 * B * Real.log X) * ∑ n ∈ Finset.Icc 2 (Nat.floor X), (1 : ℝ) / Real.sqrt n := by
+          rw [← Finset.mul_sum]
+      _ ≤ (2 * B * Real.log X) * (2 * Real.sqrt (Nat.floor X)) := by
+          gcongr
+          have hsub : Finset.Icc 2 (Nat.floor X) ⊆ Finset.Icc 1 (Nat.floor X) := by
+            intro m hm; simp only [Finset.mem_Icc] at hm ⊢; omega
+          exact (Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => by positivity)).trans
+            (sum_inv_sqrt_le (Nat.floor X))
+      _ ≤ (2 * B * Real.log X) * (2 * Real.sqrt X) := by
+          gcongr
+          exact Nat.floor_le (by positivity)
+      _ = 4 * B * Real.log X * Real.sqrt X := by ring
+  calc (1 / (2 * Real.pi)) * |∑ n ∈ Finset.Icc 2 (Nat.floor X), _|
+      ≤ (1 / (2 * Real.pi)) * (4 * B * Real.log X * Real.sqrt X) := by gcongr
+    _ = (2 * B / Real.pi) * Real.log X * Real.sqrt X := by ring
+
 /-- **Theorem 1.1** (Pointwise directional envelope). -/
 theorem directional_envelope_bound (D : LFunctionData) (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ (Q₀ C_err : ℝ), Q₀ ≥ 100 ∧ C_err > 0 ∧
@@ -75,7 +174,324 @@ theorem directional_envelope_bound (D : LFunctionData) (θ : ℝ) (hθ : |θ| < 
             (envelopeC θ + C_err * Real.log (Real.log (Real.log (analyticConductor q t))) /
               Real.log (Real.log (analyticConductor q t))) *
               (Real.log (analyticConductor q t) / Real.log (Real.log (analyticConductor q t))) := by
-  sorry
+  obtain ⟨C₀, hC₀_pos, h_hzs⟩ := horizontal_zero_sum D
+  obtain ⟨C₁, hC₁_pos, h_gw⟩ := guinand_weil_bandlimited D
+  obtain ⟨Δ₀, C_sup, C_L1, C_err_M, hΔ₀, hC_sup, hC_L1, hC_err_M, h_maj⟩ := asymmetric_majorant θ hθ
+  obtain ⟨Q_16, hQ_16, hlll_16⟩ := logloglog_div_loglog_lt (1 / 6) (by norm_num)
+  let L₀ : ℝ := max 100 (2 * Real.pi * Δ₀ + 2 * Real.pi)
+  let Q₀ : ℝ := max (max 100 Q_16) (Real.exp (Real.exp L₀))
+  let C_err : ℝ := 6 * |envelopeC θ| + C_err_M / (2 * Real.pi) + 4 * C_L1 / Real.pi +
+    2 * C₁ * C_sup + C₀ + 1
+  refine ⟨Q₀, C_err, le_trans (by norm_num) (le_trans (le_max_left _ _) (le_max_left _ _)),
+    by positivity, fun q hq χ hχ hGRH t ht hcond => ?_⟩
+  haveI : NeZero q := ⟨by omega⟩
+  set Q : ℝ := analyticConductor q t
+  have hQ_ge_100 : 100 ≤ Q := le_trans (le_trans (by norm_num) (le_max_left _ _)) (le_trans (le_max_left _ _) hcond)
+  have hQ_ge_Q16 : Q_16 ≤ Q := le_trans (le_max_right _ _) (le_trans (le_max_left _ _) hcond)
+  have hQ_ge_exp : Real.exp (Real.exp L₀) ≤ Q := le_trans (le_max_right _ _) hcond
+  have hL_ge : L₀ ≤ Real.log (Real.log Q) := by
+    have h1 : Real.exp L₀ ≤ Real.log Q := by
+      rw [← Real.log_exp (Real.exp L₀)]
+      exact Real.log_le_log (Real.exp_pos _) hQ_ge_exp
+    rw [← Real.log_exp L₀]
+    exact Real.log_le_log (Real.exp_pos _) h1
+  set L : ℝ := Real.log (Real.log Q)
+  set LL : ℝ := Real.log L
+  have hL_ge_100 : 100 ≤ L := le_trans (le_max_left _ _) hL_ge
+  have hL_pos : 0 < L := by linarith
+  have hLL_ge_1 : 1 ≤ LL := by
+    have : Real.exp 1 ≤ 100 := by
+      have he : Real.exp 1 < 3 := Real.exp_one_lt_d9.trans (by norm_num)
+      linarith
+    rw [← Real.log_exp 1]
+    exact Real.log_le_log (Real.exp_pos 1) (this.trans hL_ge_100)
+  have hLL_div_L : LL / L < 1 / 6 := (hlll_16 Q hQ_ge_Q16).2
+  have h_piΔ_ge : L / 2 ≤ L - 3 * LL := by
+    have : 3 * LL ≤ L / 2 := by
+      have h1 : LL < (1 / 6) * L := (div_lt_iff₀ hL_pos).mp hLL_div_L
+      linarith
+    linarith
+  set Δ : ℝ := (L - 3 * LL) / Real.pi
+  have hΔ_ge_Δ₀ : Δ₀ ≤ Δ := by
+    have hL_ge_2pi : 2 * Real.pi * Δ₀ ≤ L / 2 := by
+      have : 2 * Real.pi * Δ₀ + 2 * Real.pi ≤ L := le_trans (le_max_right _ _) hL_ge
+      nlinarith [Real.pi_pos]
+    dsimp only [Δ]
+    rw [le_div_iff₀ Real.pi_pos]
+    linarith
+  have hΔ_ge_1 : 1 ≤ Δ := le_trans hΔ₀ hΔ_ge_Δ₀
+  have hΔ_pos : 0 < Δ := by linarith
+  obtain ⟨α, M_entire, hα, hM_exp, hM_real, hM_int, hM_sup, hM_L1, hM_maj, hM_err⟩ := h_maj Δ hΔ_ge_Δ₀
+  have hq1_t : q = 1 → |t| ≥ 10 := by
+    intro hq1
+    have : Q = |t| + 2 := by simp [Q, analyticConductor, hq1]
+    linarith
+  obtain ⟨hsumm_K, h_hzs_bd⟩ := h_hzs q hq χ hχ hGRH θ hθ t ht hq1_t
+  have hM_im : ∀ x : ℝ, (M_entire x).im = 0 := fun x => (hM_real x).1
+  have hM_sup_bd : ∀ x : ℝ, ‖M_entire x‖ ≤ (C_sup * Real.log Δ) / (1 + x ^ 2) := by
+    intro x
+    have hnorm : ‖M_entire x‖ = |majorantM θ Δ α x| := by
+      have hre : M_entire x = ((majorantM θ Δ α x : ℝ) : ℂ) := by
+        apply Complex.ext
+        · simp [(hM_real x).2]
+        · simp [(hM_real x).1]
+      rw [hre, Complex.norm_real, Real.norm_eq_abs]
+    rw [hnorm, le_div_iff₀ (by positivity : (0 : ℝ) < 1 + x ^ 2), mul_comm]
+    exact hM_sup x
+  have hM_sup_nonneg : 0 ≤ C_sup * Real.log Δ :=
+    mul_nonneg hC_sup.le (Real.log_nonneg hΔ_ge_1)
+  obtain ⟨hsumm_M, h_gw_bd⟩ := h_gw q hq χ hχ hGRH M_entire Δ (C_sup * Real.log Δ)
+    hΔ_ge_1 hM_sup_nonneg hM_exp hM_sup_bd hM_im t hq1_t
+  have h_sum_le : ∑' n : ℕ, kernelK θ (t - D.zeros q χ n) ≤
+      ∑' n : ℕ, (M_entire (t - D.zeros q χ n)).re := by
+    refine Summable.tsum_le_tsum (fun n => ?_) hsumm_K hsumm_M
+    have hne : t - D.zeros q χ n ≠ 0 := sub_ne_zero.mpr (D.nonvanishing_zeros q χ t ht n)
+    rw [(hM_real _).2]
+    exact hM_maj _ hne
+  have hK_int_val : ∫ x : ℝ, kernelK θ x = -Real.pi * Real.cos θ := by
+    have h0 := (kernelK_fourier θ hθ.le).1
+    unfold fourierHat at h0
+    simp only [Complex.ofReal_zero, mul_zero, zero_mul, Complex.exp_zero, mul_one] at h0
+    have heq : (∫ x : ℝ, (kernelK θ x : ℂ)) = ((∫ x : ℝ, kernelK θ x : ℝ) : ℂ) := integral_ofReal
+    rw [heq] at h0
+    exact Complex.ofReal_injective (by simpa using h0)
+  have hM_int_split : ∫ x : ℝ, (M_entire x).re =
+      (∫ x : ℝ, majorantM θ Δ α x - kernelK θ x) + (-Real.pi * Real.cos θ) := by
+    have heq_M : (fun x : ℝ => (M_entire x).re) = fun x => majorantM θ Δ α x := funext fun x => (hM_real x).2
+    rw [heq_M, ← hK_int_val]
+    have hK_int := kernelK_integrable θ
+    rw [← integral_add hM_int hK_int]
+    congr 1; ext x; ring
+  have h_gw_upper : ∑' n : ℕ, (M_entire (t - D.zeros q χ n)).re ≤
+      (Real.log Q / (2 * Real.pi)) * (∫ x : ℝ, (M_entire x).re) -
+        primePowerSum q χ (fourierHat (fun x : ℝ => M_entire x)) (Real.exp (2 * Real.pi * Δ)) t +
+        C₁ * (C_sup * Real.log Δ +
+          (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * (C_sup * Real.log Δ) else 0)) := by
+    linarith [(abs_le.mp h_gw_bd).2]
+  have h_hzs_upper : polarLogL D q χ t θ ≤
+      (Real.cos θ / 2) * Real.log Q + ∑' n : ℕ, kernelK θ (t - D.zeros q χ n) + C₀ := by
+    linarith [(abs_le.mp h_hzs_bd).2]
+  have h_main_int_bd : (Real.log Q / (2 * Real.pi)) * (∫ x : ℝ, (M_entire x).re) ≤
+      -(Real.cos θ / 2) * Real.log Q +
+        envelopeC θ * (Real.log Q / (Real.pi * Δ)) +
+        (Real.log Q / (2 * Real.pi)) * (C_err_M * Real.exp (-2 * Real.pi * Δ)) := by
+    rw [hM_int_split]
+    have h_err_upper : ∫ x : ℝ, majorantM θ Δ α x - kernelK θ x ≤
+        2 * envelopeC θ / Δ + C_err_M * Real.exp (-2 * Real.pi * Δ) := by
+      linarith [(abs_le.mp hM_err).2]
+    have hlogQ_nonneg : 0 ≤ Real.log Q / (2 * Real.pi) :=
+      div_nonneg (Real.log_nonneg (by linarith)) (by positivity)
+    calc (Real.log Q / (2 * Real.pi)) * ((∫ x : ℝ, majorantM θ Δ α x - kernelK θ x) + (-Real.pi * Real.cos θ))
+        ≤ (Real.log Q / (2 * Real.pi)) * ((2 * envelopeC θ / Δ + C_err_M * Real.exp (-2 * Real.pi * Δ)) + (-Real.pi * Real.cos θ)) := by
+          gcongr
+      _ = -(Real.cos θ / 2) * Real.log Q + envelopeC θ * (Real.log Q / (Real.pi * Δ)) +
+            (Real.log Q / (2 * Real.pi)) * (C_err_M * Real.exp (-2 * Real.pi * Δ)) := by
+          field_simp [Real.pi_ne_zero]; ring
+  set X : ℝ := Real.exp (2 * Real.pi * Δ)
+  have hX_eq : X = Real.log Q ^ 2 / L ^ 6 := by
+    dsimp only [X, Δ]
+    rw [show 2 * Real.pi * ((L - 3 * LL) / Real.pi) = 2 * L - 6 * LL by field_simp [Real.pi_ne_zero]; ring,
+      Real.exp_sub, Real.exp_nat_mul, show (6 : ℕ) * LL = 6 * LL by ring]
+    simp only [L, LL]
+    rw [Real.exp_log (by linarith), Real.exp_nat_mul, Real.exp_log hL_pos]
+    ring
+  have hX_ge_2 : 2 ≤ X := by
+    have h1 : 1 ≤ 2 * Real.pi * Δ := by nlinarith [Real.pi_pos]
+    calc (2 : ℝ) ≤ Real.exp 1 := by linarith [Real.exp_one_gt_d9]
+      _ ≤ Real.exp (2 * Real.pi * Δ) := Real.exp_le_exp.mpr h1
+  have h_four_bd : ∀ ξ : ℝ, ‖fourierHat (fun x : ℝ => M_entire x) ξ‖ ≤ C_L1 := by
+    intro ξ
+    unfold fourierHat
+    calc ‖∫ x : ℝ, M_entire x * Complex.exp (-2 * Real.pi * Complex.I * ξ * x)‖
+        ≤ ∫ x : ℝ, ‖M_entire x * Complex.exp (-2 * Real.pi * Complex.I * ξ * x)‖ :=
+          norm_integral_le_integral_norm _
+      _ = ∫ x : ℝ, |majorantM θ Δ α x| := by
+          congr 1; ext x
+          have hn : ‖Complex.exp (-2 * Real.pi * Complex.I * ξ * x)‖ = 1 := by
+            have : -2 * (Real.pi : ℂ) * Complex.I * ↑ξ * ↑x = ((-2 * Real.pi * ξ * x : ℝ) : ℂ) * Complex.I := by
+              push_cast; ring
+            rw [this, Complex.norm_exp_ofReal_mul_I]
+          have hre : M_entire x = ((majorantM θ Δ α x : ℝ) : ℂ) := by
+            apply Complex.ext <;> simp [(hM_real x).1, (hM_real x).2]
+          rw [norm_mul, hn, mul_one, hre, Complex.norm_real, Real.norm_eq_abs]
+      _ ≤ C_L1 := hM_L1
+  have h_pps_bd : |primePowerSum q χ (fourierHat (fun x : ℝ => M_entire x)) X t| ≤
+      (2 * C_L1 / Real.pi) * Real.log X * Real.sqrt X :=
+    primePowerSum_abs_le q χ _ C_L1 X t hC_L1.le hX_ge_2 h_four_bd
+  have h_sqrt_X : Real.sqrt X = Real.log Q / L ^ 3 := by
+    rw [hX_eq, Real.sqrt_div (sq_nonneg _), Real.sqrt_sq (by linarith),
+      show L ^ 6 = (L ^ 3) ^ 2 by ring, Real.sqrt_sq (by positivity)]
+  have h_log_X : Real.log X ≤ 2 * L := by
+    dsimp only [X]
+    rw [Real.log_exp]
+    have : 2 * Real.pi * Δ = 2 * L - 6 * LL := by
+      dsimp only [Δ]; field_simp [Real.pi_ne_zero]; ring
+    linarith
+  have h_pps_scale : |primePowerSum q χ (fourierHat (fun x : ℝ => M_entire x)) X t| ≤
+      (4 * C_L1 / Real.pi) * (LL / L) * (Real.log Q / L) := by
+    have hlogX_nonneg : 0 ≤ Real.log X := Real.log_nonneg (by linarith)
+    calc |primePowerSum q χ (fourierHat (fun x : ℝ => M_entire x)) X t|
+        ≤ (2 * C_L1 / Real.pi) * Real.log X * Real.sqrt X := h_pps_bd
+      _ ≤ (2 * C_L1 / Real.pi) * (2 * L) * (Real.log Q / L ^ 3) := by gcongr
+      _ = (4 * C_L1 / Real.pi) * (1 / L) * (Real.log Q / L) := by
+          field_simp [hL_pos.ne']; ring
+      _ ≤ (4 * C_L1 / Real.pi) * (LL / L) * (Real.log Q / L) := by
+          gcongr
+          exact div_le_div_of_nonneg_right hLL_ge_1 hL_pos.le
+  have h_env_scale : envelopeC θ * (Real.log Q / (Real.pi * Δ)) ≤
+      (envelopeC θ + 6 * |envelopeC θ| * (LL / L)) * (Real.log Q / L) := by
+    have hpiΔ_eq : Real.pi * Δ = L - 3 * LL := by
+      dsimp only [Δ]; field_simp [Real.pi_ne_zero]
+    have hdiff : Real.log Q / (Real.pi * Δ) - Real.log Q / L ≤ 6 * (LL / L) * (Real.log Q / L) := by
+      rw [hpiΔ_eq]
+      have hsub_pos : 0 < L - 3 * LL := by linarith
+      have heq : Real.log Q / (L - 3 * LL) - Real.log Q / L =
+          (3 * LL * Real.log Q) / (L * (L - 3 * LL)) := by
+        field_simp [hL_pos.ne', hsub_pos.ne']; ring
+      rw [heq]
+      calc (3 * LL * Real.log Q) / (L * (L - 3 * LL))
+          ≤ (3 * LL * Real.log Q) / (L * (L / 2)) := by
+            gcongr
+            exact mul_nonneg (by linarith) (Real.log_nonneg (by linarith))
+        _ = 6 * (LL / L) * (Real.log Q / L) := by
+            field_simp [hL_pos.ne']; ring
+    have hdiff_nonneg : 0 ≤ Real.log Q / (Real.pi * Δ) - Real.log Q / L := by
+      rw [hpiΔ_eq]
+      have hsub_pos : 0 < L - 3 * LL := by linarith
+      exact sub_nonneg.mpr (div_le_div_of_nonneg_left (Real.log_nonneg (by linarith)) hsub_pos (by linarith))
+    have h1 : envelopeC θ * (Real.log Q / (Real.pi * Δ) - Real.log Q / L) ≤
+        |envelopeC θ| * (6 * (LL / L) * (Real.log Q / L)) :=
+      calc envelopeC θ * (Real.log Q / (Real.pi * Δ) - Real.log Q / L)
+          ≤ |envelopeC θ| * (Real.log Q / (Real.pi * Δ) - Real.log Q / L) :=
+            mul_le_mul_of_nonneg_right (le_abs_self _) hdiff_nonneg
+        _ ≤ |envelopeC θ| * (6 * (LL / L) * (Real.log Q / L)) :=
+            mul_le_mul_of_nonneg_left hdiff (abs_nonneg _)
+    linarith
+  have h_L2_le : L ^ 2 ≤ Real.log Q := by
+    have h3 : L ^ 3 / 6 ≤ Real.exp L := by
+      have h_s := Real.sum_le_exp_of_nonneg hL_pos.le 4
+      simp only [Finset.sum_range_succ, Finset.range_zero, Finset.sum_empty, zero_add,
+        pow_zero, Nat.factorial_zero, Nat.cast_one, div_one, pow_one, Nat.factorial_one,
+        Nat.factorial_two, Nat.cast_ofNat] at h_s
+      have h3f : (Nat.factorial 3 : ℝ) = 6 := by norm_num
+      rw [h3f] at h_s
+      linarith [sq_nonneg L]
+    have hL6 : 6 ≤ L := by linarith
+    have h_exp_L : Real.exp L = Real.log Q := Real.exp_log (by linarith)
+    nlinarith
+  have h_scale_ge_L : L ≤ Real.log Q / L := by
+    rw [le_div_iff₀ hL_pos]
+    nlinarith
+  have h_one_le_prod : 1 ≤ (LL / L) * (Real.log Q / L) := by
+    rw [div_mul_div_comm, one_le_div (mul_pos hL_pos hL_pos)]
+    nlinarith
+  have h_exp_le_inv_logQ : Real.exp (-2 * Real.pi * Δ) ≤ 1 / Real.log Q := by
+    have h_neg : -2 * Real.pi * Δ ≤ -L := by
+      have : 2 * Real.pi * Δ = 2 * L - 6 * LL := by dsimp only [Δ]; field_simp [Real.pi_ne_zero]; ring
+      linarith
+    calc Real.exp (-2 * Real.pi * Δ) ≤ Real.exp (-L) := Real.exp_le_exp.mpr h_neg
+      _ = 1 / Real.exp L := by rw [Real.exp_neg, one_div]
+      _ = 1 / Real.log Q := by rw [Real.exp_log (by linarith)]
+  have h_q1_term : (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * (C_sup * Real.log Δ) else 0) ≤
+      C_sup * Real.log Δ := by
+    split_ifs with hq1
+    · have hQ_eq : Q = |t| + 2 := by simp [Q, analyticConductor, hq1]
+      have ht_ge : Q / 2 ≤ |t| := by linarith
+      have ht2_ge : Q ^ 2 / 4 ≤ t ^ 2 := by
+        rw [← sq_abs t]; nlinarith
+      have hexp_le : Real.exp (Real.pi * Δ) ≤ Real.log Q := by
+        have hpiΔ_le : Real.pi * Δ ≤ L := by
+          dsimp only [Δ]; rw [mul_div_cancel₀ _ Real.pi_ne_zero]; linarith
+        calc Real.exp (Real.pi * Δ) ≤ Real.exp L := Real.exp_le_exp.mpr hpiΔ_le
+          _ = Real.log Q := Real.exp_log (by linarith)
+      have hlogQ_le : Real.log Q ≤ Q ^ 2 / 4 := by
+        have h1 : Real.log Q ≤ Q := (Real.log_le_sub_one_of_pos (by linarith)).trans (by linarith)
+        nlinarith
+      have hdiv_le : Real.exp (Real.pi * Δ) / t ^ 2 ≤ 1 :=
+        div_le_one_of_le₀ (hexp_le.trans (hlogQ_le.trans ht2_ge)) (sq_nonneg t)
+      calc Real.exp (Real.pi * Δ) / t ^ 2 * (C_sup * Real.log Δ)
+          ≤ 1 * (C_sup * Real.log Δ) := mul_le_mul_of_nonneg_right hdiv_le hM_sup_nonneg
+        _ = C_sup * Real.log Δ := one_mul _
+    · exact hM_sup_nonneg
+  have h_logΔ_le : Real.log Δ ≤ LL := by
+    apply Real.log_le_log hΔ_pos
+    dsimp only [Δ]
+    have : L - 3 * LL ≤ L := by linarith
+    calc (L - 3 * LL) / Real.pi ≤ L / Real.pi := div_le_div_of_nonneg_right this Real.pi_pos.le
+      _ ≤ L / 1 := div_le_div_of_nonneg_left hL_pos.le zero_lt_one (by linarith [Real.two_le_pi])
+      _ = L := div_one L
+  have h_gw_err_scale : C₁ * (C_sup * Real.log Δ +
+      (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * (C_sup * Real.log Δ) else 0)) ≤
+      (2 * C₁ * C_sup) * (LL / L) * (Real.log Q / L) := by
+    calc C₁ * (C_sup * Real.log Δ + _)
+        ≤ C₁ * (C_sup * Real.log Δ + C_sup * Real.log Δ) := by gcongr
+      _ = (2 * C₁ * C_sup) * Real.log Δ := by ring
+      _ ≤ (2 * C₁ * C_sup) * LL := by gcongr
+      _ = (2 * C₁ * C_sup) * (LL / L) * L := by field_simp [hL_pos.ne']
+      _ ≤ (2 * C₁ * C_sup) * (LL / L) * (Real.log Q / L) := by gcongr
+  have h_C0_scale : C₀ ≤ C₀ * (LL / L) * (Real.log Q / L) := by
+    calc C₀ = C₀ * 1 := (mul_one C₀).symm
+      _ ≤ C₀ * ((LL / L) * (Real.log Q / L)) := mul_le_mul_of_nonneg_left h_one_le_prod hC₀_pos.le
+      _ = C₀ * (LL / L) * (Real.log Q / L) := by ring
+  have h_errM_scale : (Real.log Q / (2 * Real.pi)) * (C_err_M * Real.exp (-2 * Real.pi * Δ)) ≤
+      (C_err_M / (2 * Real.pi)) * (LL / L) * (Real.log Q / L) := by
+    have hlogQ_pos : 0 < Real.log Q := by linarith
+    calc (Real.log Q / (2 * Real.pi)) * (C_err_M * Real.exp (-2 * Real.pi * Δ))
+        ≤ (Real.log Q / (2 * Real.pi)) * (C_err_M * (1 / Real.log Q)) := by gcongr
+      _ = C_err_M / (2 * Real.pi) := by field_simp [hlogQ_pos.ne', Real.pi_ne_zero]
+      _ = (C_err_M / (2 * Real.pi)) * 1 := (mul_one _).symm
+      _ ≤ (C_err_M / (2 * Real.pi)) * ((LL / L) * (Real.log Q / L)) := by
+          gcongr
+      _ = (C_err_M / (2 * Real.pi)) * (LL / L) * (Real.log Q / L) := by ring
+  have h_pps_neg : -primePowerSum q χ (fourierHat (fun x : ℝ => M_entire x)) X t ≤
+      (4 * C_L1 / Real.pi) * (LL / L) * (Real.log Q / L) :=
+    (neg_le_abs _).trans h_pps_scale
+  calc polarLogL D q χ t θ
+      ≤ (Real.cos θ / 2) * Real.log Q + ∑' n : ℕ, kernelK θ (t - D.zeros q χ n) + C₀ := h_hzs_upper
+    _ ≤ (Real.cos θ / 2) * Real.log Q + ∑' n : ℕ, (M_entire (t - D.zeros q χ n)).re + C₀ := by
+        linarith
+    _ ≤ (Real.cos θ / 2) * Real.log Q +
+          ((Real.log Q / (2 * Real.pi)) * (∫ x : ℝ, (M_entire x).re) -
+            primePowerSum q χ (fourierHat (fun x : ℝ => M_entire x)) X t +
+            C₁ * (C_sup * Real.log Δ +
+              (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * (C_sup * Real.log Δ) else 0))) + C₀ := by
+        linarith [h_gw_upper]
+    _ ≤ (Real.cos θ / 2) * Real.log Q +
+          ((-(Real.cos θ / 2) * Real.log Q + envelopeC θ * (Real.log Q / (Real.pi * Δ)) +
+            (Real.log Q / (2 * Real.pi)) * (C_err_M * Real.exp (-2 * Real.pi * Δ))) -
+            primePowerSum q χ (fourierHat (fun x : ℝ => M_entire x)) X t +
+            C₁ * (C_sup * Real.log Δ +
+              (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * (C_sup * Real.log Δ) else 0))) + C₀ := by
+        linarith [h_main_int_bd]
+    _ = envelopeC θ * (Real.log Q / (Real.pi * Δ)) +
+          (Real.log Q / (2 * Real.pi)) * (C_err_M * Real.exp (-2 * Real.pi * Δ)) +
+          (-primePowerSum q χ (fourierHat (fun x : ℝ => M_entire x)) X t) +
+          C₁ * (C_sup * Real.log Δ +
+            (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * (C_sup * Real.log Δ) else 0)) + C₀ := by
+        ring
+    _ ≤ (envelopeC θ + 6 * |envelopeC θ| * (LL / L)) * (Real.log Q / L) +
+          (C_err_M / (2 * Real.pi)) * (LL / L) * (Real.log Q / L) +
+          (4 * C_L1 / Real.pi) * (LL / L) * (Real.log Q / L) +
+          (2 * C₁ * C_sup) * (LL / L) * (Real.log Q / L) +
+          C₀ * (LL / L) * (Real.log Q / L) := by
+        linarith [h_env_scale, h_errM_scale, h_pps_neg, h_gw_err_scale, h_C0_scale]
+    _ ≤ (envelopeC θ + C_err * LL / L) * (Real.log Q / L) := by
+        have h_nonneg : 0 ≤ (LL / L) * (Real.log Q / L) := by positivity
+        have h_eq1 : (envelopeC θ + 6 * |envelopeC θ| * (LL / L)) * (Real.log Q / L) +
+              (C_err_M / (2 * Real.pi)) * (LL / L) * (Real.log Q / L) +
+              (4 * C_L1 / Real.pi) * (LL / L) * (Real.log Q / L) +
+              (2 * C₁ * C_sup) * (LL / L) * (Real.log Q / L) +
+              C₀ * (LL / L) * (Real.log Q / L) =
+            envelopeC θ * (Real.log Q / L) +
+              (6 * |envelopeC θ| + C_err_M / (2 * Real.pi) + 4 * C_L1 / Real.pi +
+                2 * C₁ * C_sup + C₀) * ((LL / L) * (Real.log Q / L)) := by ring
+        have h_eq2 : (envelopeC θ + C_err * LL / L) * (Real.log Q / L) =
+            envelopeC θ * (Real.log Q / L) + C_err * ((LL / L) * (Real.log Q / L)) := by ring
+        rw [h_eq1, h_eq2]
+        have h_c_le : 6 * |envelopeC θ| + C_err_M / (2 * Real.pi) + 4 * C_L1 / Real.pi +
+            2 * C₁ * C_sup + C₀ ≤ C_err := by
+          dsimp only [C_err]; linarith
+        linarith [mul_le_mul_of_nonneg_right h_c_le h_nonneg]
 
 /-- **Theorem 1.2 (Part 1)** (Universal convex domain confinement):
 For every `ε > 0`, `z(t, χ)` lies in the `ε`-neighborhood of `Ω` for `q(|t| + 2) ≥ q₀(ε)`. -/
@@ -570,7 +986,8 @@ theorem corollary_1_3_iii (D : LFunctionData) :
     have hmono : MonotoneOn (fun t : ℝ => t / Real.log t) (Set.Ici (Real.exp 1)) := by
       apply monotoneOn_of_deriv_nonneg (convex_Ici (Real.exp 1))
       · refine continuousOn_id.div (Real.continuousOn_log.mono fun t ht => ?_) ?_
-        · have : Real.exp 1 ≤ t := ht
+        · 
+          have : Real.exp 1 ≤ t := ht
           exact Set.mem_compl_singleton_iff.mpr (by linarith [Real.exp_pos 1])
         · intro t ht
           have : Real.exp 1 ≤ t := ht
