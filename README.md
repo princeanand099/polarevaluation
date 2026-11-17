@@ -1,0 +1,2 @@
+# polarevaluation
+Lean 4 formalization of "THE POLAR ENVELOPE AND LARGE DEVIATIONS OF log L( 1/2 + it, χ) ON THE GENERALIZED RIEMANN HYPOTHESIS"
