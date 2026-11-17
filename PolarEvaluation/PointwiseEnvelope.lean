@@ -207,10 +207,17 @@ theorem convex_domain_confinement (D : LFunctionData) :
         intro hKne
         let g : ℂ → ℝ := fun z => s.sup' hs_ne (fun θ => z.re * Real.cos θ + z.im * Real.sin θ - envelopeC θ)
         have hg_cont : Continuous g := by
-          apply Finset.continuous_sup' hs_ne
-          intro θ _
-          exact ((Complex.continuous_re.mul continuous_const).add
-            (Complex.continuous_im.mul continuous_const)).sub continuous_const
+          have h_ind : ∀ (t : Finset ℝ) (ht : t.Nonempty),
+              Continuous (fun z : ℂ => t.sup' ht (fun θ => z.re * Real.cos θ + z.im * Real.sin θ - envelopeC θ)) := by
+            intro t ht
+            induction t using Finset.Nonempty.cons_induction with
+            | singleton a =>
+              simp only [Finset.sup'_singleton]
+              fun_prop
+            | cons a t ha ht' ih =>
+              simp only [Finset.sup'_cons]
+              exact Continuous.max (by fun_prop) ih
+          exact h_ind s hs_ne
         obtain ⟨z_min, hz_min, hz_isMin⟩ := hK_compact.exists_isMinOn hKne hg_cont.continuousOn
         have hg_pos : 0 < g z_min := by
           have hmem := hs_cov' hz_min
@@ -224,7 +231,7 @@ theorem convex_domain_confinement (D : LFunctionData) :
         obtain ⟨θ, hθs, hθeq⟩ := Finset.exists_mem_eq_sup' hs_ne
           (fun θ => z.re * Real.cos θ + z.im * Real.sin θ - envelopeC θ)
         refine ⟨θ, hθs, ?_⟩
-        dsimp only [g] at hle
+        dsimp only [g, Set.mem_setOf_eq] at hle
         linarith
       by_cases hKne : K.Nonempty
       · obtain ⟨δ₀, hδ₀, hK_gap⟩ := hK_ne hKne
@@ -423,12 +430,8 @@ theorem modulus_argument_tradeoff (D : LFunctionData) (α : ℝ) (hα : α ≤ R
   have harccos_eq : 2 * |w.im| = Real.arccos (Real.cos (2 * w.im)) := by
     rw [← Real.cos_abs (2 * w.im), show |2 * w.im| = 2 * |w.im| by rw [abs_mul, abs_of_pos two_pos]]
     exact (Real.arccos_cos h2wim_nonneg h2wim_le).symm
-  have harccos_le : Real.arccos (Real.cos (2 * w.im)) ≤ f (α - η / 3 - ε₁) := by
-    apply Real.arccos_le_arccos
-    · have : 0 ≤ min 1 (Real.exp (2 * (α - η / 3 - ε₁)) / 2) := le_min (by norm_num) (by positivity)
-      linarith
-    · exact hcos_ge
-    · exact Real.cos_le_one _
+  have harccos_le : Real.arccos (Real.cos (2 * w.im)) ≤ f (α - η / 3 - ε₁) :=
+    Real.arccos_le_arccos hcos_ge
   have hdist : dist (α - η / 3 - ε₁) α < η := by
     rw [Real.dist_eq, show α - η / 3 - ε₁ - α = -(η / 3 + ε₁) by ring, abs_neg,
       abs_of_pos (by positivity)]
@@ -568,7 +571,7 @@ theorem corollary_1_3_iii (D : LFunctionData) :
       apply monotoneOn_of_deriv_nonneg (convex_Ici (Real.exp 1))
       · refine continuousOn_id.div (Real.continuousOn_log.mono fun t ht => ?_) ?_
         · have : Real.exp 1 ≤ t := ht
-          linarith [Real.exp_pos 1]
+          exact Set.mem_compl_singleton_iff.mpr (by linarith [Real.exp_pos 1])
         · intro t ht
           have : Real.exp 1 ≤ t := ht
           have : 1 < t := lt_of_lt_of_le (Real.one_lt_exp_iff.mpr one_pos) this
@@ -640,12 +643,24 @@ theorem corollary_1_3_iii (D : LFunctionData) :
       _ ≤ 1 + ε₁ := by linarith
   set zq : ℂ := ⟨D.logAbsL q χ 0 / scale₁, (Real.pi * D.S_val q χ 0) / scale₁⟩
   set z₂ := normalizedLogL D q χ 0
+  have hlog_q_ne : Real.log (q : ℝ) ≠ 0 := (Real.log_pos (by linarith)).ne'
+  have hlog_c_ne : Real.log (analyticConductor q 0) ≠ 0 := (Real.log_pos (by linarith)).ne'
+  have hloglog_q_ne : Real.log (Real.log (q : ℝ)) ≠ 0 := by
+    have : 0 < Real.log (Real.log (q : ℝ)) := by
+      dsimp only [scale₁] at hscale₁_pos
+      exact (div_pos_iff.mp hscale₁_pos).elim (fun h => h.2) (fun h => by linarith [Real.log_pos (by linarith : (1 : ℝ) < q)])
+    exact this.ne'
+  have hloglog_c_ne : Real.log (Real.log (analyticConductor q 0)) ≠ 0 := by
+    have : 0 < Real.log (Real.log (analyticConductor q 0)) := by
+      dsimp only [scale₂] at hscale₂_pos
+      exact (div_pos_iff.mp hscale₂_pos).elim (fun h => h.2) (fun h => by linarith [Real.log_pos (by linarith : (1 : ℝ) < analyticConductor q 0)])
+    exact this.ne'
   have hzq_re : zq.re = c * z₂.re := by
     dsimp only [zq, z₂, normalizedLogL, c, scale₂, scale₁]
-    field_simp [hscale₁_pos.ne', hscale₂_pos.ne']
+    field_simp [hlog_q_ne, hlog_c_ne, hloglog_q_ne, hloglog_c_ne]
   have hzq_im : zq.im = c * z₂.im := by
     dsimp only [zq, z₂, normalizedLogL, c, scale₂, scale₁]
-    field_simp [hscale₁_pos.ne', hscale₂_pos.ne']
+    field_simp [hlog_q_ne, hlog_c_ne, hloglog_q_ne, hloglog_c_ne]
   have hre_bd : |z₂.re - w.re| < ε₁ := (Complex.abs_re_le_norm _).trans_lt hzw
   have him_bd : |z₂.im - w.im| < ε₁ := (Complex.abs_im_le_norm _).trans_lt hzw
   have hpi_le : Real.pi < 4 := Real.pi_lt_four
