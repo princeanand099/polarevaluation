@@ -3,76 +3,56 @@ import PolarEvaluation.ExternalResults
 import PolarEvaluation.ExplicitFormulae
 
 /-!
-# High-Moment Estimates for Prime Sums
-
-This module formalizes Section 5 of the manuscript:
-- Lemma 5.1: Uniform bounds on prime-square `P^{(2)}` and higher-power `P^{(≥ 3)}` sums.
-- Lemma 5.2: `2k`-th moment bounds on `P^{(1)}` in both the `t`-aspect and `q`-aspect.
+# High-Moment Estimates for Prime Sums (Section 6 & Lemmas 4.1–4.2)
 -/
 
 noncomputable section
 
-open Real Complex MeasureTheory Classical
+open Complex Real MeasureTheory Filter Topology
 
 namespace PolarEvaluation
 
-/-- Prime-power sum `P_{θ,Δ}(t, χ)` from the Guinand-Weil explicit formula. -/
-def primePowerSum (M : ℝ → ℝ) (X : ℝ) (q : ℕ) (χ : DirichletCharacter ℂ q) (t : ℝ) : ℂ :=
-  (1 / (2 * Real.pi : ℂ)) *
-    ∑' n : ℕ, if 2 ≤ n ∧ (n : ℝ) ≤ X then
-      ((ArithmeticFunction.vonMangoldt n : ℂ) / Real.sqrt n) *
-        (χ n * (fourierHat (fun x : ℝ => (M x : ℂ)) (-Real.log n / (2 * Real.pi))) *
-            (n : ℂ) ^ (-Complex.I * t) +
-          starRingEnd ℂ (χ n) *
-            (fourierHat (fun x : ℝ => (M x : ℂ)) (Real.log n / (2 * Real.pi))) *
-            (n : ℂ) ^ (Complex.I * t))
-    else 0
-
-/-- Prime sum `P^{(1)}_{θ,Δ}(t, χ)` restricted to primes `p ≤ X`. -/
-def primeSum1 (M : ℝ → ℝ) (X : ℝ) (q : ℕ) (χ : DirichletCharacter ℂ q) (t : ℝ) : ℂ :=
-  (1 / (2 * Real.pi : ℂ)) *
-    ∑ p ∈ Finset.filter Nat.Prime (Finset.Icc 2 (Nat.floor X)),
-      ((Real.log p : ℂ) / Real.sqrt p) *
-        (χ p * (fourierHat (fun x : ℝ => (M x : ℂ)) (-Real.log p / (2 * Real.pi))) *
-            (p : ℂ) ^ (-Complex.I * t) +
-          starRingEnd ℂ (χ p) *
-            (fourierHat (fun x : ℝ => (M x : ℂ)) (Real.log p / (2 * Real.pi))) *
-            (p : ℂ) ^ (Complex.I * t))
-
-/-- **Lemma 5.1 (Prime-square and higher-power sums).** -/
-theorem prime_power_tail_bounds (θ : ℝ) (hθ : θ ∈ Set.Icc (-Real.pi / 2) (Real.pi / 2))
-    (Δ₀ : ℝ) (hΔ₀ : Δ₀ ≥ 1) (M : ℝ → ℝ → ℝ)
-    (hL1 : ∃ C > 0, ∀ Δ ≥ Δ₀, ∫ x : ℝ, |M Δ x - kernelK θ x| ≤ C / Δ) :
-    ∃ C_2 C_3 : ℝ, C_2 > 0 ∧ C_3 > 0 ∧
-      ∀ Δ ≥ Δ₀, ∀ q : ℕ, ∀ χ : DirichletCharacter ℂ q, ∀ t : ℝ,
-        ‖primePowerSum (M Δ) (Real.exp (2 * Real.pi * Δ)) q χ t -
-          primeSum1 (M Δ) (Real.exp (2 * Real.pi * Δ)) q χ t‖ ≤
-          C_2 * Real.log (Real.log (Real.exp (2 * Real.pi * Δ))) + C_3 := by
+/-- **Lemma 4.1** (Prime-square and higher-power tail bounds). -/
+theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2) (hΔ₀ : Δ₀ ≥ 1) :
+    ∃ C_tail > 0, ∀ (q : ℕ) (χ : DirichletCharacter ℂ q) (Δ : ℝ) (M : ℝ → ℝ),
+      Δ ≥ Δ₀ →
+      Integrable (fun x : ℝ => M x - kernelK θ x) →
+      (∫ x : ℝ, |M x - kernelK θ x|) ≤ C_L1 / Δ →
+      (∫ x : ℝ, |M x|) ≤ C_L1 →
+      ∀ t : ℝ,
+        let X := Real.exp (2 * Real.pi * Δ)
+        let h_hat := fourierHat (fun x : ℝ => (M x : ℂ))
+        |primeSum2 q χ h_hat X t| ≤ C_tail * Real.log (Real.log X) ∧
+        |primeSumGe3 q χ h_hat X t| ≤ C_tail := by
   sorry
 
-/-- **Lemma 5.2(i) (`2k`-th moment bound in the `t`-aspect).** -/
-theorem prime_moment_t_aspect (θ : ℝ) (hθ : θ ∈ Set.Icc (-Real.pi / 2) (Real.pi / 2))
-    (Δ₀ : ℝ) (hΔ₀ : Δ₀ ≥ 1) (M : ℝ → ℝ → ℝ)
-    (hL1 : ∃ C > 0, ∀ Δ ≥ Δ₀, ∫ x : ℝ, |M Δ x - kernelK θ x| ≤ C / Δ) :
-    ∃ B_θ > 0, ∀ Δ ≥ Δ₀, ∀ k : ℕ, k ≥ 1 → ∀ q ≥ 1, ∀ χ : DirichletCharacter ℂ q,
-      ∀ T : ℝ, T ≥ (Real.exp (2 * Real.pi * Δ)) ^ k →
-        (1 / T) * ∫ t in Set.Icc T (2 * T),
-          ‖primeSum1 (M Δ) (Real.exp (2 * Real.pi * Δ)) q χ t‖ ^ (2 * k) ≤
-          (B_θ * k * Real.log (Real.log (Real.exp (2 * Real.pi * Δ)))) ^ k := by
+/-- **Lemma 4.2(i)** (`2k`-th moment bound in the `t`-aspect). -/
+theorem prime_moment_t_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2) (hΔ₀ : Δ₀ ≥ 1) :
+    ∃ B > 0, ∀ (q : ℕ) (χ : DirichletCharacter ℂ q) (Δ T : ℝ) (k : ℕ) (M : ℝ → ℝ),
+      q ≥ 1 → Δ ≥ Δ₀ → T ≥ 10 →
+      (Real.exp (2 * Real.pi * Δ)) ^ k ≤ T →
+      Integrable (fun x : ℝ => M x - kernelK θ x) →
+      (∫ x : ℝ, |M x - kernelK θ x|) ≤ C_L1 / Δ →
+      (∫ x : ℝ, |M x|) ≤ C_L1 →
+      (1 / T) * ∫ t in Set.Icc T (2 * T),
+        |primeSum1 q χ (fourierHat (fun x : ℝ => (M x : ℂ))) (Real.exp (2 * Real.pi * Δ)) t| ^ (2 * k) ≤
+        (B * k * Real.log (Real.log (Real.exp (2 * Real.pi * Δ)))) ^ k := by
   sorry
 
-/-- **Lemma 5.2(ii) (`2k`-th moment bound in the `q`-aspect).** -/
-theorem prime_moment_q_aspect (θ : ℝ) (hθ : θ ∈ Set.Icc (-Real.pi / 2) (Real.pi / 2))
-    (Δ₀ : ℝ) (hΔ₀ : Δ₀ ≥ 1) (M : ℝ → ℝ → ℝ)
-    (hL1 : ∃ C > 0, ∀ Δ ≥ Δ₀, ∫ x : ℝ, |M Δ x - kernelK θ x| ≤ C / Δ) :
-    ∃ B_θ > 0, ∀ Δ ≥ Δ₀, ∀ k : ℕ, k ≥ 1 → ∀ q : ℕ,
-      (Real.exp (2 * Real.pi * Δ)) ^ k < q → ∀ t₀ : ℝ,
-        (∑ χ : DirichletCharacter ℂ q,
-          if χ.IsPrimitive then
-            ‖primeSum1 (M Δ) (Real.exp (2 * Real.pi * Δ)) q χ t₀‖ ^ (2 * k)
-          else 0) ≤
-          (Nat.totient q : ℝ) *
-            (B_θ * k * Real.log (Real.log (Real.exp (2 * Real.pi * Δ)))) ^ k := by
+/-- **Lemma 4.2(ii)** (`2k`-th moment bound in the `q`-aspect). -/
+theorem prime_moment_q_aspect (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 2) (hΔ₀ : Δ₀ ≥ 1) :
+    ∃ B > 0, ∀ (q : ℕ) (t₀ Δ : ℝ) (k : ℕ) (M : ℝ → ℝ),
+      q ≥ 3 → totientStar q ≥ 1 → Δ ≥ Δ₀ →
+      (Real.exp (2 * Real.pi * Δ)) ^ k < (q : ℝ) →
+      Integrable (fun x : ℝ => M x - kernelK θ x) →
+      (∫ x : ℝ, |M x - kernelK θ x|) ≤ C_L1 / Δ →
+      (∫ x : ℝ, |M x|) ≤ C_L1 →
+      letI := Classical.decPred (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive)
+      (1 / (totientStar q : ℝ)) *
+        ∑ χ ∈ Finset.univ.filter (fun χ : DirichletCharacter ℂ q => χ.IsPrimitive),
+          |primeSum1 q χ (fourierHat (fun x : ℝ => (M x : ℂ))) (Real.exp (2 * Real.pi * Δ)) t₀| ^ (2 * k) ≤
+        ((Nat.totient q : ℝ) / (totientStar q : ℝ)) *
+          (B * k * Real.log (Real.log (Real.exp (2 * Real.pi * Δ)))) ^ k := by
   sorry
 
 end PolarEvaluation

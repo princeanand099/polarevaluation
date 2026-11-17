@@ -1,77 +1,84 @@
 import PolarEvaluation.Basic
 
 /-!
-# External Mathematical Axioms
+# External Literature Axioms
 
-This module contains ONLY established external results from peer-reviewed mathematical
-literature that are not yet formalized in Mathlib. Every axiom is documented in
-`EXTERNAL_AXIOMS.md` with its exact published source and justification.
-No manuscript-owned theorem, lemma, or corollary appears here.
+Strictly governed external axioms for established peer-reviewed results unavailable in Mathlib:
+- E1: Davenport (2000), Ch. 12 — Hadamard factorization & Stirling horizontal zero-sum for `log L(1/2 + it, χ)`.
+- E2: Carneiro, Chandee, Milinovich (2013 Lemma 5; 2015) — Guinand-Weil explicit formula for bandlimited functions.
+- E3: Montgomery & Vaughan (1974) — Mean value theorem for Dirichlet polynomials.
+- E4: Carneiro, Chandee, Milinovich (2013) — Odd Beurling-Selberg majorant/minorant for `K_{π/2}`.
+- E5: Carneiro, Chandee, Milinovich (2013, 2015) — Sharp GRH bound `|S(t, χ)| ≤ (1/4 + o(1)) log q / log log q`.
 -/
 
 noncomputable section
 
-open Real Complex MeasureTheory
+open Complex Real MeasureTheory Filter Topology
 
 namespace PolarEvaluation
 
-/-- **External Axiom E1 (Davenport 2000, Ch. 12; CCM 2013/2015):**
-Hadamard factorization and horizontal logarithmic representation of `L(1/2 + it, χ)`
-under GRH. -/
-axiom horizontal_zero_sum_external (D : LFunctionData) (q : ℕ) (hq : q ≥ 1)
-    (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive) (hGRH : D.GRH q hq χ hχ)
-    (θ : ℝ) (hθ : θ ∈ Set.Ioo (-Real.pi / 2) (Real.pi / 2))
-    (t : ℝ) (ht0 : D.L q χ (1 / 2 + Complex.I * t) ≠ 0) (ht1 : q = 1 → |t| ≥ 10) :
-    ∃ C_abs : ℝ, C_abs ≥ 0 ∧
-      |(Complex.exp (-Complex.I * θ) *
-          Complex.log (D.L q χ (1 / 2 + Complex.I * t))).re -
-        ((Real.cos θ / 2) * Real.log (analyticConductor q t) +
-          ∑' γ : D.zeros q χ, kernelK θ (t - (γ : ℝ)))| ≤ C_abs
+/-- **External Axiom E1** (Davenport 2000, Chapter 12):
+Horizontal zero-sum representation for `Re(e^{-iθ} log L(1/2 + it, χ))` under GRH. -/
+axiom horizontal_zero_sum_external (D : LFunctionData) :
+  ∃ C₀ : ℝ, C₀ > 0 ∧
+    ∀ (q : ℕ) (hq : q ≥ 1) (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive),
+      D.GRH q hq χ hχ →
+      ∀ (θ : ℝ), |θ| < Real.pi / 2 →
+      ∀ (t : ℝ), D.nonvanishing q χ t → (q = 1 → |t| ≥ 10) →
+        Summable (fun n : ℕ => kernelK θ (t - D.zeros q χ n)) ∧
+        |polarLogL D q χ t θ -
+          ((Real.cos θ / 2) * Real.log (analyticConductor q t) +
+            ∑' n : ℕ, kernelK θ (t - D.zeros q χ n))| ≤ C₀
 
-/-- **External Axiom E2 (Carneiro-Chandee-Milinovich 2013, Lemma 5; 2015):**
-Guinand-Weil explicit formula for bandlimited test functions `h : ℂ → ℂ` of
-exponential type `2πΔ` with `O((1 + x^2)^{-1})` decay on `ℝ`. -/
-axiom guinand_weil_external (D : LFunctionData) (q : ℕ) (hq : q ≥ 1)
-    (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive) (hGRH : D.GRH q hq χ hχ)
-    (Δ : ℝ) (hΔ : Δ ≥ 1) (h : ℂ → ℂ) (hh_type : HasExponentialType h (2 * Real.pi * Δ))
-    (M : ℝ) (hM : ∀ x : ℝ, (1 + x ^ 2) * ‖h x‖ ≤ M)
-    (t : ℝ) (ht1 : q = 1 → |t| ≥ 10) :
-    ∃ C_gw : ℝ, C_gw ≥ 0 ∧
-      ‖(∑' γ : D.zeros q χ, h (t - (γ : ℝ))) -
-        ((Real.log (analyticConductor q t) / (2 * Real.pi)) * (∫ x : ℝ, h x) -
-          (1 / (2 * Real.pi)) *
-            ∑' n : ℕ, if 2 ≤ n ∧ (n : ℝ) ≤ Real.exp (2 * Real.pi * Δ) then
-              ((ArithmeticFunction.vonMangoldt n : ℂ) / Real.sqrt n) *
-                (χ n * (fourierHat (fun x : ℝ => h x) (-Real.log n / (2 * Real.pi))) *
-                    (n : ℂ) ^ (-Complex.I * t) +
-                  starRingEnd ℂ (χ n) *
-                    (fourierHat (fun x : ℝ => h x) (Real.log n / (2 * Real.pi))) *
-                    (n : ℂ) ^ (Complex.I * t))
-            else 0)‖ ≤
-        C_gw * (M + (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * M else 0))
+/-- **External Axiom E2** (Carneiro–Chandee–Milinovich 2013, Lemma 5; 2015):
+Guinand–Weil explicit formula for bandlimited test functions `h` of exponential type `2πΔ`
+with `h(x) = O((1 + x^2)^{-1})`. -/
+axiom guinand_weil_external (D : LFunctionData) :
+  ∃ C₁ : ℝ, C₁ > 0 ∧
+    ∀ (q : ℕ) (hq : q ≥ 1) (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive),
+      D.GRH q hq χ hχ →
+      ∀ (h : ℂ → ℂ) (Δ M_sup : ℝ), Δ ≥ 1 → M_sup ≥ 0 →
+        HasExponentialType h (2 * Real.pi * Δ) →
+        (∀ x : ℝ, ‖h x‖ ≤ M_sup / (1 + x ^ 2)) →
+        (∀ x : ℝ, (h x).im = 0) →
+        ∀ (t : ℝ), (q = 1 → |t| ≥ 10) →
+          Summable (fun n : ℕ => (h (t - D.zeros q χ n)).re) ∧
+          |∑' n : ℕ, (h (t - D.zeros q χ n)).re -
+            ((Real.log (analyticConductor q t) / (2 * Real.pi)) * (∫ x : ℝ, (h x).re) -
+              primePowerSum q χ (fourierHat (fun x : ℝ => h x)) (Real.exp (2 * Real.pi * Δ)) t)| ≤
+            C₁ * (M_sup + (if q = 1 then Real.exp (Real.pi * Δ) / t ^ 2 * M_sup else 0))
 
-/-- **External Axiom E3 (Montgomery-Vaughan 1974, Hilbert's Inequality):**
-Mean value theorem for Dirichlet polynomials over `[T, 2T]`. -/
-axiom montgomery_vaughan_mvt (N : ℕ) (T : ℝ) (hT : T > 0) (a : ℕ → ℂ) :
-    ∃ C_mv : ℝ, C_mv ≥ 0 ∧
-      ∫ t in Set.Icc T (2 * T),
-        ‖∑ n ∈ Finset.Icc 1 N, a n * (n : ℂ) ^ (-Complex.I * t)‖ ^ 2 ≤
-        (T + C_mv * N) * ∑ n ∈ Finset.Icc 1 N, ‖a n‖ ^ 2
+/-- **External Axiom E3** (Montgomery–Vaughan 1974):
+Mean value theorem for Dirichlet polynomials `∫_T^{2T} |∑_{n ≤ N} a_n n^{-it}|^2 dt = (T + O(N)) ∑ |a_n|^2`. -/
+axiom montgomery_vaughan_mvt :
+  ∃ C₂ : ℝ, C₂ > 0 ∧
+    ∀ (N : ℕ) (a : ℕ → ℂ) (T : ℝ), T ≥ 1 → (N : ℝ) ≤ T →
+      (∫ t in Set.Icc T (2 * T),
+        ‖∑ n ∈ Finset.Icc 1 N, a n * Complex.exp (-Complex.I * t * Real.log n)‖ ^ 2) ≤
+        C₂ * T * ∑ n ∈ Finset.Icc 1 N, ‖a n‖ ^ 2
 
-/-- **External Axiom E4 (Carneiro-Chandee-Milinovich 2013):**
-Existence of the odd Beurling-Selberg majorant and minorant `M^±_{π/2,Δ}` of `K_{π/2}`
-of exponential type `2πΔ` with `L^1` excess `π/(2Δ) + O(exp(-2πΔ))` and uniform
-`(1+x^2)^{-1}` decay. -/
-axiom ccm_odd_extremal (Δ : ℝ) (hΔ : Δ ≥ 1) :
-    ∃ M_plus M_minus : ℝ → ℝ,
-      (∀ x : ℝ, x ≠ 0 → M_minus x ≤ kernelK (Real.pi / 2) x ∧
-        kernelK (Real.pi / 2) x ≤ M_plus x) ∧
-      (∃ C_1 > 0, ∀ x : ℝ, (1 + x ^ 2) * |M_plus x| ≤ C_1 ∧
-        (1 + x ^ 2) * |M_minus x| ≤ C_1) ∧
-      (∃ C_2 > 0,
-        |∫ x : ℝ, (M_plus x - kernelK (Real.pi / 2) x) - Real.pi / (2 * Δ)| ≤
-          C_2 * Real.exp (-2 * Real.pi * Δ) ∧
-        |∫ x : ℝ, (kernelK (Real.pi / 2) x - M_minus x) - Real.pi / (2 * Δ)| ≤
-          C_2 * Real.exp (-2 * Real.pi * Δ))
+/-- **External Axiom E4** (Carneiro–Chandee–Milinovich 2013):
+Odd Beurling–Selberg majorant and minorant `M^±_{π/2, Δ}` for `K_{π/2}`. -/
+axiom ccm_odd_extremal :
+  ∃ (Δ₀ C₃ : ℝ), Δ₀ ≥ 1 ∧ C₃ > 0 ∧
+    ∀ Δ ≥ Δ₀, ∃ (M_plus M_minus : ℂ → ℂ),
+      HasExponentialType M_plus (2 * Real.pi * Δ) ∧
+      HasExponentialType M_minus (2 * Real.pi * Δ) ∧
+      (∀ x : ℝ, (M_plus x).im = 0 ∧ (M_minus x).im = 0) ∧
+      (∀ x : ℝ, x ≠ 0 → (M_minus x).re ≤ kernelK (Real.pi / 2) x ∧
+        kernelK (Real.pi / 2) x ≤ (M_plus x).re) ∧
+      (∀ x : ℝ, ‖M_plus x‖ ≤ C₃ / (1 + x ^ 2) ∧ ‖M_minus x‖ ≤ C₃ / (1 + x ^ 2)) ∧
+      |(∫ x : ℝ, (M_plus x).re) - Real.pi / (2 * Δ)| ≤ C₃ * Real.exp (-2 * Real.pi * Δ) ∧
+      |(∫ x : ℝ, (M_minus x).re) + Real.pi / (2 * Δ)| ≤ C₃ * Real.exp (-2 * Real.pi * Δ)
+
+/-- **External Axiom E5** (Carneiro–Chandee–Milinovich 2013, 2015):
+Sharp GRH upper bound `|S(t, χ)| ≤ (1/4 + o(1)) log q / log log q`. -/
+axiom ccm_S_bound (D : LFunctionData) :
+  ∀ ε > 0, ∃ Q₀ : ℝ, Q₀ ≥ 10 ∧
+    ∀ (q : ℕ) (hq : q ≥ 1) (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive),
+      D.GRH q hq χ hχ →
+      ∀ (t : ℝ), D.nonvanishing q χ t → analyticConductor q t ≥ Q₀ →
+        |D.S_val q χ t| ≤ (1 / 4 + ε) * (Real.log (analyticConductor q t) /
+          Real.log (Real.log (analyticConductor q t)))
 
 end PolarEvaluation
