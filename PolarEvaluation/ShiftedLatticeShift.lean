@@ -277,7 +277,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hK_lt : K_big < Real.pi * Δ := by
         have h1 : K_big / Real.pi + 1 ≤ Δ := le_trans (le_max_right _ _) hΔ
         have h3 := (div_le_iff₀ Real.pi_pos).mp (by linarith : K_big / Real.pi ≤ Δ - 1)
-        linarith [Real.pi_pos]
+        linarith [mul_pos Real.pi_pos hΔ_pos]
       have h_quad : 1 + Real.pi * Δ + (Real.pi * Δ) ^ 2 / 2 ≤ Real.exp (Real.pi * Δ) := by
         simpa [Finset.sum_range_succ, pow_two] using Real.sum_le_exp_of_nonneg (by positivity : 0 ≤ Real.pi * Δ) 3
       have h_pi_gt : 2 < Real.pi := by linarith [Real.pi_gt_three]
@@ -286,7 +286,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hpi2 : Real.pi * Δ ^ 2 < (Real.pi * Δ) ^ 2 / 2 := by
         calc Real.pi * Δ ^ 2 < (Real.pi ^ 2 / 2) * Δ ^ 2 := mul_lt_mul_of_pos_right hpi_half (sq_pos_of_pos hΔ_pos)
           _ = (Real.pi * Δ) ^ 2 / 2 := by ring
-      linarith
+      linarith [mul_pos Real.pi_pos hΔ_pos]
     have h_exp2 : Real.exp (-2 * Real.pi * Δ) = (Real.exp (Real.pi * Δ) * Real.exp (Real.pi * Δ))⁻¹ := by
       rw [← Real.exp_add, show Real.pi * Δ + Real.pi * Δ = 2 * Real.pi * Δ by ring, ← Real.exp_neg]
       congr 1; ring
@@ -434,8 +434,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           · have hn' : (0 : ℝ) ≤ n := by exact_mod_cast (by omega : 0 ≤ n)
             linarith [ht_mem.1]
         have h1 : HasDerivAt (fun s : ℝ => 1 / ((n : ℝ) + s)) (-1 / ((n : ℝ) + t) ^ 2) t := by
-          have := ((hasDerivAt_id' t).const_add (n : ℝ)).inv hne
-          simpa only [one_div] using this
+          convert (hasDerivAt_const t (1 : ℝ)).div ((hasDerivAt_id' t).const_add (n : ℝ)) hne using 1; ring
         have h2 : HasDerivAt (fun s : ℝ => ((n : ℝ) + s) / (((n : ℝ) + s) ^ 2 + Δ ^ 2))
             ((((n : ℝ) + t) ^ 2 + Δ ^ 2 - 2 * ((n : ℝ) + t) ^ 2) / (((n : ℝ) + t) ^ 2 + Δ ^ 2) ^ 2) t := by
           have ha' : HasDerivAt (fun s : ℝ => (n : ℝ) + s) 1 t :=
