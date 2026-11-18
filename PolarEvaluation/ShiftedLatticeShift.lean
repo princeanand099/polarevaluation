@@ -1168,7 +1168,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h1 : 0 ≤ Real.pi * r := by positivity
     have h2 : Real.pi * r ≤ Real.pi / 2 := by nlinarith [Real.pi_pos]
     have h3 := Real.mul_le_sin h1 h2
-    linarith
+    rw [← mul_assoc, div_mul_cancel₀ _ Real.pi_ne_zero] at h3
+    exact h3
   have h_gap : C_tot * Δ * Real.exp (-2 * Real.pi * Δ) < Real.pi * (2 * r) := by
     dsimp only [r, C_α]
     have : C_tot < Real.pi * (2 * (C_tot / (2 * Real.pi) + 1)) := by
@@ -1176,29 +1177,36 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     nlinarith [Real.exp_pos (-2 * Real.pi * Δ)]
   have hg_pos_neg : g alpha_plus < 0 ∧ 0 < g alpha_minus := by
     have hsin_p : 0 < Real.sin (Real.pi * alpha_plus) :=
-      Real.sin_pos_of_pos_of_lt_pi (by positivity) (by nlinarith [Real.pi_pos, halpha_plus_mem.2])
+      Real.sin_pos_of_pos_of_lt_pi (mul_pos Real.pi_pos halpha_plus_mem.1) (by nlinarith [Real.pi_pos, halpha_plus_mem.2])
     have hsin_p_le : Real.sin (Real.pi * alpha_plus) ≤ 1 := Real.sin_le_one _
     have h_p := hg_approx r (by rw [abs_of_pos hr_pos])
     have h_p_main : Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_plus) ≥ Real.pi * (2 * r) := by
       calc Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_plus)
-          ≥ Real.pi * (2 * r) / 1 := div_le_div₀ (by positivity) (by gcongr) zero_lt_one hsin_p_le
+          ≥ Real.pi * (2 * r) / 1 :=
+            div_le_div₀ (mul_nonneg Real.pi_pos.le (mul_nonneg (by norm_num) hr_pos.le))
+              (mul_le_mul_of_nonneg_left hsin_r_ge Real.pi_pos.le) zero_lt_one hsin_p_le
         _ = Real.pi * (2 * r) := div_one _
     have hg_p_lt : g alpha_plus < 0 := by
-      have := (abs_le.mp h_p).2
-      dsimp only [alpha_plus]
+      have h_p2 := (abs_le.mp h_p).2
+      have h_neg_eq : -Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * (α_star + r)) =
+          -(Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * (α_star + r))) := by ring
+      rw [h_neg_eq] at h_p2
+      dsimp only [alpha_plus] at h_p_main ⊢
       linarith
     have hsin_m : 0 < Real.sin (Real.pi * alpha_minus) :=
-      Real.sin_pos_of_pos_of_lt_pi (by positivity) (by nlinarith [Real.pi_pos, halpha_minus_mem.2])
+      Real.sin_pos_of_pos_of_lt_pi (mul_pos Real.pi_pos halpha_minus_mem.1) (by nlinarith [Real.pi_pos, halpha_minus_mem.2])
     have hsin_m_le : Real.sin (Real.pi * alpha_minus) ≤ 1 := Real.sin_le_one _
     have h_m := hg_approx (-r) (by rw [abs_neg, abs_of_pos hr_pos])
     have h_m_main : -Real.pi * Real.sin (Real.pi * (-r)) / Real.sin (Real.pi * alpha_minus) ≥ Real.pi * (2 * r) := by
-      rw [mul_neg, Real.sin_neg, neg_mul, neg_neg]
+      rw [show -Real.pi * Real.sin (Real.pi * (-r)) = Real.pi * Real.sin (Real.pi * r) by rw [mul_neg, Real.sin_neg]; ring]
       calc Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_minus)
-          ≥ Real.pi * (2 * r) / 1 := div_le_div₀ (by positivity) (by gcongr) zero_lt_one hsin_m_le
+          ≥ Real.pi * (2 * r) / 1 :=
+            div_le_div₀ (mul_nonneg Real.pi_pos.le (mul_nonneg (by norm_num) hr_pos.le))
+              (mul_le_mul_of_nonneg_left hsin_r_ge Real.pi_pos.le) zero_lt_one hsin_m_le
         _ = Real.pi * (2 * r) := div_one _
     have hg_m_gt : 0 < g alpha_minus := by
-      have := (abs_le.mp h_m).1
-      dsimp only [alpha_minus]
+      have h_m1 := (abs_le.mp h_m).1
+      dsimp only [alpha_minus] at h_m_main ⊢
       rw [sub_eq_add_neg]
       linarith
     exact ⟨hg_p_lt, hg_m_gt⟩
@@ -1207,7 +1215,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   obtain ⟨α, hα_icc, hα_zero⟩ := h_ivt h0_mem
   have hα_mem : α ∈ Set.Ioo (0 : ℝ) 1 := hIcc_sub hα_icc
   refine ⟨α, ⟨hα_mem, h_summ_all α hα_mem, by rw [hg_eq α hα_mem]; exact hα_zero, ?_⟩, ?_⟩
-  · rw [abs_le]
+  · dsimp only [alpha_minus, alpha_plus, α_star, r] at hα_icc
+    rw [abs_le]
     constructor <;> linarith [hα_icc.1, hα_icc.2]
   · intro β ⟨hβ_mem, _, hβ_sum, _⟩
     rw [hg_eq β hβ_mem] at hβ_sum
