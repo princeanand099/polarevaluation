@@ -50,7 +50,9 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
       linarith
     have h_ne_sum : Real.exp (Real.pi * ω) + (Real.exp (Real.pi * ω))⁻¹ ≠ 0 := by positivity
     field_simp [hu.ne', h_ne4, h_ne4', h_ne_sum]
-    ring
+    rw [show Real.exp (Real.pi * ω) ^ 4 * (-1 + Real.exp (Real.pi * ω) ^ 4)⁻¹ - (-1 + Real.exp (Real.pi * ω) ^ 4)⁻¹ =
+        (-1 + Real.exp (Real.pi * ω) ^ 4) * (-1 + Real.exp (Real.pi * ω) ^ 4)⁻¹ by ring,
+      mul_inv_cancel₀ h_ne4']
   have h_int_exp_diff : ∀ (a b x' : ℝ), 0 < a → a < b →
       (∫ ω in Set.Ioi (0 : ℝ),
         ((Real.exp (-a * ω) - Real.exp (-b * ω) : ℝ) : ℂ) * Complex.exp (-Complex.I * ω * x')) =
@@ -155,17 +157,18 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
             ((1 / (((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') -
               1 / (((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') : ℝ) : ℂ) := by
           rw [h_c]; push_cast; rfl
-        have h_c''' : ((∫ ω in Set.Ioi (0 : ℝ), (Real.exp (-(((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω) -
-            Real.exp (-(((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω))) : ℂ) =
-            ((1 / (((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') -
-              1 / (((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') : ℝ) : ℂ) :=
-          integral_ofReal.symm.trans h_c''
-        rw [MeasureTheory.integral_const_mul, Complex.ofReal_injective h_c''']
+        have h_c''' : (∫ ω in Set.Ioi (0 : ℝ), (Real.exp (-(((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω) -
+            Real.exp (-(((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω))) =
+            1 / (((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') -
+              1 / (((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') := by
+          apply Complex.ofReal_injective
+          rw [← integral_ofReal, h_c'']
+        rw [MeasureTheory.integral_const_mul, h_c''']
       have hf_int : IntegrableOn (f k) (Set.Ioi 0) := by
         refine h_int_norm.mono' (hf_meas k) ?_
         filter_upwards [ae_restrict_mem measurableSet_Ioi] with ω hω
         exact (h_norm_eq hω).le
-      have h_lin : (∫⁻ ω in Set.Ioi (0 : ℝ), (‖f k ω‖₊ : ℝ≥0∞)) =
+      have h_lin : (∫⁻ ω in Set.Ioi (0 : ℝ), (‖f k ω‖₊ : ENNReal)) =
           ENNReal.ofReal (∫ ω in Set.Ioi (0 : ℝ), ‖f k ω‖) := by
         rw [MeasureTheory.ofReal_integral_eq_lintegral_ofReal hf_int.norm (Eventually.of_forall fun _ => norm_nonneg _)]
         congr 1; ext ω; rw [← coe_nnnorm, ENNReal.ofReal_coe_nnreal]
@@ -748,7 +751,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
           have h2 : Real.exp (-2 * θ * (-ω)) ≤ Real.exp (2 * |θ| * ω) := by
             exact Real.exp_le_exp.mpr (by rw [show -2 * θ * (-ω) = 2 * θ * ω by ring]; exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (le_abs_self θ) zero_le_two) hω.le)
           calc Real.exp (-2 * θ * (-ω)) / Real.cosh (Real.pi * ω)
-              ≤ Real.exp (2 * |θ| * ω) / (Real.exp (Real.pi * ω) / 2) := by gcongr; exact div_pos (Real.exp_pos _) two_pos
+              ≤ Real.exp (2 * |θ| * ω) / (Real.exp (Real.pi * ω) / 2) := by gcongr
             _ = 2 * Real.exp (-(Real.pi - 2 * |θ|) * ω) := by
                 rw [show -(Real.pi - 2 * |θ|) * ω = 2 * |θ| * ω - Real.pi * ω by ring, Real.exp_sub]; ring
         rw [← MeasureTheory.integrableOn_univ, ← Set.Iic_union_Ioi]
@@ -995,5 +998,6 @@ theorem limitingJ_pos (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     · rw [← limitingJ_neg_neg]
       exact limitingJ_pos_of_pos (by rwa [abs_neg]) (by linarith)
   · exact limitingJ_pos_of_pos hθ hy_pos
+
 
 end PolarEvaluation
