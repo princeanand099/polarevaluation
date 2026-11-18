@@ -415,7 +415,13 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
             (1 - Complex.exp (2 * Complex.I * Real.pi * w t)) := by
       filter_upwards [eventually_gt_atTop (0 : ℝ)] with t ht
       have hsin' : Complex.sin (Real.pi * w t) ≠ 0 := h_sin_ne t (by linarith)
-      rw [Complex.cos_apply, Complex.sin_apply]
+      have hcos_def : Complex.cos (Real.pi * w t) =
+          (Complex.exp (Real.pi * w t * Complex.I) + Complex.exp (-(Real.pi * w t) * Complex.I)) / 2 := by
+        unfold Complex.cos; ring_nf
+      have hsin_def : Complex.sin (Real.pi * w t) =
+          (Complex.exp (-(Real.pi * w t) * Complex.I) - Complex.exp (Real.pi * w t * Complex.I)) * Complex.I / 2 := by
+        unfold Complex.sin; ring_nf
+      rw [hcos_def, hsin_def]
       have h1 : Complex.exp (Real.pi * w t * Complex.I) * Complex.exp (Real.pi * w t * Complex.I) =
           Complex.exp (2 * Complex.I * Real.pi * w t) := by
         rw [← Complex.exp_add]; ring_nf
@@ -423,7 +429,7 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
       have hsub_ne : 1 - Complex.exp (2 * Complex.I * Real.pi * w t) ≠ 0 := by
         intro h0
         apply hsin'
-        rw [Complex.sin_apply]
+        rw [hsin_def]
         have hsq1 : Complex.exp (Real.pi * w t * Complex.I) * Complex.exp (Real.pi * w t * Complex.I) = 1 := by
           rw [h1]; exact (sub_eq_zero.mp h0).symm
         have h_inv : Complex.exp (-(Real.pi * w t) * Complex.I) = Complex.exp (Real.pi * w t * Complex.I) := by
