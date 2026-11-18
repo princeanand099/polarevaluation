@@ -1210,7 +1210,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       refine h_e.mono' ?_ ?_
       · refine (Complex.continuous_im.comp (continuous_const.mul (continuous_const.mul (Continuous.div (by fun_prop)
-          (Complex.continuous_cos (by fun_prop)) fun v => cos_ne_zero_of_abs_lt hθ)))).neg.aestronglyMeasurable
+          (Complex.continuous_cos.comp (by fun_prop)) fun v => cos_ne_zero_of_abs_lt hθ)))).neg.aestronglyMeasurable
       · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
         rw [Real.norm_eq_abs, abs_neg]
         refine (Complex.abs_im_le_norm _).trans ?_
@@ -1232,17 +1232,22 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have hcos_def : Complex.cos (θ : ℂ) = (Complex.exp ((θ : ℂ) * Complex.I) + Complex.exp (-(θ : ℂ) * Complex.I)) / 2 := by
             unfold Complex.cos; ring_nf
           rw [← Complex.ofReal_cos, hcos_def]
-          push_cast; rw [Complex.exp_mul_I, Complex.exp_neg_mul_I]
+          push_cast; rw [Complex.exp_mul_I, show -(θ : ℂ) * Complex.I = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring, Complex.exp_mul_I]; simp [Complex.cos_neg, Complex.sin_neg]
           ring_nf; simp [Complex.I_sq]; ring
         rw [heq, Complex.log_exp (by
           simp [Complex.add_im, Complex.mul_im]
           have := abs_lt.mp hθ; exact ⟨by linarith, by linarith⟩)]
         have hexp : Complex.exp (-Complex.I * θ) = ((Real.cos θ : ℝ) : ℂ) - ((Real.sin θ : ℝ) : ℂ) * Complex.I := by
-          rw [show -Complex.I * (θ : ℂ) = -((θ : ℂ) * Complex.I) by ring,
-            Complex.exp_neg_mul_I, ← Complex.ofReal_cos, ← Complex.ofReal_sin]
+          rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
+
+            Complex.exp_mul_I]
+
+          simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
+
+          ring
         rw [hexp]
         unfold envelopeC
-        simp only [Complex.sub_mul, Complex.mul_add, Complex.mul_im, Complex.add_im, Complex.ofReal_re,
+        simp only [sub_mul, Complex.mul_add, Complex.mul_im, Complex.add_im, Complex.ofReal_re,
           Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul, add_zero, sub_zero]
         ring
       rw [← hG_val]
@@ -1287,8 +1292,13 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         -Real.pi * Δ * Real.cos θ := by
       have hexp : Complex.exp (-Complex.I * θ) * ((Real.pi : ℂ) * Complex.I) =
           ((Real.pi * Real.sin θ : ℝ) : ℂ) + ((Real.pi * Real.cos θ : ℝ) : ℂ) * Complex.I := by
-        rw [show -Complex.I * (θ : ℂ) = -((θ : ℂ) * Complex.I) by ring,
-          Complex.exp_neg_mul_I, ← Complex.ofReal_cos, ← Complex.ofReal_sin]
+        rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
+
+          Complex.exp_mul_I]
+
+        simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
+
+        ring
         push_cast; ring_nf; simp [Complex.I_sq]; ring
       simp_rw [hexp]
       simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.I_re, Complex.I_im,
@@ -1351,7 +1361,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       refine h_e.mono' ?_ ?_
       · refine (Complex.continuous_im.comp (continuous_const.mul (continuous_const.mul (Continuous.div (by fun_prop)
-          (Complex.continuous_cos (by fun_prop)) fun v => cos_ne_zero_of_abs_lt hθ)))).neg.aestronglyMeasurable
+          (Complex.continuous_cos.comp (by fun_prop)) fun v => cos_ne_zero_of_abs_lt hθ)))).neg.aestronglyMeasurable
       · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
         rw [Real.norm_eq_abs, abs_neg]; refine (Complex.abs_im_le_norm _).trans ?_
         rw [norm_mul, show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
