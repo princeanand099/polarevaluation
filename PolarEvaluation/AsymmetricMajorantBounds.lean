@@ -359,7 +359,7 @@ lemma kernelK_bound_large (θ : ℝ) {u : ℝ} (hu : 1 ≤ |u|) :
           _ = |x| ^ 2 := mul_one _
       · have hmvt := (convex_Icc (-|x|) |x|).norm_image_sub_le_of_norm_deriv_le
           hf_diff hbd' (x := x) ⟨neg_abs_le x, le_abs_self x⟩ (y := 0) ⟨neg_nonpos.mpr (abs_nonneg x), abs_nonneg x⟩
-        simp only [f, Real.arctan_zero, sub_zero, Real.norm_eq_abs] at hmvt
+        simp only [f, Real.arctan_zero, sub_zero, Real.norm_eq_abs, zero_sub, abs_neg] at hmvt
         calc |Real.arctan x - x| ≤ |x| ^ 2 * |x| := hmvt
           _ ≤ |x| ^ 2 * 1 := mul_le_mul_of_nonneg_left hx_le (sq_nonneg _)
           _ = |x| ^ 2 := mul_one _
@@ -434,7 +434,7 @@ lemma kernelK_bound_small (θ : ℝ) {u : ℝ} (hu0 : 0 < |u|) (hu1 : |u| ≤ 1)
 lemma integrable_log_inv_Ioo : IntegrableOn (fun x : ℝ => Real.log (1 / |x|)) (Set.Ioo (-1 : ℝ) 1) := by
   have h_half : IntegrableOn (fun x : ℝ => Real.log (1 / x)) (Set.Ioo (0 : ℝ) 1) := by
     have h_rpow : IntegrableOn (fun x : ℝ => 2 * x ^ (-1 / 2 : ℝ)) (Set.Ioo (0 : ℝ) 1) :=
-      ((intervalIntegral.intervalIntegrable_rpow (a := (0 : ℝ)) (b := 1) (by norm_num : (-1 : ℝ) < -1 / 2)).1.mono_set
+      ((intervalIntegral.intervalIntegrable_rpow' (a := (0 : ℝ)) (b := 1) (by norm_num : (-1 : ℝ) < -1 / 2)).1.mono_set
         Set.Ioo_subset_Ioc_self).const_mul 2
     have h_int : IntegrableOn (fun x : ℝ => -Real.log x) (Set.Ioo (0 : ℝ) 1) := by
       refine h_rpow.mono' (ContinuousOn.aestronglyMeasurable
@@ -1354,7 +1354,51 @@ private lemma contour_c0_rhs_bd (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
       _ = (Δ ^ 2 / c_sin ^ 2) / m := by ring
   exact (abs_sub _ _).trans ((add_le_add hI_bd hR_bd).trans_eq (by ring))
 
-set_option maxHeartbeats 800000 in
+private lemma contour_c0_lhs_ha_bd_aux (a_fn : ℤ → ℝ) (Δ α y : ℝ) (m : ℕ)
+    (hm_pos : (0 : ℝ) < m) (hy_ge_m : (m : ℝ) ≤ y) (hy : y = (m : ℝ) + α + 1 / 2)
+    (ha_s : Summable (fun n : ℤ => a_fn n / (y - n - α) ^ 2))
+    (ha_summ : Summable (fun n : ℤ => |a_fn n|))
+    (h_term : ∀ n : ℤ, |y * (a_fn n / (y - n - α) ^ 2)| ≤
+      4 * |a_fn n| / y + 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2)) :
+    |∑' n : ℤ, y * (a_fn n / (y - n - α) ^ 2)| ≤
+      (4 * (∑' n : ℤ, |a_fn n|) + 16 * Δ ^ 2 * (∑' k : ℤ, 1 / ((k : ℝ) + 1 / 2) ^ 2)) / (m : ℝ) := by
+  have hy_pos : 0 < y := by linarith
+  have hC_half_summ : Summable (fun k : ℤ => 1 / ((k : ℝ) + 1 / 2) ^ 2) :=
+    summable_inv_add_sq_of_ne_zero (1 / 2) (fun k h0 => by
+      have h1 : (k : ℝ) * 2 + 1 = 0 := by linarith
+      have h2 : k * 2 + 1 = 0 := by exact_mod_cast h1
+      omega)
+  have h_c_eq : ∑' n : ℤ, (1 : ℝ) / (y - n - α) ^ 2 = ∑' k : ℤ, 1 / ((k : ℝ) + 1 / 2) ^ 2 := by
+    have h_shift : (fun n : ℤ => (1 : ℝ) / (y - n - α) ^ 2) = fun n : ℤ => 1 / (((m - n : ℤ) : ℝ) + 1 / 2) ^ 2 := by
+      ext n; congr 1; rw [hy]; push_cast; ring
+    rw [h_shift]
+    exact Equiv.tsum_eq (Equiv.subLeft (m : ℤ)) (fun k => 1 / ((k : ℝ) + 1 / 2) ^ 2)
+  have h_s_inv : Summable (fun n : ℤ => 1 / (y - n - α) ^ 2) := by
+    have h_shift : (fun n : ℤ => (1 : ℝ) / (y - n - α) ^ 2) =
+        (fun k : ℤ => 1 / ((k : ℝ) + 1 / 2) ^ 2) ∘ Equiv.subLeft (m : ℤ) := by
+      ext n; dsimp only [Function.comp_apply]; rw [hy, Equiv.subLeft_apply]; push_cast; ring
+    rw [h_shift, (Equiv.subLeft (m : ℤ)).summable_iff]
+    exact hC_half_summ
+  have h_sum_term : Summable (fun n : ℤ => 4 * |a_fn n| / y + 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2)) :=
+    ((ha_summ.mul_left (4 / y)).congr (fun n => by ring)).add (h_s_inv.mul_left (16 * Δ ^ 2 / y))
+  have h_abs_tsum : |∑' n : ℤ, y * (a_fn n / (y - n - α) ^ 2)| ≤
+      ∑' n : ℤ, |y * (a_fn n / (y - n - α) ^ 2)| := by
+    have h := norm_tsum_le_tsum_norm (ha_s.mul_left y)
+    simp only [Real.norm_eq_abs] at h
+    exact h
+  calc |∑' n : ℤ, y * (a_fn n / (y - n - α) ^ 2)|
+      ≤ ∑' n : ℤ, |y * (a_fn n / (y - n - α) ^ 2)| := h_abs_tsum
+    _ ≤ ∑' n : ℤ, (4 * |a_fn n| / y + 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2)) :=
+        Summable.tsum_le_tsum h_term (ha_s.mul_left y).abs h_sum_term
+    _ = 4 * (∑' n : ℤ, |a_fn n|) / y + 16 * Δ ^ 2 * (∑' k : ℤ, 1 / ((k : ℝ) + 1 / 2) ^ 2) / y := by
+        rw [Summable.tsum_add ((ha_summ.mul_left (4 / y)).congr (fun n => by ring)) (h_s_inv.mul_left (16 * Δ ^ 2 / y))]
+        rw [show (fun n : ℤ => 4 * |a_fn n| / y) = fun n : ℤ => (4 / y) * |a_fn n| by ext n; ring,
+          tsum_mul_left, tsum_mul_left, h_c_eq]
+        ring
+    _ ≤ (4 * (∑' n : ℤ, |a_fn n|) + 16 * Δ ^ 2 * (∑' k : ℤ, 1 / ((k : ℝ) + 1 / 2) ^ 2)) / m := by
+        rw [← add_div]
+        exact div_le_div_of_nonneg_left (by positivity) hm_pos hy_ge_m
+
 private lemma contour_c0_lhs_ha_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
     (m : ℕ) (hm : m ≥ Nat.ceil (2 * Δ) + 2) (y : ℝ) (hy : y = (m : ℝ) + α + 1 / 2)
     (ha_s : Summable (fun n : ℤ => rescaledF θ Δ (n + α) / (y - n - α) ^ 2)) :
@@ -1416,41 +1460,51 @@ private lemma contour_c0_lhs_ha_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α �
         _ = 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2) := by field_simp [hy_pos.ne']
         _ ≤ 4 * |rescaledF θ Δ (n + α)| / y + 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2) := by
             linarith [show (0 : ℝ) ≤ 4 * |rescaledF θ Δ (n + α)| / y by positivity]
-  have h_c_eq : ∑' n : ℤ, (1 : ℝ) / (y - n - α) ^ 2 = ∑' k : ℤ, 1 / ((k : ℝ) + 1 / 2) ^ 2 := by
-    have h_shift : (fun n : ℤ => (1 : ℝ) / (y - n - α) ^ 2) = fun n : ℤ => 1 / (((m - n : ℤ) : ℝ) + 1 / 2) ^ 2 := by
-      ext n; congr 1; rw [hy]; push_cast; ring
-    rw [h_shift]
-    exact Equiv.tsum_eq (Equiv.subLeft (m : ℤ)) (fun k => 1 / ((k : ℝ) + 1 / 2) ^ 2)
-  have h_s_inv : Summable (fun n : ℤ => 1 / (y - n - α) ^ 2) := by
-    have h_shift : (fun n : ℤ => (1 : ℝ) / (y - n - α) ^ 2) =
-        (fun k : ℤ => 1 / ((k : ℝ) + 1 / 2) ^ 2) ∘ Equiv.subLeft (m : ℤ) := by
-      ext n; dsimp only [Function.comp_apply]; rw [hy, Equiv.subLeft_apply]; push_cast; ring
-    rw [h_shift, (Equiv.subLeft (m : ℤ)).summable_iff]
-    exact hC_half_summ
-  have h_sum_term : Summable (fun n : ℤ => 4 * |rescaledF θ Δ (n + α)| / y + 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2)) :=
-    ((ha_summ.mul_left (4 / y)).congr (fun n => by ring)).add (h_s_inv.mul_left (16 * Δ ^ 2 / y))
-  let f_a : ℤ → ℝ := fun n => y * (rescaledF θ Δ (n + α) / (y - n - α) ^ 2)
-  have hf_a_s : Summable f_a := ha_s.mul_left y
-  have hf_a_abs : Summable (fun n : ℤ => |f_a n|) := hf_a_s.abs
-  have h_term' : ∀ n : ℤ, |f_a n| ≤ 4 * |rescaledF θ Δ (n + α)| / y + 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2) := h_term
-  have h_abs_tsum : |∑' n : ℤ, f_a n| ≤ ∑' n : ℤ, |f_a n| := by
-    have h := norm_tsum_le_tsum_norm hf_a_s
+  exact contour_c0_lhs_ha_bd_aux (fun n => rescaledF θ Δ (n + α)) Δ α y m hm_pos hy_ge_m hy ha_s ha_summ h_term
+
+private lemma contour_c0_lhs_hb_bd_aux (b_fn : ℤ → ℝ) (Δ α y : ℝ) (m : ℕ)
+    (hm_pos : (0 : ℝ) < m) (hy_ge_m : (m : ℝ) ≤ y) (h_m1 : (1 : ℝ) ≤ m)
+    (F_fin : Finset ℤ) (hcard_eq : F_fin.card = (2 * m + 1 : ℕ))
+    (g_fin : ℤ → ℝ) (hg_def : g_fin = fun n => if n ∈ F_fin then 16 * Δ ^ 2 / (m : ℝ) ^ 2 else 0)
+    (hb_mul_summ : Summable (fun n : ℤ => |b_fn n|))
+    (h_bm_s : Summable (fun n : ℤ => b_fn n / (y - n - α)))
+    (h_term : ∀ n : ℤ, |b_fn n / (y - n - α)| ≤ 2 * |b_fn n| / y + g_fin n) :
+    |∑' n : ℤ, b_fn n / (y - n - α)| ≤
+      (2 * (∑' n : ℤ, |b_fn n|) + 48 * Δ ^ 2) / (m : ℝ) := by
+  subst hg_def
+  have hy_pos : 0 < y := by linarith
+  have hg_summ : Summable g_fin := summable_of_ne_finset_zero (s := F_fin) (fun n hn => by simp [g_fin, hn])
+  have hg_sum : ∑' n : ℤ, g_fin n ≤ 48 * Δ ^ 2 / m := by
+    rw [tsum_eq_sum (s := F_fin) (fun n hn => by simp [g_fin, hn])]
+    have h_eq : ∑ n ∈ F_fin, g_fin n = (F_fin.card : ℝ) * (16 * Δ ^ 2 / (m : ℝ) ^ 2) := by
+      have h_eq1 : ∑ n ∈ F_fin, g_fin n = ∑ _n ∈ F_fin, (16 * Δ ^ 2 / (m : ℝ) ^ 2) :=
+        Finset.sum_congr rfl (fun n hn => by simp [g_fin, hn])
+      rw [h_eq1, Finset.sum_const, nsmul_eq_mul]
+    rw [h_eq]
+    have hcard : (F_fin.card : ℝ) ≤ 3 * m := by
+      rw [hcard_eq]; push_cast; linarith
+    calc (F_fin.card : ℝ) * (16 * Δ ^ 2 / (m : ℝ) ^ 2)
+        ≤ (3 * m) * (16 * Δ ^ 2 / (m : ℝ) ^ 2) := by gcongr
+      _ = 48 * Δ ^ 2 / m := by field_simp [hm_pos.ne']; ring
+  have h_sum_term : Summable (fun n : ℤ => 2 * |b_fn n| / y + g_fin n) :=
+    ((hb_mul_summ.mul_left (2 / y)).congr (fun n => by ring)).add hg_summ
+  have h_abs_tsum : |∑' n : ℤ, b_fn n / (y - n - α)| ≤ ∑' n : ℤ, |b_fn n / (y - n - α)| := by
+    have h := norm_tsum_le_tsum_norm h_bm_s
     simp only [Real.norm_eq_abs] at h
     exact h
-  calc |∑' n : ℤ, f_a n|
-      ≤ ∑' n : ℤ, |f_a n| := h_abs_tsum
-    _ ≤ ∑' n : ℤ, (4 * |rescaledF θ Δ (n + α)| / y + 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2)) :=
-        Summable.tsum_le_tsum h_term' hf_a_abs h_sum_term
-    _ = 4 * (∑' n : ℤ, |rescaledF θ Δ (n + α)|) / y + 16 * Δ ^ 2 * (∑' k : ℤ, 1 / ((k : ℝ) + 1 / 2) ^ 2) / y := by
-        rw [Summable.tsum_add ((ha_summ.mul_left (4 / y)).congr (fun n => by ring)) (h_s_inv.mul_left (16 * Δ ^ 2 / y))]
-        rw [show (fun n : ℤ => 4 * |rescaledF θ Δ (n + α)| / y) = fun n : ℤ => (4 / y) * |rescaledF θ Δ (n + α)| by ext n; ring,
-          tsum_mul_left, tsum_mul_left, h_c_eq]
+  calc |∑' n : ℤ, b_fn n / (y - n - α)|
+      ≤ ∑' n : ℤ, |b_fn n / (y - n - α)| := h_abs_tsum
+    _ ≤ ∑' n : ℤ, (2 * |b_fn n| / y + g_fin n) :=
+        Summable.tsum_le_tsum h_term h_bm_s.abs h_sum_term
+    _ = 2 * (∑' n : ℤ, |b_fn n|) / y + ∑' n : ℤ, g_fin n := by
+        rw [Summable.tsum_add ((hb_mul_summ.mul_left (2 / y)).congr (fun n => by ring)) hg_summ,
+          show (fun n : ℤ => 2 * |b_fn n| / y) = fun n : ℤ => (2 / y) * |b_fn n| by ext n; ring,
+          tsum_mul_left]
         ring
-    _ ≤ (4 * (∑' n : ℤ, |rescaledF θ Δ (n + α)|) + 16 * Δ ^ 2 * (∑' k : ℤ, 1 / ((k : ℝ) + 1 / 2) ^ 2)) / m := by
-        rw [← add_div]
-        exact div_le_div_of_nonneg_left (by positivity) hm_pos hy_ge_m
+    _ ≤ 2 * (∑' n : ℤ, |b_fn n|) / m + 48 * Δ ^ 2 / m := by
+        gcongr; exact div_le_div_of_nonneg_left (by positivity) hm_pos hy_ge_m
+    _ = (2 * (∑' n : ℤ, |b_fn n|) + 48 * Δ ^ 2) / m := by ring
 
-set_option maxHeartbeats 800000 in
 private lemma contour_c0_lhs_hb_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
     (m : ℕ) (hm : m ≥ Nat.ceil (2 * Δ) + 2) (y : ℝ) (hy : y = (m : ℝ) + α + 1 / 2) :
     |∑' n : ℤ, (n + α) * rescaledFDeriv θ Δ (n + α) / (y - n - α)| ≤
@@ -1528,45 +1582,10 @@ private lemma contour_c0_lhs_hb_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α �
     have h_inv : 1 / |y - n - α| ≤ 2 := by rw [div_le_iff₀ (by linarith)]; linarith
     calc |(n + α) * rescaledFDeriv θ Δ (n + α)| * (1 / |y - n - α|) ≤ _ * 2 := by gcongr
       _ = 2 * |(n + α) * rescaledFDeriv θ Δ (n + α)| := mul_comm _ _
-  have hg_sum : ∑' n : ℤ, g_fin n ≤ 48 * Δ ^ 2 / m := by
-    rw [tsum_eq_sum (s := F_fin) (fun n hn => by simp [g_fin, hn])]
-    have h_eq : ∑ n ∈ F_fin, g_fin n = (F_fin.card : ℝ) * (16 * Δ ^ 2 / (m : ℝ) ^ 2) := by
-      have h_eq1 : ∑ n ∈ F_fin, g_fin n = ∑ _n ∈ F_fin, (16 * Δ ^ 2 / (m : ℝ) ^ 2) :=
-        Finset.sum_congr rfl (fun n hn => by simp [g_fin, hn])
-      rw [h_eq1, Finset.sum_const, nsmul_eq_mul]
-    rw [h_eq]
-    have hcard : (F_fin.card : ℝ) ≤ 3 * m := by
-      have h1 : F_fin.card = (2 * m + 1 : ℕ) := by
-        dsimp only [F_fin]; rw [Int.card_Icc]; omega
-      rw [h1]; push_cast
-      have : (1 : ℝ) ≤ m := by linarith
-      linarith
-    calc (F_fin.card : ℝ) * (16 * Δ ^ 2 / (m : ℝ) ^ 2)
-        ≤ (3 * m) * (16 * Δ ^ 2 / (m : ℝ) ^ 2) := by gcongr
-      _ = 48 * Δ ^ 2 / m := by field_simp [hm_pos.ne']; ring
-  have h_sum_term : Summable (fun n : ℤ => 2 * |(n + α) * rescaledFDeriv θ Δ (n + α)| / y + g_fin n) :=
-    ((hb_mul_summ.mul_left (2 / y)).congr (fun n => by ring)).add hg_summ
-  let f_b : ℤ → ℝ := fun n => (n + α) * rescaledFDeriv θ Δ (n + α) / (y - n - α)
-  have hf_b_s : Summable f_b := h_bm_s
-  have hf_b_abs : Summable (fun n : ℤ => |f_b n|) := hf_b_s.abs
-  have h_term' : ∀ n : ℤ, |f_b n| ≤ 2 * |(n + α) * rescaledFDeriv θ Δ (n + α)| / y + g_fin n := h_term
-  have h_abs_tsum : |∑' n : ℤ, f_b n| ≤ ∑' n : ℤ, |f_b n| := by
-    have h := norm_tsum_le_tsum_norm hf_b_s
-    simp only [Real.norm_eq_abs] at h
-    exact h
-  calc |∑' n : ℤ, f_b n|
-      ≤ ∑' n : ℤ, |f_b n| := h_abs_tsum
-    _ ≤ ∑' n : ℤ, (2 * |(n + α) * rescaledFDeriv θ Δ (n + α)| / y + g_fin n) :=
-        Summable.tsum_le_tsum h_term' hf_b_abs h_sum_term
-    _ = 2 * (∑' n : ℤ, |(n + α) * rescaledFDeriv θ Δ (n + α)|) / y + ∑' n : ℤ, g_fin n := by
-        rw [Summable.tsum_add ((hb_mul_summ.mul_left (2 / y)).congr (fun n => by ring)) hg_summ,
-          show (fun n : ℤ => 2 * |(n + α) * rescaledFDeriv θ Δ (n + α)| / y) =
-            fun n : ℤ => (2 / y) * |(n + α) * rescaledFDeriv θ Δ (n + α)| by ext n; ring,
-          tsum_mul_left]
-        ring
-    _ ≤ 2 * (∑' n : ℤ, |(n + α) * rescaledFDeriv θ Δ (n + α)|) / m + 48 * Δ ^ 2 / m := by
-        gcongr; exact div_le_div_of_nonneg_left (by positivity) hm_pos hy_ge_m
-    _ = (2 * (∑' n : ℤ, |(n + α) * rescaledFDeriv θ Δ (n + α)|) + 48 * Δ ^ 2) / m := by ring
+  have hcard_eq : F_fin.card = (2 * m + 1 : ℕ) := by
+    dsimp only [F_fin]; rw [Int.card_Icc]; omega
+  exact contour_c0_lhs_hb_bd_aux (fun n => (n + α) * rescaledFDeriv θ Δ (n + α)) Δ α y m
+    hm_pos hy_ge_m (by linarith) F_fin hcard_eq g_fin rfl hb_mul_summ h_bm_s h_term
 
 private lemma contour_c0_lhs_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
     (hsumm_b : Summable (fun n : ℤ => rescaledFDeriv θ Δ (n + α)))
