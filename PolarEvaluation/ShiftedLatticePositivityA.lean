@@ -27,7 +27,11 @@ lemma tsum_int_split_gen {E : Type*} [NormedAddCommGroup E] [CompleteSpace E]
     { toFun := Sum.elim (fun n : ℕ => (n : ℤ)) (fun n : ℕ => -((n + 1 : ℕ) : ℤ))
       invFun := fun m : ℤ => if 0 ≤ m then Sum.inl m.natAbs else Sum.inr (m.natAbs - 1)
       left_inv := fun s => by
-        rcases s with n | n <;> dsimp only <;> split_ifs <;> simp <;> omega
+        rcases s with n | n
+        · dsimp only; split_ifs <;> simp <;> omega
+        · dsimp only; split_ifs with h
+          · exfalso; omega
+          · simp only [Sum.elim_inr, Sum.inr.injEq]; omega
       right_inv := fun m => by
         dsimp only; split_ifs with h
         · simp only [Sum.elim_inl]; exact Int.natAbs_of_nonneg h
