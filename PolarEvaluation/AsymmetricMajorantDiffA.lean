@@ -127,9 +127,10 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_int : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi a) := by
       have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi a) :=
         integrableOn_exp_mul_complex_Ioi (by simp; positivity) a
-      refine hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi
+      refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+      dsimp only
       rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-        Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+        ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     have h_d : ∀ v ∈ Set.Ioi a, HasDerivAt (fun t : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * t))
         (Real.exp (-2 * Real.pi * v)) v := by
       intro v _
@@ -146,9 +147,10 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_e : IntegrableOn (fun v : ℝ => Real.exp (-Real.pi * v)) (Set.Ioi a) := by
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-Real.pi : ℂ) * v)) (Set.Ioi a) :=
           integrableOn_exp_mul_complex_Ioi (by simp; positivity) a
-        refine hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi
+        refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+        dsimp only
         rw [show (-(Real.pi : ℂ) * v) = ((-Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-          Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+          ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       refine h_e.mono' (by fun_prop) ?_
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
       have hv0 : 0 ≤ v := le_trans ha hv.le
@@ -423,9 +425,10 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi 1) :=
             integrableOn_exp_mul_complex_Ioi (by simp; positivity) 1
           have hr : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi 1) := by
-            refine hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi
+            refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+            dsimp only
             rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-              Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+              ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
           exact hr.const_mul _
         have h_mono1 : ∫ v in Set.Ioo 1 Δ, g v ≤ ∫ v in Set.Ioo 1 Δ, C_diff * |α - α_star| * Real.exp (-2 * Real.pi * v) := by
           refine setIntegral_mono_on hg_int3 (h_e_int.mono_set Set.Ioo_subset_Ioi_self) measurableSet_Ioo fun v hv => ?_
@@ -460,9 +463,10 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi Δ) :=
           integrableOn_exp_mul_complex_Ioi (by simp; positivity) Δ
         have hr : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi Δ) := by
-          refine hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi
+          refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+          dsimp only
           rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-            Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+            ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
         exact hr.const_mul _
       have h_mono : ∫ v in Set.Ioi Δ, ‖(Φ_star v / ((y : ℂ) - Complex.I * v)).im‖ ≤
           ∫ v in Set.Ioi Δ, C_tail * Real.exp (-2 * Real.pi * v) := by
@@ -679,9 +683,10 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have h_e : IntegrableOn (fun v : ℝ => Real.exp (-Real.pi * v)) (Set.Ioi 0) := by
           have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-Real.pi : ℂ) * v)) (Set.Ioi 0) :=
             integrableOn_exp_mul_complex_Ioi (by simp; positivity) 0
-          refine hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi
+          refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+          dsimp only
           rw [show (-(Real.pi : ℂ) * v) = ((-Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-            Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+            ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
         refine (h_e.const_mul _).mono' (by fun_prop) ?_
         filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
         rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
@@ -743,9 +748,10 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have h_e : IntegrableOn (fun v : ℝ => Real.exp (-Real.pi * v)) (Set.Ioi Δ) := by
           have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-Real.pi : ℂ) * v)) (Set.Ioi Δ) :=
             integrableOn_exp_mul_complex_Ioi (by simp; positivity) Δ
-          refine hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi
+          refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+          dsimp only
           rw [show (-(Real.pi : ℂ) * v) = ((-Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-            Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+            ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
         refine (h_e.const_mul _).mono' (by fun_prop) ?_
         filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
         have hv0 : 0 ≤ v := by linarith [hv.out]
