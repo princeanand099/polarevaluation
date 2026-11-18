@@ -109,7 +109,7 @@ lemma tsum_two_t_div_sq_bd (t : ℝ) (ht : 1 ≤ t) :
       intro u _
       have ha := ((hasDerivAt_id u).div_const t).arctan
       refine (ha.const_mul 2).congr_deriv ?_
-      dsimp only [id]; field_simp [ht_pos.ne']; ring
+      dsimp only [id]; field_simp [ht_pos.ne']
     have hcont : ContinuousOn (fun u : ℝ => 2 * t / (t ^ 2 + u ^ 2)) (Set.uIcc (0 : ℝ) (N : ℝ)) :=
       continuousOn_const.div (by fun_prop) (fun u _ => by positivity)
     rw [intervalIntegral.integral_eq_sub_of_hasDerivAt hd hcont.intervalIntegrable]
@@ -342,11 +342,11 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
     have hw_d : HasDerivAt w Complex.I t :=
       ((hasDerivAt_const t z).add ((hasDerivAt_id t).ofReal_comp.const_mul Complex.I)).congr_deriv (by simp)
     have hd1 : HasDerivAt (fun s => 1 / (w s - (n + 1 : ℕ)))
-        (-Complex.I / (w t - (n + 1 : ℕ)) ^ 2) t := by
-      simpa only [one_div] using ((hw_d.sub (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))).inv h1).congr_deriv (by simp only [Pi.sub_apply]; field_simp [h1]; ring)
+        (-Complex.I / (w t - (n + 1 : ℕ)) ^ 2) t :=
+      ((hasDerivAt_const t (1 : ℂ)).div (hw_d.sub (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))) h1).congr_deriv (by field_simp [h1]; ring)
     have hd2 : HasDerivAt (fun s => 1 / (w s + (n + 1 : ℕ)))
-        (-Complex.I / (w t + (n + 1 : ℕ)) ^ 2) t := by
-      simpa only [one_div] using ((hw_d.add (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))).inv h2).congr_deriv (by simp only [Pi.add_apply]; field_simp [h2]; ring)
+        (-Complex.I / (w t + (n + 1 : ℕ)) ^ 2) t :=
+      ((hasDerivAt_const t (1 : ℂ)).div (hw_d.add (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))) h2).congr_deriv (by field_simp [h2]; ring)
     refine (hd1.add hd2).congr_deriv ?_
     dsimp only [f']; ring
   have hf'_bd : ∀ n : ℕ, ∀ t ∈ Set.Ioi (-z.im / 2), ‖f' n t‖ ≤ u n := by
@@ -392,7 +392,7 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
       simp only [one_div]
       exact (hw_d.inv h0).congr_deriv (by field_simp [h0])
     have hd_sum : HasDerivAt (fun r => ∑' n : ℕ, f n (ψ r)) (∑' n : ℕ, f' n (ψ s) * (ψ' s : ℂ)) s := by
-      refine hasDerivAt_tsum (f := fun n r => f n (ψ r)) (f' := fun n r => f' n (ψ r) * (ψ' r : ℂ)) hu_summ ?_ ?_ (hf_summ (ψ s) (hψ_mem s)) s
+      refine hasDerivAt_tsum (g := fun n r => f n (ψ r)) (g' := fun n r => f' n (ψ r) * (ψ' r : ℂ)) hu_summ ?_ ?_ (hf_summ (ψ s) (hψ_mem s)) s
       · intro n r
         exact (hf_deriv n (ψ r) (hψ_mem r)).comp r (hψ_deriv r)
       · intro n r
@@ -407,10 +407,10 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
         hw_d.const_mul (Real.pi : ℂ)
       have hcos_d : HasDerivAt (fun r => Complex.cos (Real.pi * w (ψ r)))
           (-Complex.sin (Real.pi * w (ψ s)) * ((Real.pi : ℂ) * (Complex.I * (ψ' s : ℂ)))) s :=
-        (Complex.hasDerivAt_cos (Real.pi * w (ψ s))).comp s hpw
+        by simpa only [Function.comp_def] using (Complex.hasDerivAt_cos (Real.pi * w (ψ s))).comp s hpw
       have hsin_d : HasDerivAt (fun r => Complex.sin (Real.pi * w (ψ r)))
           (Complex.cos (Real.pi * w (ψ s)) * ((Real.pi : ℂ) * (Complex.I * (ψ' s : ℂ)))) s :=
-        (Complex.hasDerivAt_sin (Real.pi * w (ψ s))).comp s hpw
+        by simpa only [Function.comp_def] using (Complex.hasDerivAt_sin (Real.pi * w (ψ s))).comp s hpw
       have hq := (hcos_d.const_mul (Real.pi : ℂ)).div hsin_d hsin
       refine hq.congr_deriv ?_
       have hcs := Complex.cos_sq_add_sin_sq (Real.pi * w (ψ s))
@@ -446,7 +446,7 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
         congr 1; ext n; push_cast; ring
       rw [h_match]
       rw [show (1 : ℂ) / (w (ψ s) - (0 : ℤ)) ^ 2 = 1 / (w (ψ s)) ^ 2 by simp] at h_tsum_Z
-      rw [← h_tsum_Z]; ring
+      rw [← h_tsum_Z.2]; ring
     refine ((hd_0.add hd_sum).sub hd_cot).congr_deriv ?_
     rw [h_tsum_f', sub_self]
   have hg_const : ∀ t : ℝ, 0 ≤ t → g t = g 0 := by
