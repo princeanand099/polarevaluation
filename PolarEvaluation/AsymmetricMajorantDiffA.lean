@@ -548,7 +548,10 @@ private lemma majorant_contour_diff_small (θ : ℝ) (hθ : |θ| < Real.pi / 2)
       _ = (1 / c_sin ^ 2) * Real.exp (-2 * Real.pi * Δ) := by
           rw [mul_pow, ← Real.exp_nat_mul]; push_cast
           rw [show (2 : ℝ) * (Real.pi * Δ) = -(-2 * Real.pi * Δ) by ring, Real.exp_neg]
-          field_simp [(by linarith only [hΔ] : Δ ≠ 0), hc_pos.ne']
+          have h_eq : Δ * 1 / (c_sin ^ 2 * (Real.exp (-2 * Real.pi * Δ))⁻¹ * Δ) =
+              (Δ * Δ⁻¹) * (c_sin ^ 2)⁻¹ * Real.exp (-2 * Real.pi * Δ) := by
+            simp only [div_eq_mul_inv, mul_inv, inv_inv, mul_one]; ring
+          rw [h_eq, mul_inv_cancel₀ hΔ_pos.ne', one_mul, one_div]
   have h_log_nonneg : 0 ≤ Real.log (1 / |y|) := Real.log_nonneg ((one_le_div hy0).mpr hy1.le)
   have h_1_le_log : 1 ≤ 1 + Real.log (1 / |y|) := by linarith
   have h_2_le : 2 + Real.log (1 / |y|) ≤ 2 * (1 + Real.log (1 / |y|)) := by linarith
@@ -872,8 +875,9 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
         rw [show (-(Real.pi : ℂ) * v) = ((-Real.pi * v : ℝ) : ℂ) by push_cast; ring,
           ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       refine (h_e.const_mul (C_diff * |α - α_star| / y ^ 2)).mono' (by fun_prop) ?_
+      have hC_diff_nn : 0 ≤ C_diff := div_nonneg (mul_pos two_pos Real.pi_pos).le (pow_nonneg hc_pos.le 4)
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
-      rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
+      rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (div_nonneg (mul_nonneg hC_diff_nn (abs_nonneg _)) (sq_nonneg y)) (mul_nonneg hv.out.le (Real.exp_pos _).le))]
       have h_v : v ≤ Real.exp (Real.pi * v) := by have := Real.add_one_le_exp (Real.pi * v); nlinarith [Real.two_le_pi, hv.out]
       calc C_diff * |α - α_star| / y ^ 2 * (v * Real.exp (-2 * Real.pi * v))
           ≤ C_diff * |α - α_star| / y ^ 2 * (Real.exp (Real.pi * v) * Real.exp (-2 * Real.pi * v)) := by gcongr
@@ -1015,7 +1019,7 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
         Δ * 1 / (c_sin * Real.exp (Real.pi * Δ)) ^ 2 :=
       div_le_div₀ (by positivity) (mul_le_mul_of_nonneg_left (Real.abs_sin_le_one θ) (by linarith)) (by positivity) hden
     have h_div2 : Δ / (|y| * ‖Complex.I * (Δ : ℂ) - (y : ℂ)‖) ≤ Δ / y ^ 2 :=
-      div_le_div_of_nonneg_left (by linarith) (by positivity) h_y2
+      div_le_div_of_nonneg_left (zero_le_one.trans hΔ) (by rw [← sq_abs y]; exact sq_pos_of_pos hy0) h_y2
     calc Δ * |Real.sin θ| / ‖Complex.sin (Real.pi * (Complex.I * Δ - α))‖ ^ 2 * (Δ / (|y| * ‖Complex.I * (Δ : ℂ) - (y : ℂ)‖))
         ≤ Δ * 1 / (c_sin * Real.exp (Real.pi * Δ)) ^ 2 * (Δ / y ^ 2) :=
           mul_le_mul h_div1 h_div2 (div_nonneg (by linarith) (by positivity)) (by positivity)
