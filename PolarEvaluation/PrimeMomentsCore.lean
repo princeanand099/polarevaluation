@@ -251,7 +251,7 @@ lemma chebyshev_theta_le : ∀ N : ℕ,
             · intro p hp q hq hpq
               have hp' := (Finset.mem_filter.mp hp).2
               have hq' := (Finset.mem_filter.mp hq).2
-              exact (Nat.coprime_primes hp' hq').mpr hpq
+              exact ((Nat.coprime_primes hp' hq').mpr hpq).isCoprime
             · intro p hp
               simp only [s, Finset.mem_filter, Finset.mem_Icc] at hp
               have hchoose := Nat.choose_mul_factorial_mul_factorial (by omega : m ≤ 2 * m + 1)
@@ -521,7 +521,7 @@ lemma mertens_second (N : ℕ) (hN : N ≥ 3) :
             have h_lhs_sub : ∑ k ∈ Finset.Ico 3 N, (1 / Real.log k - 1 / Real.log (k + 1 : ℕ)) =
                 ∑ k ∈ Finset.Ico 3 N, (-(1 / Real.log (k + 1 : ℕ)) - -(1 / Real.log k)) := by
               congr 1; ext k; ring
-            rw [h_lhs_sub, hsub]; ring
+            rw [h_lhs_sub, hsub]; ring_nf
       _ ≤ Real.log 4 * (Real.log (Real.log N) + 1 / Real.log 3 + 1) := by
           have hlog3_gt1 : 1 < Real.log 3 := by
             have he : Real.exp 1 < 3 := Real.exp_one_lt_d9.trans (by norm_num)
@@ -576,7 +576,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
         |primeSumGe3 q χ h_hat X t| ≤ C_tail := by
   obtain ⟨C_dec, hC_dec, h_dec⟩ := majorant_fourier_decay_any θ C_L1 Δ₀ hθ hΔ₀
   have hsumm_54 : Summable (fun n : ℕ => (n : ℝ) ^ (-5 / 4 : ℝ)) := by
-    have h_eq : (fun n : ℕ => (n : ℝ) ^ (-5 / 4 : ℝ)) = fun n => 1 / (n : ℝ) ^ (5 / 4 : ℝ) := by
+    have h_eq : (fun n : ℕ => (n : ℝ) ^ (-5 / 4 : ℝ)) = fun n : ℕ => 1 / (n : ℝ) ^ (5 / 4 : ℝ) := by
       ext n
       rw [show (-5 / 4 : ℝ) = -(5 / 4 : ℝ) by norm_num, Real.rpow_neg (Nat.cast_nonneg n), one_div]
     rw [h_eq]
@@ -694,7 +694,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
               ‖χ (p ^ 2)‖ * ‖h_hat (Real.log (p ^ 2) / (2 * Real.pi))‖ * 1 := by
               rw [norm_mul, norm_mul, norm_mul, norm_mul, he1, he2, norm_star]
           _ ≤ 1 * (C_dec * (1 / Real.log p + 1 / Δ)) * 1 + 1 * (C_dec * (1 / Real.log p + 1 / Δ)) * 1 := by
-              have hp2 : ‖χ ((p : ZMod q) ^ 2)‖ ≤ 1 := by simpa [Nat.cast_pow] using hchi_le (p ^ 2)
+              have hp2 : ‖χ ((p : ZMod q) ^ 2)‖ ≤ 1 := by rw [← Nat.cast_pow]; exact hchi_le (p ^ 2)
               gcongr
           _ = 2 * C_dec * (1 / Real.log p + 1 / Δ) := by ring
       rw [abs_mul, abs_of_nonneg (div_nonneg hlogp_pos.le hp_pos.le)]
