@@ -87,9 +87,8 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
       HasDerivAt G ((v * Real.cos θ - x * Real.sin θ) / (x ^ 2 + v ^ 2)) v := by
     intro v _
     have hxv_pos : 0 < x ^ 2 + v ^ 2 := by positivity
-    have hd1 : HasDerivAt (fun t : ℝ => x ^ 2 + t ^ 2) (2 * v) v := by
-      have h := (hasDerivAt_const v (x ^ 2)).add (hasDerivAt_pow 2 v)
-      rwa [zero_add] at h
+    have hd1 : HasDerivAt (fun t : ℝ => x ^ 2 + t ^ 2) (2 * v) v :=
+      ((hasDerivAt_const v (x ^ 2)).add (hasDerivAt_pow 2 v)).congr_deriv (by ring)
     have hd_log : HasDerivAt (fun t : ℝ => (Real.cos θ / 2) * Real.log (x ^ 2 + t ^ 2))
         ((Real.cos θ / 2) * (2 * v / (x ^ 2 + v ^ 2))) v :=
       (hd1.log hxv_pos.ne').const_mul (Real.cos θ / 2)
@@ -110,8 +109,6 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
   dsimp only [G]
   simp only [zero_pow two_ne_zero, add_zero, zero_div, Real.arctan_zero, mul_zero, sub_zero]
   have hx2_pos : 0 < x ^ 2 := sq_pos_of_ne_zero hx
-  have hx2_eq : x * x = x ^ 2 := (sq x).symm
-  rw [hx2_eq]
   have hlog_sub : Real.log (x ^ 2 + Δ ^ 2) - Real.log (x ^ 2) =
       Real.log (((x / Δ) ^ 2 + 1) / (x / Δ) ^ 2) := by
     rw [← Real.log_div (by positivity) hx2_pos.ne']
@@ -138,10 +135,9 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
       have hre := congr_arg Complex.re h
       simp at hre
       exact hx hre
-    have hd_den : HasDerivAt (fun t : ℝ => (x : ℂ) - Complex.I * t) (-Complex.I) v := by
-      have h1 := (hasDerivAt_id v).ofReal_comp.const_mul Complex.I
-      have h2 := (hasDerivAt_const v (x : ℂ)).sub h1
-      rwa [zero_sub, mul_one] at h2
+    have hd_den : HasDerivAt (fun t : ℝ => (x : ℂ) - Complex.I * t) (-Complex.I) v :=
+      ((hasDerivAt_const v (x : ℂ)).sub ((hasDerivAt_id v).ofReal_comp.const_mul Complex.I)).congr_deriv
+        (by simp)
     have hd_inv : HasDerivAt (fun t : ℝ => Complex.exp (-Complex.I * θ) / ((x : ℂ) - Complex.I * t))
         (-Complex.exp (-Complex.I * θ) * (-Complex.I) / ((x : ℂ) - Complex.I * v) ^ 2) v := by
       refine ((hasDerivAt_const v (Complex.exp (-Complex.I * θ))).div hd_den hne).congr_deriv ?_
@@ -298,8 +294,11 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
           (∫ v in (0 : ℝ)..Δ, (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2).im) /
             (y - n - α) =
           ∫ v in (0 : ℝ)..Δ, d n v := by
+        have h_add := intervalIntegral.integral_add (hF_int.neg.div_const ((y - n - α) ^ 2))
+          (hFd_int.div_const (y - n - α))
+        dsimp only at h_add
         rw [← intervalIntegral.integral_neg, ← intervalIntegral.integral_div, ← intervalIntegral.integral_div,
-          ← intervalIntegral.integral_add (hF_int.neg.div_const ((y - n - α) ^ 2)) (hFd_int.div_const (y - n - α))]
+          ← h_add]
         congr 1; ext v
         have ha : (y : ℂ) - Complex.I * v ≠ 0 := by
           intro h0; have hre := congr_arg Complex.re h0; simp at hre; exact hy_ne hre
@@ -350,13 +349,14 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
             ((Δ * Real.sin θ : ℝ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * Δ)))).re := by
           have hmul : ((Δ * Real.sin θ : ℝ) : ℂ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * Δ))) =
               ((Δ * Real.sin θ / (y - n - α) ^ 2 : ℝ) : ℂ) * (1 / (((n + α : ℝ) : ℂ) - Complex.I * Δ)) := by
-            push_cast; ring
+            field_simp [hu, hw]; push_cast; ring
           rw [hmul, Complex.re_ofReal_mul, h_re1]; ring
         have h2 : (Δ * Real.sin θ / ((Complex.I * Δ - (n + α)) ^ 2)).re / (y - n - α) =
             ((Δ * Real.sin θ : ℝ) * (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2))).re := by
           have hmul : ((Δ * Real.sin θ : ℝ) : ℂ) * (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2)) =
               (Δ * Real.sin θ / ((Complex.I * Δ - (n + α)) ^ 2)) / ((y - n - α : ℝ) : ℂ) := by
-            have hsq : (Complex.I * Δ - (n + α)) ^ 2 = (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2 := by ring
+            have hsq : (Complex.I * Δ - (n + α)) ^ 2 = (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2 := by
+              push_cast; ring
             have hsq_ne : (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2 ≠ 0 := pow_ne_zero 2 hw
             rw [hsq]; field_simp [hu, hsq_ne]; push_cast; ring
           rw [hmul, Complex.div_ofReal_re]
