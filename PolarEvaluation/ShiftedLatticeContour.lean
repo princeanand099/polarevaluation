@@ -109,6 +109,7 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
   dsimp only [G]
   simp only [zero_pow two_ne_zero, add_zero, zero_div, Real.arctan_zero, mul_zero, sub_zero]
   have hx2_pos : 0 < x ^ 2 := sq_pos_of_ne_zero hx
+
   have hlog_sub : Real.log (x ^ 2 + Δ ^ 2) - Real.log (x ^ 2) =
       Real.log (((x / Δ) ^ 2 + 1) / (x / Δ) ^ 2) := by
     rw [← Real.log_div (by positivity) hx2_pos.ne']
@@ -199,7 +200,7 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
       ← Complex.ofReal_pow, Complex.div_ofReal_re]
     have hnum : ((x : ℂ) + Complex.I * Δ) ^ 2 =
         ((x ^ 2 - Δ ^ 2 : ℝ) : ℂ) + ((2 * x * Δ : ℝ) : ℂ) * Complex.I := by
-      push_cast; ring_nf; simp [Complex.I_sq]; ring
+      push_cast; ring_nf; simp [Complex.I_sq]
     rw [hnum]
     simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
       Complex.add_re, Complex.add_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul,
@@ -310,13 +311,13 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
             (Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * v)))).im := by
           rw [show Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * v))) =
             (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v)) / (((y - n - α : ℝ) ^ 2 : ℝ) : ℂ) by
-            push_cast; ring, Complex.div_ofReal_im]
+            field_simp [hu, hw]; push_cast; ring, Complex.div_ofReal_im]
         have h2 : (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2).im / (y - n - α) =
             (Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2))).im := by
           rw [show Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2)) =
             (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2) / ((y - n - α : ℝ) : ℂ) by
-            push_cast; ring, Complex.div_ofReal_im]
-        rw [h1, h2, ← Complex.neg_im, ← Complex.add_im]
+            field_simp [hu, hw]; push_cast; ring, Complex.div_ofReal_im]
+        rw [neg_div, h1, h2, ← Complex.neg_im, ← Complex.add_im]
         dsimp only [d]
         congr 1
         calc Complex.exp (-Complex.I * θ) *
@@ -1131,5 +1132,6 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
       rw [h_mul_eq]
       exact mul_nonneg_of_nonpos_of_nonpos hy.le h_le_zero
   linarith
+
 
 end PolarEvaluation
