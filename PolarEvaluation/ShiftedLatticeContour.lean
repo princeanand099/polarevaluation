@@ -311,12 +311,12 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
             (Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * v)))).im := by
           rw [show Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * v))) =
             (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v)) / (((y - n - α : ℝ) ^ 2 : ℝ) : ℂ) by
-            push_cast at hu hw ⊢; field_simp [hu, hw]; ring, Complex.div_ofReal_im]
+            push_cast at hu hw ⊢; field_simp [hu, hw], Complex.div_ofReal_im]
         have h2 : (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2).im / (y - n - α) =
             (Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2))).im := by
           rw [show Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2)) =
             (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2) / ((y - n - α : ℝ) : ℂ) by
-            push_cast at hu hw ⊢; field_simp [hu, hw]; ring, Complex.div_ofReal_im]
+            push_cast at hu hw ⊢; field_simp [hu, hw], Complex.div_ofReal_im]
         rw [neg_div, h1, h2, ← Complex.neg_im, ← Complex.add_im]
         dsimp only [d]
         congr 1
