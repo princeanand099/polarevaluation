@@ -844,7 +844,7 @@ lemma limitingJ_lower_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have hy_pos : 0 < |y| := by linarith
           have h_y1 : C_inf * Real.pi ^ 2 / envelopeC θ ≤ |y| := le_trans (le_max_right _ _) h_l.le
           have h_div : C_inf / |y| ≤ envelopeC θ / Real.pi ^ 2 := by
-            rw [div_le_div_iff₀ hy_pos (sq_pos_of_pos Real.pi_pos), ← div_le_iff₀ hC_env]
+            rw [div_le_div_iff₀ hy_pos (sq_pos_of_pos Real.pi_pos), mul_comm (envelopeC θ) |y|, ← div_le_iff₀ hC_env]
             exact h_y1
           calc C_inf / |y| ^ 3 = (C_inf / |y|) / y ^ 2 := by rw [← sq_abs y]; ring
             _ ≤ (envelopeC θ / Real.pi ^ 2) / y ^ 2 := div_le_div_of_nonneg_right h_div (sq_nonneg y)
@@ -865,7 +865,7 @@ lemma limitingJ_lower_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       exact le_trans (mul_le_mul_of_nonneg_right h2 (by linarith)) h1
     · have h1 := h_mid y h_m.le (hy1.trans hY₁_ge1)
       have h_log_le : 1 + Real.log (1 / |y|) ≤ 1 + Real.log (1 / δ₀) := by
-        gcongr; exact div_le_div_of_nonneg_left zero_le_one hδ₀_pos h_m.le
+        gcongr
       have h2 : c'_J ≤ m / (1 + Real.log (1 / δ₀)) := min_le_right _ _
       calc c'_J * (1 + Real.log (1 / |y|))
           ≤ (m / (1 + Real.log (1 / δ₀))) * (1 + Real.log (1 / δ₀)) :=
@@ -883,6 +883,7 @@ lemma sin_pi_iv_beta_lb {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
   have h_re_im : ‖Complex.sin (((-Real.pi * β : ℝ) : ℂ) + Complex.I * (Real.pi * v))‖ ^ 2 =
       Real.sin (-Real.pi * β) ^ 2 + Real.sinh (Real.pi * v) ^ 2 := by
     have hs := Complex.sin_add ((-Real.pi * β : ℝ) : ℂ) (Complex.I * (Real.pi * v))
+    rw [mul_comm Complex.I ((Real.pi * v : ℝ) : ℂ)] at hs
     rw [← Complex.ofReal_sin, ← Complex.ofReal_cos, Complex.sin_mul_I, Complex.cos_mul_I,
       ← Complex.ofReal_sinh, ← Complex.ofReal_cosh] at hs
     have h_split : Complex.sin (((-Real.pi * β : ℝ) : ℂ) + Complex.I * (Real.pi * v)) =
@@ -897,7 +898,7 @@ lemma sin_pi_iv_beta_lb {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
     have h_cs := Real.cos_sq_add_sin_sq (-Real.pi * β)
     nlinarith
   have hsin_lb : Real.sin (Real.pi * δ) ≤ |Real.sin (-Real.pi * β)| := by
-    rw [Real.sin_neg, abs_neg, abs_of_pos (Real.sin_pos_of_pos_of_lt_pi (by positivity)
+    rw [show -Real.pi * β = -(Real.pi * β) by ring, Real.sin_neg, abs_neg, abs_of_pos (Real.sin_pos_of_pos_of_lt_pi (by positivity)
       (by nlinarith [Real.pi_pos]))]
     rcases le_total β (1 / 2) with hβ | hβ
     · exact Real.strictMonoOn_sin.monotoneOn ⟨by linarith [Real.pi_pos], by nlinarith [Real.pi_pos]⟩ ⟨by linarith [Real.pi_pos], by nlinarith [Real.pi_pos]⟩ (by nlinarith [Real.pi_pos])
@@ -921,7 +922,7 @@ lemma sin_pi_iv_beta_lb {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
         rw [← sq_abs (Real.sin (-Real.pi * β))]
         exact sq_le_sq' (by linarith [hsin_δ_pos]) hsin_lb
       have h4 : ((Real.sin (Real.pi * δ) / Real.exp Real.pi) * Real.exp (Real.pi * v)) ^ 2 ≤ Real.sin (Real.pi * δ) ^ 2 :=
-        sq_le_sq' (by positivity) h2
+        sq_le_sq' (by linarith [mul_pos (div_pos hsin_δ_pos (Real.exp_pos _)) (Real.exp_pos (Real.pi * v))]) h2
       nlinarith [sq_nonneg (Real.sinh (Real.pi * v))]
     exact (sq_le_sq₀ (by positivity) (norm_nonneg _)).mp hsq
   · have h_sinh := sin_norm_ge_sinh (-Real.pi * β) (Real.pi * v)
@@ -936,8 +937,8 @@ lemma sin_pi_iv_beta_lb {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
           linarith
         have hep2 : Real.exp (-2 * Real.pi) ≤ 1 / 16 := by
           rw [show -2 * Real.pi = -(Real.pi + Real.pi) by ring, Real.exp_neg, Real.exp_add]
-          rw [inv_le_iff₀ (by positivity)]
-          nlinarith
+          rw [← one_div, div_le_div_iff₀ (by positivity) (by norm_num)]
+          norm_num; nlinarith
         rw [div_le_div_iff₀ (Real.exp_pos _) zero_lt_two]
         nlinarith
       calc Real.sin (Real.pi * δ) / Real.exp Real.pi
@@ -1000,9 +1001,9 @@ lemma sin_pi_iv_alpha_diff {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
     let f : ℝ → ℂ := fun t => Complex.sin (z₁ + t * (z₂ - z₁))
     have hf_d : ∀ t ∈ Set.Icc (0 : ℝ) 1, HasDerivAt f ((z₂ - z₁) * Complex.cos (z₁ + t * (z₂ - z₁))) t := by
       intro t _
-      have h1 : HasDerivAt (fun s : ℝ => z₁ + (s : ℂ) * (z₂ - z₁)) (z₂ - z₁) t := by
-        simpa using (hasDerivAt_const t z₁).add ((hasDerivAt_id t).ofReal_comp.mul_const (z₂ - z₁))
-      exact h1.sin.congr_deriv (by ring)
+      have h1 : HasDerivAt (fun s : ℝ => z₁ + (s : ℂ) * (z₂ - z₁)) (z₂ - z₁) t :=
+        ((hasDerivAt_id t).ofReal_comp.mul_const (z₂ - z₁)).const_add z₁
+      exact h1.csin.congr_deriv (by ring)
     have h_zdiff : ‖z₂ - z₁‖ = Real.pi * |α - β| := by
       have heq : z₂ - z₁ = ((Real.pi * (α - β) : ℝ) : ℂ) := by dsimp only [z₁, z₂]; push_cast; ring
       rw [heq, Complex.norm_real, Real.norm_eq_abs, abs_mul, abs_of_pos Real.pi_pos]
@@ -1036,7 +1037,7 @@ lemma sin_pi_iv_alpha_diff {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
     gcongr
   have hden_eq : (c_sin * Real.exp (Real.pi * v)) ^ 2 * (c_sin * Real.exp (Real.pi * v)) ^ 2 =
       c_sin ^ 4 * Real.exp (4 * Real.pi * v) := by
-    rw [← Real.exp_nat_mul]
+    rw [mul_pow, ← Real.exp_nat_mul]
     calc c_sin ^ 2 * Real.exp (↑2 * (Real.pi * v)) * (c_sin ^ 2 * Real.exp (↑2 * (Real.pi * v)))
         = c_sin ^ 4 * (Real.exp (2 * Real.pi * v) * Real.exp (2 * Real.pi * v)) := by push_cast; ring
       _ = c_sin ^ 4 * Real.exp (4 * Real.pi * v) := by rw [← Real.exp_add]; ring_nf
@@ -1050,7 +1051,6 @@ lemma sin_pi_iv_alpha_diff {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
         rw [show -2 * Real.pi * v = 2 * Real.pi * v - 4 * Real.pi * v by ring, Real.exp_sub,
           show 2 * Real.pi * v = Real.pi * v + Real.pi * v by ring, Real.exp_add]
         field_simp [hc_pos.ne']
-        ring
 
 set_option maxHeartbeats 800000 in
 lemma contour_c0_eq_zero (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
@@ -1145,7 +1145,7 @@ lemma contour_c0_eq_zero (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
         rw [← MeasureTheory.integral_const_mul]
         congr 1; ext v
         rw [← Complex.im_ofReal_mul]
-        congr 1; dsimp only [Φ]; rw [div_div]; ring
+        congr 1; dsimp only [Φ]; rw [div_div]
       rw [h_mul, ← integral_sub (by simpa using hΦy_int.const_mul y) hΦ_int]
       congr 1; ext v
       rw [← Complex.sub_im]
@@ -1163,7 +1163,7 @@ lemma contour_c0_eq_zero (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
           field_simp [hne]; ring
         calc -((y : ℂ) * (Δ * Real.sin θ / (Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ - y)))) -
               (Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2)
-            = (Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2) * (-((y : ℂ) / (Complex.I * Δ - y)) - 1) := by rw [div_div]; ring
+            = (Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2) * (-((y : ℂ) / (Complex.I * Δ - y)) - 1) := by rw [← div_div]; ring
           _ = (Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2) * (-(Complex.I * Δ / (Complex.I * Δ - y))) := by rw [h_alg]
           _ = -(Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ / (Complex.I * Δ - y))) := by ring
       have hre := congr_arg Complex.re h_id
@@ -1285,8 +1285,8 @@ lemma contour_c0_eq_zero (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
       have hsin_eq : Real.sin (Real.pi * (y - α)) ^ 2 = 1 := by
         have heq : Real.pi * (y - α) = (m : ℝ) * Real.pi + Real.pi / 2 := by dsimp only [y]; ring
         rw [heq, Real.sin_add, Real.sin_nat_mul_pi, Real.cos_nat_mul_pi, Real.sin_pi_div_two, zero_mul, zero_add]
-        rw [mul_one, ← pow_mul, mul_comm m 2, pow_mul]
-      rw [hsin_eq]; ring
+        rw [mul_one, ← pow_mul, mul_comm m 2, pow_mul]; norm_num
+      rw [hsin_eq]
     have ha_s : Summable (fun n : ℤ => rescaledF θ Δ (n + α) / (y - n - α) ^ 2) := by
       refine (ha_summ.mul_left 4).of_norm_bounded fun n => ?_
       have h_half : (1 / 2 : ℝ) ≤ |y - n - α| := by
@@ -1394,7 +1394,7 @@ lemma contour_c0_eq_zero (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
       have h_s_inv : Summable (fun n : ℤ => 1 / (y - n - α) ^ 2) := by
         have h_shift : (fun n : ℤ => (1 : ℝ) / (y - n - α) ^ 2) =
             (fun k : ℤ => 1 / ((k : ℝ) + 1 / 2) ^ 2) ∘ Equiv.subLeft (m : ℤ) := by
-          ext n; dsimp only [y, Function.comp_apply, Equiv.subLeft_apply]; push_cast; ring
+          ext n; dsimp only [y, Function.comp_apply]; rw [Equiv.subLeft_apply]; push_cast; ring
         rw [h_shift, (Equiv.subLeft (m : ℤ)).summable_iff]
         exact hC_half_summ
       have h_sum_term : Summable (fun n : ℤ => 4 * |rescaledF θ Δ (n + α)| / y + 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2)) :=
