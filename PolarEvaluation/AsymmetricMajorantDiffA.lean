@@ -12,25 +12,25 @@ lemma limitingJ_upper_bound (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   obtain ⟨Y₀, C_inf, hY₀, hC_inf, h_asymp⟩ := limitingJ_asymptotic θ hθ
   have hcont_pos : ContinuousOn (fun y : ℝ => |limitingJ y θ|) (Set.Icc 1 Y₀) :=
     (limitingJ_continuousOn_Icc θ hθ hY₀ (fun h => by linarith [h.1])).abs
-  obtain ⟨y₊, _, hy₊_max⟩ := isCompact_Icc.exists_isMaxOn ⟨1, left_mem_Icc.mpr hY₀⟩ hcont_pos
+  obtain ⟨y_plus, _, hy_plus_max⟩ := isCompact_Icc.exists_isMaxOn ⟨1, left_mem_Icc.mpr hY₀⟩ hcont_pos
   have hcont_neg : ContinuousOn (fun y : ℝ => |limitingJ y θ|) (Set.Icc (-Y₀) (-1)) :=
     (limitingJ_continuousOn_Icc θ hθ (by linarith) (fun h => by linarith [h.2])).abs
-  obtain ⟨y₋, _, hy₋_max⟩ := isCompact_Icc.exists_isMaxOn ⟨-1, right_mem_Icc.mpr (by linarith)⟩ hcont_neg
-  let M_mid : ℝ := max |limitingJ y₊ θ| |limitingJ y₋ θ|
+  obtain ⟨y_minus, _, hy_minus_max⟩ := isCompact_Icc.exists_isMaxOn ⟨-1, right_mem_Icc.mpr (by linarith)⟩ hcont_neg
+  let M_mid : ℝ := max |limitingJ y_plus θ| |limitingJ y_minus θ|
   let C_up : ℝ := max (M_mid * Y₀ ^ 2 + 1) (2 * |envelopeC θ| / Real.pi ^ 2 + C_inf)
   refine ⟨C_up, by positivity, fun y hy => ?_⟩
   rcases le_or_gt |y| Y₀ with hy_le | hy_gt
   · have h_mid : |limitingJ y θ| ≤ M_mid := by
       rcases le_total 0 y with hy0 | hy0
       · rw [abs_of_nonneg hy0] at hy hy_le
-        exact (hy₊_max ⟨hy, hy_le⟩).trans (le_max_left _ _)
+        exact (hy_plus_max ⟨hy, hy_le⟩).trans (le_max_left _ _)
       · rw [abs_of_nonpos hy0] at hy hy_le
-        exact (hy₋_max ⟨by linarith, by linarith⟩).trans (le_max_right _ _)
+        exact (hy_minus_max ⟨by linarith, by linarith⟩).trans (le_max_right _ _)
     have h1 : y ^ 2 ≤ Y₀ ^ 2 := by rw [← sq_abs y]; exact sq_le_sq' (by linarith) hy_le
     calc |limitingJ y θ| ≤ M_mid := h_mid
       _ ≤ (M_mid * Y₀ ^ 2 + 1) / y ^ 2 := by
           rw [le_div_iff₀ (by rw [← sq_abs]; nlinarith)]
-          nlinarith [abs_nonneg (limitingJ y₊ θ), le_max_left |limitingJ y₊ θ| |limitingJ y₋ θ|]
+          nlinarith [abs_nonneg (limitingJ y_plus θ), le_max_left |limitingJ y_plus θ| |limitingJ y_minus θ|]
       _ ≤ C_up / y ^ 2 := div_le_div_of_nonneg_right (le_max_left _ _) (sq_nonneg y)
   · have h_as := h_asymp y hy_gt.le
     have h1 : |limitingJ y θ| ≤ 2 * |envelopeC θ| / (Real.pi ^ 2 * y ^ 2) + C_inf / |y| ^ 3 := by
