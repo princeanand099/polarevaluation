@@ -255,10 +255,10 @@ private lemma diffA_combine_small (C_diff C_tail c_sin Δ a_diff log_y A1 A2 A3 
             (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)))) * (1 + log_y) := by ring
     _ ≤ (C_err1 * a_diff + C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ))) * (1 + log_y) := by
           have h_s1 : C_diff * a_diff * 2 ≤ C_err1 * a_diff := by
-            rw [mul_right_comm]; exact mul_le_mul_of_nonneg_right h_c1 h_a
+            rw [mul_right_comm, mul_comm C_diff 2]; exact mul_le_mul_of_nonneg_right h_c1 h_a
           have h_s2 : C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) +
               (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) ≤ C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ)) := by
-            rw [mul_assoc C_tail, ← add_mul]; exact mul_le_mul_of_nonneg_right h_c2 h_nonneg1
+            rw [← add_mul]; exact mul_le_mul_of_nonneg_right h_c2 h_nonneg1
           exact mul_le_mul_of_nonneg_right (add_le_add h_s1 h_s2) (by linarith)
     _ = C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ) + a_diff) * (1 + log_y) := by ring
 
