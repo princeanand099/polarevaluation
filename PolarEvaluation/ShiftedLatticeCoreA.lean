@@ -747,7 +747,7 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
     exact hf'_all k
   have hs_e : Summable (fun s : ℕ ⊕ ℕ => g_k (e s)) := e.summable_iff.mpr hs_gk
   rw [← e.tsum_eq, Summable.tsum_sum (hs_e.comp_injective Sum.inl_injective) (hs_e.comp_injective Sum.inr_injective)]
-  simp only [e, Sum.elim_inl, Sum.elim_inr, hg_k_nonneg, tsum_zero, zero_add]
+  simp only [e, Equiv.coe_fn_mk, Sum.elim_inl, Sum.elim_inr, hg_k_nonneg, tsum_zero, zero_add]
   have heq_w : (∑' m : ℕ, g_k (-((m : ℤ) + 1))) = (-4 * Real.pi ^ 2 * w) * ∑' m : ℕ, ((m : ℂ) + 1) * w ^ m := by
     rw [← tsum_mul_left]
     congr 1; ext m; rw [hg_k_eq m]; ring
