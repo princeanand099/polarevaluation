@@ -759,8 +759,12 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
     linarith
   have hsin_eq : Complex.sin (Real.pi * z) =
       (Complex.exp (Complex.I * Real.pi * z) - Complex.exp (-Complex.I * Real.pi * z)) / (2 * Complex.I) := by
-    rw [Complex.sin_eq_exp]
-    congr 1; ring
+    unfold Complex.sin
+    have h1 : -(Real.pi * z) * Complex.I = -Complex.I * Real.pi * z := by ring
+    have h2 : (Real.pi : ℂ) * z * Complex.I = Complex.I * Real.pi * z := by ring
+    rw [h1, h2]
+    field_simp [Complex.I_ne_zero]
+    ring_nf; simp [Complex.I_sq]; ring
   have hsin_sq : Complex.sin (Real.pi * z) ^ 2 =
       -Complex.exp (-2 * Complex.I * Real.pi * z) * (1 - w) ^ 2 / 4 := by
     rw [hsin_eq, div_pow, mul_pow, show (2 : ℂ) ^ 2 = 4 by norm_num, Complex.I_sq]
@@ -772,14 +776,13 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
     rw [he1, show Complex.exp (-Complex.I * Real.pi * z) * w - Complex.exp (-Complex.I * Real.pi * z) =
         -Complex.exp (-Complex.I * Real.pi * z) * (1 - w) by ring, mul_pow, neg_sq, he2]
     ring
-  have hw_inv : w = Complex.exp (-2 * Complex.I * Real.pi * z)⁻¹ := by
-    dsimp only [w]; rw [← Complex.exp_neg]; congr 1; ring
   have hexp_ne : Complex.exp (-2 * Complex.I * Real.pi * z) ≠ 0 := Complex.exp_ne_zero _
   rw [hsin_sq]
   have hw_prod : w * Complex.exp (-2 * Complex.I * Real.pi * z) = 1 := by
     dsimp only [w]; rw [← Complex.exp_add]; convert Complex.exp_zero using 2; ring
   field_simp [h1w, hexp_ne]
-  linear_combination -4 * (Real.pi : ℂ) ^ 2 * hw_prod
+  try rw [show -(Real.pi * 2 * Complex.I * z) = -2 * Complex.I * Real.pi * z by ring]
+  linear_combination (4 * (Real.pi : ℂ) ^ 2 - 1) * hw_prod
 
 lemma tsum_inv_sub_real_sq (y : ℝ) (hy : Real.sin (Real.pi * y) ≠ 0) :
     Summable (fun n : ℤ => 1 / (y - n) ^ 2) ∧
