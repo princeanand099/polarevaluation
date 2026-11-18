@@ -324,9 +324,9 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     calc Δ ^ 2 / (|(n : ℝ) + α| * ((n + α) ^ 2 + Δ ^ 2))
         ≤ Δ ^ 2 / (min α (1 - α) * (n + α) ^ 2) := by
           gcongr
-          exact mul_le_mul_of_nonneg_left (by linarith [sq_pos_of_pos hΔ_pos]) hmin_pos.le
+          linarith [sq_pos_of_pos hΔ_pos]
       _ = Δ ^ 2 / min α (1 - α) * (1 / (-α - n) ^ 2) := by
-          rw [h_eq_inv]; ring
+          rw [h_eq_inv, mul_div_assoc', mul_one, div_div]
   have h_summ_2 : ∀ α : ℝ, Summable (fun n : ℤ => f₂ (n + α)) := by
     intro α
     have hs := (lorentz_tsum_bound Δ α hΔ_ge_1).1
@@ -334,22 +334,24 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     dsimp only [f₂]
     rw [Real.norm_eq_abs, abs_of_pos (by positivity)]
     have h1 : Δ ^ 2 ≤ (n + α) ^ 2 + Δ ^ 2 := by linarith [sq_nonneg ((n : ℝ) + α)]
+    have hne2 : (n + α) ^ 2 + Δ ^ 2 ≠ 0 := by positivity
     calc 2 * Δ ^ 3 / ((n + α) ^ 2 + Δ ^ 2) ^ 2
-        = (2 * Δ / ((n + α) ^ 2 + Δ ^ 2)) * (Δ ^ 2 / ((n + α) ^ 2 + Δ ^ 2)) := by ring
+        = (2 * Δ / ((n + α) ^ 2 + Δ ^ 2)) * (Δ ^ 2 / ((n + α) ^ 2 + Δ ^ 2)) := by
+          field_simp [hne2]; ring
       _ ≤ (2 * Δ / ((n + α) ^ 2 + Δ ^ 2)) * 1 := by
           gcongr; exact div_le_one_of_le₀ h1 (by positivity)
       _ = 2 * (Δ / ((n + α) ^ 2 + Δ ^ 2)) := by ring
   have h_summ_all : ∀ α ∈ Set.Ioo (0 : ℝ) 1, Summable (fun n : ℤ => rescaledFDeriv θ Δ (n + α)) := by
     intro α hα
     have heq : (fun n : ℤ => rescaledFDeriv θ Δ (n + α)) =
-        fun n => Real.cos θ * f₁ (n + α) - Real.sin θ * f₂ (n + α) := by
+        fun n : ℤ => Real.cos θ * f₁ (n + α) - Real.sin θ * f₂ (n + α) := by
       ext n; unfold rescaledFDeriv; dsimp only [f₁, f₂]; ring
     rw [heq]
     exact ((h_summ_1 α hα).mul_left _).sub ((h_summ_2 α).mul_left _)
   have hg_eq : ∀ α ∈ Set.Ioo (0 : ℝ) 1, ∑' n : ℤ, rescaledFDeriv θ Δ (n + α) = g α := by
     intro α hα
     have heq : (fun n : ℤ => rescaledFDeriv θ Δ (n + α)) =
-        fun n => Real.cos θ * f₁ (n + α) - Real.sin θ * f₂ (n + α) := by
+        fun n : ℤ => Real.cos θ * f₁ (n + α) - Real.sin θ * f₂ (n + α) := by
       ext n; unfold rescaledFDeriv; dsimp only [f₁, f₂]; ring
     rw [heq, ((h_summ_1 α hα).mul_left _).tsum_sub ((h_summ_2 α).mul_left _),
       tsum_mul_left, tsum_mul_left]
@@ -358,8 +360,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     let e : ℤ ≃ ℤ :=
       { toFun := fun n => -n - 1
         invFun := fun n => -n - 1
-        left_inv := fun n => by omega
-        right_inv := fun n => by omega }
+        left_inv := fun n => by dsimp; omega
+        right_inv := fun n => by dsimp; omega }
     have heq : g₁ (1 / 2) = -g₁ (1 / 2) := by
       calc g₁ (1 / 2) = ∑' n : ℤ, f₁ ((e n : ℝ) + 1 / 2) := (e.tsum_eq (fun n : ℤ => f₁ (n + 1 / 2))).symm
         _ = ∑' n : ℤ, -f₁ (n + 1 / 2) := by
@@ -410,8 +412,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           · simp only [id_eq]; ring
         have h2 : HasDerivAt (fun s : ℝ => ((n : ℝ) + s) / (((n : ℝ) + s) ^ 2 + Δ ^ 2))
             ((((n : ℝ) + t) ^ 2 + Δ ^ 2 - 2 * ((n : ℝ) + t) ^ 2) / (((n : ℝ) + t) ^ 2 + Δ ^ 2) ^ 2) t := by
-          have ha' : HasDerivAt (fun s : ℝ => (n : ℝ) + s) 1 t := by
-            simpa using (hasDerivAt_id t).const_add (n : ℝ)
+          have ha' : HasDerivAt (fun s : ℝ => (n : ℝ) + s) 1 t :=
+            (hasDerivAt_id' t).const_add (n : ℝ)
           have hb' : HasDerivAt (fun s : ℝ => ((n : ℝ) + s) ^ 2 + Δ ^ 2) (2 * ((n : ℝ) + t)) t := by
             simpa using (ha'.pow 2).add_const (Δ ^ 2)
           convert ha'.div hb' (by positivity : ((n : ℝ) + t) ^ 2 + Δ ^ 2 ≠ 0) using 1
