@@ -29,13 +29,11 @@ lemma tsum_int_split_gen {E : Type*} [NormedAddCommGroup E] [CompleteSpace E]
       left_inv := fun s => by
         rcases s with n | n
         · simp only [Sum.elim_inl]
-          split_ifs with h
-          · simp
-          · exfalso; omega
+          rw [if_pos (by omega)]
+          simp
         · simp only [Sum.elim_inr]
-          split_ifs with h
-          · exfalso; omega
-          · simp
+          rw [if_neg (by omega)]
+          simp [Int.natAbs_neg]
       right_inv := fun m => by
         dsimp only; split_ifs with h
         · simp only [Sum.elim_inl]; exact Int.natAbs_of_nonneg h
