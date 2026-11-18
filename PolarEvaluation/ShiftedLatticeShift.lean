@@ -551,6 +551,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have hs2 := sin_norm_ge_sinh (-Real.pi * t) (Real.pi * Δ)
         rw [abs_of_pos (by positivity)] at hs2
         have hs3 := (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs2
+        push_cast at hs3
         rw [← heq] at hs3
         exact pow_ne_zero 2 (norm_ne_zero_iff.mp (by linarith))
     rw [h_int_congr, intervalIntegral.integral_add h_int1 h_int2, intervalIntegral.integral_neg,
@@ -571,14 +572,13 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           (-(Real.pi ^ 2 * (1 / Real.sin (Real.pi * t) ^ 2))) t := by
         intro t ht
         have hne := h_sin_ne t (h_ab_sub ht)
+        have hd : HasDerivAt (fun s => Real.pi * s) Real.pi t := by
+          simpa using (hasDerivAt_id t).const_mul Real.pi
         have h1 : HasDerivAt (fun s => Real.pi * Real.cos (Real.pi * s))
             (Real.pi * (-Real.sin (Real.pi * t) * Real.pi)) t := by
-          have := ((Real.hasDerivAt_cos (Real.pi * t)).comp t ((hasDerivAt_id t).const_mul Real.pi)).const_mul Real.pi
-          convert this using 1; ring
-        have h2 : HasDerivAt (fun s => Real.sin (Real.pi * s)) (Real.cos (Real.pi * t) * Real.pi) t := by
-          have hd : HasDerivAt (fun s => Real.pi * s) Real.pi t := by
-            simpa using (hasDerivAt_id t).const_mul Real.pi
-          exact (Real.hasDerivAt_sin (Real.pi * t)).comp t hd
+          simpa [Function.comp_def] using ((Real.hasDerivAt_cos (Real.pi * t)).comp t hd).const_mul Real.pi
+        have h2 : HasDerivAt (fun s => Real.sin (Real.pi * s)) (Real.cos (Real.pi * t) * Real.pi) t :=
+          (Real.hasDerivAt_sin (Real.pi * t)).comp t hd
         convert h1.div h2 hne using 1
         have hsc := Real.sin_sq_add_cos_sq (Real.pi * t)
         field_simp [hne]; nlinarith
@@ -698,7 +698,9 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           |∑' n : ℤ, Δ * (Δ ^ 2 - (n + α) ^ 2) / ((n + α) ^ 2 + Δ ^ 2) ^ 2| := abs_add_le _ _
       _ ≤ C_lor * Real.exp (-2 * Real.pi * Δ) + C_sin * Δ * Real.exp (-2 * Real.pi * Δ) := by
           gcongr
-          simpa [C_lor, mul_comm, mul_div_assoc] using hlor.2
+          calc |∑' n : ℤ, Δ / ((n + α) ^ 2 + Δ ^ 2) - Real.pi|
+              ≤ 2 * Real.pi * Real.exp (-2 * Real.pi * Δ) / (1 - Real.exp (-2 * Real.pi)) := hlor.2
+            _ = C_lor * Real.exp (-2 * Real.pi * Δ) := by dsimp only [C_lor]; ring
       _ = (C_lor + C_sin * Δ) * Real.exp (-2 * Real.pi * Δ) := by ring
   have hg2_diff : ∀ {a b : ℝ}, a ≤ b →
       |g₂ b - g₂ a| ≤ (C_sin + C_lip * Δ) * Real.exp (-2 * Real.pi * Δ) * (b - a) := by
@@ -737,9 +739,12 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         intro n
         apply intervalIntegral.integral_eq_sub_of_hasDerivAt (f := fun t => Δ / ((n + t) ^ 2 + Δ ^ 2))
         · intro t _
-          have hb' := ((hasDerivAt_pow 2 ((n : ℝ) + t)).comp t ((hasDerivAt_id t).const_add (n : ℝ))).add_const (Δ ^ 2)
+          have ha' : HasDerivAt (fun s : ℝ => (n : ℝ) + s) 1 t := by
+            simpa using (hasDerivAt_id t).const_add (n : ℝ)
+          have hb' : HasDerivAt (fun s : ℝ => ((n : ℝ) + s) ^ 2 + Δ ^ 2) (2 * ((n : ℝ) + t)) t := by
+            simpa using (ha'.pow 2).add_const (Δ ^ 2)
           convert (hasDerivAt_const t Δ).div hb' (ne_of_gt (add_pos_of_nonneg_of_pos (sq_nonneg _) (sq_pos_of_pos hΔ_pos))) using 1
-          ring
+          dsimp only [d₂]; ring
         · exact (hd₂_cont n).mono (by rw [Set.uIcc_of_le hab]) |>.intervalIntegrable
       let M₂ : ℤ → ℝ := fun n => 4 * (1 + (|a| + |b|)) ^ 2 * Δ * (1 + |(n : ℝ)|) ^ (-2 : ℝ)
       have hM₂_summ : Summable M₂ := summable_inv_one_add_sq_int.mul_left (4 * (1 + (|a| + |b|)) ^ 2 * Δ)
