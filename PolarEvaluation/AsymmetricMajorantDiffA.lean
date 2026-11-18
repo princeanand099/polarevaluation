@@ -204,6 +204,117 @@ private noncomputable def diffA_C_err1 (θ : ℝ) : ℝ :=
   let C_tail : ℝ := 4 / Real.cos θ ^ 2
   C_diff * (2 + 1 / (2 * Real.pi)) + C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1
 
+private lemma diffA_combine_small (C_diff C_tail c_sin Δ a_diff log_y A1 A2 A3 : ℝ)
+    (hΔ : Δ ≥ 1) (hC_diff : 0 ≤ C_diff) (hC_tail : 0 ≤ C_tail) (hc_sin : 0 ≤ 1 / c_sin ^ 2)
+    (h_log : 0 ≤ log_y) (h_a : 0 ≤ a_diff)
+    (h1 : |A1| ≤ C_diff * a_diff * (2 + log_y))
+    (h2 : |A2| ≤ C_tail * (1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * Δ))
+    (h3 : |A3| ≤ (1 / c_sin ^ 2) * Real.exp (-2 * Real.pi * Δ)) :
+    |A1 - A2 - A3| ≤
+      (C_diff * (2 + 1 / (2 * Real.pi)) + C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1) *
+        (Δ * Real.exp (-2 * Real.pi * Δ) + a_diff) * (1 + log_y) := by
+  let C_err1 : ℝ := C_diff * (2 + 1 / (2 * Real.pi)) + C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1
+  have h_1_le_log : 1 ≤ 1 + log_y := by linarith
+  have h_2_le : 2 + log_y ≤ 2 * (1 + log_y) := by linarith
+  have h_exp_le : Real.exp (-2 * Real.pi * Δ) ≤ Δ * Real.exp (-2 * Real.pi * Δ) :=
+    le_mul_of_one_le_left (Real.exp_pos _).le hΔ
+  have h_tri : |A1 - A2 - A3| ≤ |A1| + |A2| + |A3| :=
+    (abs_sub (A1 - A2) A3).trans (add_le_add (abs_sub A1 A2) le_rfl)
+  have h1' : C_diff * a_diff * (2 + log_y) ≤ C_diff * a_diff * (2 * (1 + log_y)) := by gcongr
+  have h2' : C_tail * (1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * Δ) ≤
+      C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + log_y) := by
+    calc C_tail * (1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * Δ)
+        ≤ C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) := by gcongr
+      _ = C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) * 1 := (mul_one _).symm
+      _ ≤ _ := by gcongr
+  have h3' : (1 / c_sin ^ 2) * Real.exp (-2 * Real.pi * Δ) ≤
+      (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + log_y) := by
+    calc (1 / c_sin ^ 2) * Real.exp (-2 * Real.pi * Δ)
+        ≤ (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) := by gcongr
+      _ = (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) * 1 := (mul_one _).symm
+      _ ≤ _ := by gcongr
+  have h_c1 : 2 * C_diff ≤ C_err1 := by
+    dsimp only [C_err1]
+    have h_pi : 0 ≤ C_diff / (2 * Real.pi) := div_nonneg hC_diff (mul_pos two_pos Real.pi_pos).le
+    have h_t : 0 ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) := by positivity
+    nlinarith
+  have h_c2 : C_tail * (1 / (2 * Real.pi)) + 1 / c_sin ^ 2 ≤ C_err1 := by
+    dsimp only [C_err1]
+    have : 0 ≤ C_diff * (2 + 1 / (2 * Real.pi)) := by positivity
+    have : 0 ≤ C_tail * (1 / (4 * Real.pi ^ 2) + 1) := by positivity
+    linarith
+  have h_nonneg1 : 0 ≤ Δ * Real.exp (-2 * Real.pi * Δ) := by positivity
+  calc |A1 - A2 - A3| ≤ |A1| + |A2| + |A3| := h_tri
+    _ ≤ C_diff * a_diff * (2 * (1 + log_y)) +
+        C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + log_y) +
+        (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + log_y) :=
+          add_le_add (add_le_add (h1.trans h1') (h2.trans h2')) (h3.trans h3')
+    _ = (C_diff * a_diff * 2 +
+          (C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) +
+            (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)))) * (1 + log_y) := by ring
+    _ ≤ (C_err1 * a_diff + C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ))) * (1 + log_y) := by
+          gcongr
+          · rw [mul_comm (C_diff * a_diff) 2, ← mul_assoc]; gcongr; linarith
+          · rw [← add_mul]; gcongr
+    _ = C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ) + a_diff) * (1 + log_y) := by ring
+
+private lemma diffA_combine_large (C_diff C_tail c_sin Δ a_diff y A1 A2 A3 : ℝ)
+    (hΔ : Δ ≥ 1) (hC_diff : 0 ≤ C_diff) (hC_tail : 0 ≤ C_tail) (hc_sin : 0 ≤ 1 / c_sin ^ 2)
+    (h_a : 0 ≤ a_diff)
+    (h1 : |A1| ≤ C_diff * a_diff * (1 / (4 * Real.pi ^ 2)) / y ^ 2)
+    (h2 : |A2| ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * Δ * Real.exp (-2 * Real.pi * Δ) / y ^ 2)
+    (h3 : |A3| ≤ (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) / y ^ 2) :
+    |A1 - A2 - A3| ≤
+      (C_diff * (2 + 1 / (2 * Real.pi)) + C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1) *
+        (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) + a_diff) / y ^ 2 := by
+  let C_err1 : ℝ := C_diff * (2 + 1 / (2 * Real.pi)) + C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1
+  have h_Δ_le : Δ * Real.exp (-2 * Real.pi * Δ) ≤ Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) := by
+    have : Δ ≤ Δ ^ 2 := by nlinarith
+    gcongr
+  have h_tri : |A1 - A2 - A3| ≤ |A1| + |A2| + |A3| :=
+    (abs_sub (A1 - A2) A3).trans (add_le_add (abs_sub A1 A2) le_rfl)
+  have h_c1 : C_diff * (1 / (4 * Real.pi ^ 2)) ≤ C_err1 := by
+    have hpi2 : (1 : ℝ) ≤ 4 * Real.pi ^ 2 := by nlinarith [Real.two_le_pi]
+    have h_inv : 1 / (4 * Real.pi ^ 2) ≤ 1 := div_le_one_of_le₀ hpi2 (by positivity)
+    have h_le1 : 1 / (4 * Real.pi ^ 2) ≤ 2 + 1 / (2 * Real.pi) :=
+      h_inv.trans (le_add_of_le_of_nonneg (by norm_num) (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le))
+    have h_le2 : C_diff * (1 / (4 * Real.pi ^ 2)) ≤ C_diff * (2 + 1 / (2 * Real.pi)) :=
+      mul_le_mul_of_nonneg_left h_le1 hC_diff
+    have h_tail_nn : 0 ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1 := by positivity
+    exact h_le2.trans (le_add_of_nonneg_right h_tail_nn)
+  have h_c2 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) + 1 / c_sin ^ 2 ≤ C_err1 := by
+    have h_d_nn : 0 ≤ C_diff * (2 + 1 / (2 * Real.pi)) := by positivity
+    have h_t_le : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) :=
+      mul_le_mul_of_nonneg_left (le_add_of_nonneg_right zero_le_one) hC_tail
+    exact (add_le_add h_t_le le_rfl).trans (le_trans (le_add_of_nonneg_left h_d_nn) (le_add_of_nonneg_right zero_le_one))
+  have h_le2 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * Δ * Real.exp (-2 * Real.pi * Δ) / y ^ 2 ≤
+      C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) / y ^ 2 := by
+    rw [mul_assoc (C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2))) Δ (Real.exp (-2 * Real.pi * Δ))]
+    gcongr
+  have h_step1 : |A1 - A2 - A3| ≤
+      C_diff * a_diff * (1 / (4 * Real.pi ^ 2)) / y ^ 2 +
+      C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) / y ^ 2 +
+      (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) / y ^ 2 :=
+    h_tri.trans (add_le_add (add_le_add h1 (h2.trans h_le2)) h3)
+  refine h_step1.trans ?_
+  rw [← add_div, ← add_div]
+  refine div_le_div_of_nonneg_right ?_ (sq_nonneg y)
+  have h_nonneg1 : 0 ≤ Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) := by positivity
+  have h_s1 : C_diff * a_diff * (1 / (4 * Real.pi ^ 2)) ≤ C_err1 * a_diff := by
+    rw [mul_right_comm]; exact mul_le_mul_of_nonneg_right h_c1 h_a
+  have h_s2 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) +
+      (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) ≤ C_err1 * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) := by
+    rw [mul_assoc (1 / c_sin ^ 2), ← add_mul]
+    exact mul_le_mul_of_nonneg_right h_c2 h_nonneg1
+  calc C_diff * a_diff * (1 / (4 * Real.pi ^ 2)) +
+        C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) +
+        (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)
+      = C_diff * a_diff * (1 / (4 * Real.pi ^ 2)) +
+          (C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) +
+            (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) := by ring
+    _ ≤ C_err1 * a_diff + C_err1 * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) := add_le_add h_s1 h_s2
+    _ = C_err1 * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) + a_diff) := by ring
+
 private lemma majorant_contour_diff_small (θ : ℝ) (hθ : |θ| < Real.pi / 2)
     (Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
     (hα_near : |α - (1 / 2 - θ / Real.pi)| ≤ (min ((1 / 2 - θ / Real.pi) / 2) ((1 - (1 / 2 - θ / Real.pi)) / 2)) / 2)
@@ -581,88 +692,10 @@ private lemma majorant_contour_diff_small (θ : ℝ) (hθ : |θ| < Real.pi / 2)
     rw [integral_const_mul, int_exp_neg_two_pi_Ioi Δ (by linarith)] at h_mono
     linarith [h_mono]
   have h_part3 := diffA_part3_small θ Δ α c_sin y hΔ hc_pos (sin_pi_iv_beta_lb hδ0 hδ1 hα1 hα2 Δ (by linarith))
-  have h_log_nonneg : 0 ≤ Real.log (1 / |y|) := Real.log_nonneg ((one_le_div hy0).mpr hy1.le)
-  have h_1_le_log : 1 ≤ 1 + Real.log (1 / |y|) := by linarith
-  have h_2_le : 2 + Real.log (1 / |y|) ≤ 2 * (1 + Real.log (1 / |y|)) := by linarith
-  have h_exp_le : Real.exp (-2 * Real.pi * Δ) ≤ Δ * Real.exp (-2 * Real.pi * Δ) :=
-    le_mul_of_one_le_left (Real.exp_pos _).le hΔ
-  have hC_diff_nn : 0 ≤ C_diff := div_nonneg (mul_pos two_pos Real.pi_pos).le (pow_nonneg hc_pos.le 4)
-  have hC_tail_nn : 0 ≤ C_tail := div_nonneg (by norm_num) (sq_nonneg _)
-  have hc_sin_sq_nn : 0 ≤ 1 / c_sin ^ 2 := div_nonneg zero_le_one (sq_nonneg _)
-  have h_tri_s : |(∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) / ((y : ℂ) - Complex.I * v)).im) -
-        (∫ v in Set.Ioi Δ, (Φ_star v / ((y : ℂ) - Complex.I * v)).im) -
-        (Δ * Real.sin θ / (Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ - y))).re|
-      ≤ |∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) / ((y : ℂ) - Complex.I * v)).im| +
-        |∫ v in Set.Ioi Δ, (Φ_star v / ((y : ℂ) - Complex.I * v)).im| +
-        |(Δ * Real.sin θ / (Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ - y))).re| := by
-    have h_a := abs_sub (∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) / ((y : ℂ) - Complex.I * v)).im)
-      (∫ v in Set.Ioi Δ, (Φ_star v / ((y : ℂ) - Complex.I * v)).im)
-    have h_b := abs_sub ((∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) / ((y : ℂ) - Complex.I * v)).im) -
-      (∫ v in Set.Ioi Δ, (Φ_star v / ((y : ℂ) - Complex.I * v)).im))
-      ((Δ * Real.sin θ / (Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ - y))).re)
-    exact h_b.trans (add_le_add_right h_a _)
-  have h1_s : C_diff * |α - α_star| * (2 + Real.log (1 / |y|)) ≤ C_diff * |α - α_star| * (2 * (1 + Real.log (1 / |y|))) :=
-    mul_le_mul_of_nonneg_left h_2_le (mul_nonneg hC_diff_nn (abs_nonneg _))
-  have h2_s : C_tail * (1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * Δ) ≤
-      C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + Real.log (1 / |y|)) := by
-    have h2a : C_tail * (1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * Δ) ≤
-        C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) :=
-      mul_le_mul_of_nonneg_left h_exp_le (mul_nonneg hC_tail_nn (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le))
-    have h2b : C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) * 1 ≤
-        C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + Real.log (1 / |y|)) :=
-      mul_le_mul_of_nonneg_left h_1_le_log (mul_nonneg (mul_nonneg hC_tail_nn (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le))
-        (mul_nonneg (zero_le_one.trans hΔ) (Real.exp_pos _).le))
-    exact h2a.trans ((mul_one _).symm.le.trans h2b)
-  have h3_s : (1 / c_sin ^ 2) * Real.exp (-2 * Real.pi * Δ) ≤
-      (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + Real.log (1 / |y|)) := by
-    have h3a : (1 / c_sin ^ 2) * Real.exp (-2 * Real.pi * Δ) ≤ (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) :=
-      mul_le_mul_of_nonneg_left h_exp_le hc_sin_sq_nn
-    have h3b : (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) * 1 ≤
-        (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + Real.log (1 / |y|)) :=
-      mul_le_mul_of_nonneg_left h_1_le_log (mul_nonneg hc_sin_sq_nn (mul_nonneg (zero_le_one.trans hΔ) (Real.exp_pos _).le))
-    exact h3a.trans ((mul_one _).symm.le.trans h3b)
-  have h_step2_s : |(∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) / ((y : ℂ) - Complex.I * v)).im) -
-        (∫ v in Set.Ioi Δ, (Φ_star v / ((y : ℂ) - Complex.I * v)).im) -
-        (Δ * Real.sin θ / (Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ - y))).re| ≤
-      C_diff * |α - α_star| * (2 * (1 + Real.log (1 / |y|))) +
-      C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + Real.log (1 / |y|)) +
-      (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + Real.log (1 / |y|)) :=
-    h_tri_s.trans (add_le_add (add_le_add (h_part1.trans h1_s) (h_part2.trans h2_s)) (h_part3.trans h3_s))
-  have h_c1 : 2 * C_diff ≤ C_err1 := by
-    have h1 : 2 * C_diff ≤ C_diff * (2 + 1 / (2 * Real.pi)) := by
-      rw [mul_comm 2 C_diff]
-      exact mul_le_mul_of_nonneg_left (le_add_of_nonneg_right (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le)) hC_diff_nn
-    have h_tail_nn : 0 ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1 :=
-      add_nonneg (add_nonneg (mul_nonneg hC_tail_nn
-        (add_nonneg (add_nonneg (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le)
-          (div_nonneg zero_le_one (mul_nonneg (by norm_num) (sq_nonneg _)))) zero_le_one))
-        hc_sin_sq_nn) zero_le_one
-    exact h1.trans (le_add_of_nonneg_right h_tail_nn)
-  have h_c2 : C_tail * (1 / (2 * Real.pi)) + 1 / c_sin ^ 2 ≤ C_err1 := by
-    have h_d_nn : 0 ≤ C_diff * (2 + 1 / (2 * Real.pi)) :=
-      mul_nonneg hC_diff_nn (add_nonneg (by norm_num) (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le))
-    have h_t_le : C_tail * (1 / (2 * Real.pi)) ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) :=
-      mul_le_mul_of_nonneg_left (le_add_of_nonneg_right (add_nonneg (div_nonneg zero_le_one (mul_nonneg (by norm_num) (sq_nonneg _))) zero_le_one)) hC_tail_nn
-    exact (add_le_add_right h_t_le _).trans (le_trans (le_add_of_nonneg_left h_d_nn) (le_add_of_nonneg_right zero_le_one))
-  have h_nonneg1 : 0 ≤ Δ * Real.exp (-2 * Real.pi * Δ) := mul_nonneg (zero_le_one.trans hΔ) (Real.exp_pos _).le
-  have h_nonneg2 : 0 ≤ |α - α_star| := abs_nonneg _
-  have h_sum1 : C_diff * |α - α_star| * 2 ≤ C_err1 * |α - α_star| := by
-    rw [mul_comm (C_diff * |α - α_star|) 2, ← mul_assoc, mul_comm 2 C_diff]
-    exact mul_le_mul_of_nonneg_right h_c1 h_nonneg2
-  have h_sum2 : C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) +
-      (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) ≤ C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ)) := by
-    rw [← add_mul]
-    exact mul_le_mul_of_nonneg_right h_c2 h_nonneg1
-  refine h_step2_s.trans ?_
-  calc C_diff * |α - α_star| * (2 * (1 + Real.log (1 / |y|))) +
-        C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + Real.log (1 / |y|)) +
-        (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) * (1 + Real.log (1 / |y|))
-      = (C_diff * |α - α_star| * 2 +
-          (C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) +
-            (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)))) * (1 + Real.log (1 / |y|)) := by ring
-    _ ≤ (C_err1 * |α - α_star| + C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ))) * (1 + Real.log (1 / |y|)) :=
-          mul_le_mul_of_nonneg_right (add_le_add h_sum1 h_sum2) (zero_le_one.trans h_1_le_log)
-    _ = C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ) + |α - α_star|) * (1 + Real.log (1 / |y|)) := by ring
+  exact diffA_combine_small C_diff C_tail c_sin Δ |α - α_star| (Real.log (1 / |y|)) _ _ _
+    hΔ (div_nonneg (mul_pos two_pos Real.pi_pos).le (pow_nonneg hc_pos.le 4))
+    (div_nonneg (by norm_num) (sq_nonneg _)) (div_nonneg zero_le_one (sq_nonneg _))
+    (Real.log_nonneg ((one_le_div hy0).mpr hy1.le)) (abs_nonneg _) h_part1 h_part2 h_part3
 
 private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
     (Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
@@ -918,7 +951,8 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
       rw [← sub_div, ← add_div]; exact h_diff_c0
     linarith [h_diff_c0', h_sub1, h_sub2, h_id3]
   rw [h_sub_c0]
-  change |((∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) - (∫ v in Set.Ioi Δ, (Φ_star v * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) - (Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ / ((y : ℂ) * (Complex.I * Δ - y)))).re)| ≤ C_err1 * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) + |α - α_star|) / y ^ 2
+  change |((∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) - (∫ v in Set.Ioi Δ, (Φ_star v * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) - (Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ / ((y : ℂ) * (Complex.I * Δ - y)))).re)| ≤ diffA_C_err1 θ * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) + |α - α_star|) / y ^ 2
+  dsimp only [diffA_C_err1]
   have h_p1 : |∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im| ≤
       C_diff * |α - α_star| * (1 / (4 * Real.pi ^ 2)) / y ^ 2 := by
     rw [← Real.norm_eq_abs]
@@ -1059,82 +1093,10 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
       _ ≤ C_tail / y ^ 2 * ((1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * Δ * Real.exp (-2 * Real.pi * Δ)) := by gcongr
       _ = C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * Δ * Real.exp (-2 * Real.pi * Δ) / y ^ 2 := by ring
   have h_p3 := diffA_part3_large θ Δ α c_sin y hΔ hy0 hc_pos (sin_pi_iv_beta_lb hδ0 hδ1 hα1 hα2 Δ (by linarith))
-  have h_Δ_sq : Δ ≤ Δ ^ 2 := by
-    rw [sq]; exact le_mul_of_one_le_left (zero_le_one.trans hΔ) hΔ
-  have h_Δ_le : Δ * Real.exp (-2 * Real.pi * Δ) ≤ Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) :=
-    mul_le_mul_of_nonneg_right h_Δ_sq (Real.exp_pos _).le
-  have h_tri : |((∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) -
-      (∫ v in Set.Ioi Δ, (Φ_star v * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) -
-      (Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ / ((y : ℂ) * (Complex.I * Δ - y)))).re)| ≤
-      |∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im| +
-      |∫ v in Set.Ioi Δ, (Φ_star v * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im| +
-      |(Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ / ((y : ℂ) * (Complex.I * Δ - y)))).re| := by
-    have h_a := abs_sub (∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im)
-      (∫ v in Set.Ioi Δ, (Φ_star v * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im)
-    have h_b := abs_sub ((∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) -
-      (∫ v in Set.Ioi Δ, (Φ_star v * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im))
-      ((Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ / ((y : ℂ) * (Complex.I * Δ - y)))).re)
-    exact h_b.trans (add_le_add_right h_a _)
-  have h_c1 : C_diff * (1 / (4 * Real.pi ^ 2)) ≤ C_err1 := by
-    have hpi2 : (1 : ℝ) ≤ 4 * Real.pi ^ 2 := by nlinarith [Real.two_le_pi]
-    have h_inv : 1 / (4 * Real.pi ^ 2) ≤ 1 := div_le_one_of_le₀ hpi2 (by positivity)
-    have h_le1 : 1 / (4 * Real.pi ^ 2) ≤ 2 + 1 / (2 * Real.pi) :=
-      h_inv.trans (le_add_of_le_of_nonneg (by norm_num) (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le))
-    have h_le2 : C_diff * (1 / (4 * Real.pi ^ 2)) ≤ C_diff * (2 + 1 / (2 * Real.pi)) :=
-      mul_le_mul_of_nonneg_left h_le1 (div_nonneg (mul_pos two_pos Real.pi_pos).le (pow_nonneg hc_pos.le 4))
-    have h_tail_nn : 0 ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1 :=
-      add_nonneg (add_nonneg (mul_nonneg (div_nonneg (by norm_num) (sq_nonneg _))
-        (add_nonneg (add_nonneg (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le)
-          (div_nonneg zero_le_one (mul_nonneg (by norm_num) (sq_nonneg _)))) zero_le_one))
-        (div_nonneg zero_le_one (sq_nonneg _))) zero_le_one
-    exact h_le2.trans (le_add_of_nonneg_right h_tail_nn)
-  have h_c2 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) + 1 / c_sin ^ 2 ≤ C_err1 := by
-    have h_d_nn : 0 ≤ C_diff * (2 + 1 / (2 * Real.pi)) :=
-      mul_nonneg (div_nonneg (mul_pos two_pos Real.pi_pos).le (pow_nonneg hc_pos.le 4))
-        (add_nonneg (by norm_num) (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le))
-    have h_t_nn : 0 ≤ C_tail := div_nonneg (by norm_num) (sq_nonneg _)
-    have h_t_le : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) :=
-      mul_le_mul_of_nonneg_left (le_add_of_nonneg_right zero_le_one) h_t_nn
-    have h1 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) + 1 / c_sin ^ 2 ≤
-        C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 :=
-      add_le_add_left h_t_le _
-    exact h1.trans (le_trans (le_add_of_nonneg_left h_d_nn) (le_add_of_nonneg_right zero_le_one))
-  have h_step1 : |((∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) -
-      (∫ v in Set.Ioi Δ, (Φ_star v * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) -
-      (Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ / ((y : ℂ) * (Complex.I * Δ - y)))).re)| ≤
-      C_diff * |α - α_star| * (1 / (4 * Real.pi ^ 2)) / y ^ 2 +
-      C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) / y ^ 2 +
-      (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) / y ^ 2 := by
-    have h_t_nn : 0 ≤ C_tail := div_nonneg (by norm_num) (sq_nonneg _)
-    have h_fac_nn : 0 ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) :=
-      mul_nonneg h_t_nn (add_nonneg (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le)
-        (div_nonneg zero_le_one (mul_nonneg (by norm_num) (sq_nonneg _))))
-    have h_le2 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * Δ * Real.exp (-2 * Real.pi * Δ) / y ^ 2 ≤
-        C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) / y ^ 2 := by
-      rw [mul_assoc (C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2))) Δ (Real.exp (-2 * Real.pi * Δ))]
-      exact div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_left h_Δ_le h_fac_nn) (sq_nonneg y)
-    exact h_tri.trans (add_le_add (add_le_add h_p1 (h_p2.trans h_le2)) h_p3)
-  exact h_step1.trans (by
-          rw [← add_div, ← add_div]
-          refine div_le_div_of_nonneg_right ?_ (sq_nonneg y)
-          have h_nonneg1 : 0 ≤ Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) := by positivity
-          have h_nonneg2 : 0 ≤ |α - α_star| := abs_nonneg _
-          have h_s1 : C_diff * |α - α_star| * (1 / (4 * Real.pi ^ 2)) ≤ C_err1 * |α - α_star| := by
-            rw [mul_right_comm]; exact mul_le_mul_of_nonneg_right h_c1 h_nonneg2
-          have h_s2 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) +
-              (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) ≤ C_err1 * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) := by
-            rw [mul_assoc (1 / c_sin ^ 2), ← add_mul]
-            exact mul_le_mul_of_nonneg_right h_c2 h_nonneg1
-          calc C_diff * |α - α_star| * (1 / (4 * Real.pi ^ 2)) +
-                C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) +
-                (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)
-              = C_diff * |α - α_star| * (1 / (4 * Real.pi ^ 2)) +
-                  (C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) +
-                    (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) := by ring
-            _ ≤ C_err1 * |α - α_star| + C_err1 * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) := add_le_add h_s1 h_s2
-            _ = C_err1 * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) + |α - α_star|) := by ring)
-
-
+  exact diffA_combine_large C_diff C_tail c_sin Δ |α - α_star| y _ _ _
+    hΔ (div_nonneg (mul_pos two_pos Real.pi_pos).le (pow_nonneg hc_pos.le 4))
+    (div_nonneg (by norm_num) (sq_nonneg _)) (div_nonneg zero_le_one (sq_nonneg _))
+    (abs_nonneg _) h_p1 h_p2 h_p3
 
 lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ (Δ₂ C_err1 : ℝ), Δ₂ ≥ 1 ∧ C_err1 > 0 ∧
