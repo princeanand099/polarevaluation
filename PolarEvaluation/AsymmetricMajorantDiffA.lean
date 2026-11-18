@@ -266,10 +266,8 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_eq1 : (∫ v in Set.Ioo (0 : ℝ) Δ,
         (Complex.exp (-Complex.I * θ) / (Complex.sin (Real.pi * (Complex.I * v - α)) ^ 2 * (y - Complex.I * v))).im) =
         ∫ v in Set.Ioo (0 : ℝ) Δ, (Φ v / ((y : ℂ) - Complex.I * v)).im := by
-      congr 1; ext v; dsimp only [Φ]; ring_nf
-    rw [show Real.sin (Real.pi * (y - α)) ^ 2 * _ - Real.sin (Real.pi * (y - α)) ^ 2 * limitingJ y θ =
-        Real.sin (Real.pi * (y - α)) ^ 2 * (_ - limitingJ y θ) by ring, abs_mul,
-      abs_of_nonneg (sq_nonneg _)]
+      congr 1; ext v; dsimp only [Φ]; rw [div_div]
+    rw [← mul_sub, abs_mul, abs_of_nonneg (sq_nonneg _)]
     gcongr
     rw [h_eq1, h_common_split y hy_ne]
     have h_part1 : |∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) / ((y : ℂ) - Complex.I * v)).im| ≤
@@ -562,10 +560,8 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_eq1 : (∫ v in Set.Ioo (0 : ℝ) Δ,
         (Complex.exp (-Complex.I * θ) / (Complex.sin (Real.pi * (Complex.I * v - α)) ^ 2 * (y - Complex.I * v))).im) =
         ∫ v in Set.Ioo (0 : ℝ) Δ, (Φ v / ((y : ℂ) - Complex.I * v)).im := by
-      congr 1; ext v; dsimp only [Φ]; ring_nf
-    rw [show Real.sin (Real.pi * (y - α)) ^ 2 * _ - Real.sin (Real.pi * (y - α)) ^ 2 * limitingJ y θ =
-        Real.sin (Real.pi * (y - α)) ^ 2 * (_ - limitingJ y θ) by ring, abs_mul,
-      abs_of_nonneg (sq_nonneg _)]
+      congr 1; ext v; dsimp only [Φ]; rw [div_div]
+    rw [← mul_sub, abs_mul, abs_of_nonneg (sq_nonneg _)]
     gcongr
     rw [h_eq1, h_common_split y hy_ne]
     -- Use hc₀_zero and hc_star_zero to replace 1/(y - Iv) with Iv/(y*(y - Iv))!
