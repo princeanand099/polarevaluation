@@ -423,7 +423,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
           ((volume.restrict (Set.Ioi 0)).prod (volume.restrict (Set.Ioi 0))) := by
         refine Continuous.aestronglyMeasurable ?_
         refine Continuous.mul ?_ (Complex.continuous_exp.comp (by fun_prop))
-        refine continuous_const.div (Continuous.pow (Complex.continuous_cos (by fun_prop)) 2) (fun p => ?_)
+        refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun p => ?_)
         exact pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)
       refine h_prod_r.mono' h_meas ?_
       rw [← MeasureTheory.Measure.restrict_prod_eq_prod_restrict]
@@ -437,7 +437,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
       refine (cTheta_integrableOn hθ).norm.const_mul (1 / y) |>.mono'
         (Continuous.aestronglyMeasurable ?_) ?_
       · refine Continuous.div ?_ (by fun_prop) (fun v => ?_)
-        · refine continuous_const.div (Continuous.pow (Complex.continuous_cos (by fun_prop)) 2) (fun v => ?_)
+        · refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => ?_)
           exact pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)
         · intro h0; have hre := congr_arg Complex.re h0; simp at hre; linarith
       · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
@@ -500,7 +500,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
       have h1 : IntegrableOn (fun v : ℝ => cTheta θ v * Complex.exp (Complex.I * s * v)) (Set.Ioi 0) := by
         refine (cTheta_integrableOn hθ).norm.mono' (Continuous.aestronglyMeasurable ?_) ?_
         · refine Continuous.mul ?_ (Complex.continuous_exp.comp (by fun_prop))
-          refine continuous_const.div (Continuous.pow (Complex.continuous_cos (by fun_prop)) 2) (fun v => ?_)
+          refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => ?_)
           exact pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)
         · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
           have hn : ‖Complex.exp (Complex.I * s * v)‖ = 1 := by
@@ -518,7 +518,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
         refine (h_exp.const_mul (2 / (Real.pi * Real.cos θ))).mono' (Continuous.aestronglyMeasurable ?_) ?_
         · refine Continuous.mul ?_ (Complex.continuous_exp.comp (by fun_prop))
           refine (Complex.continuous_ofReal.comp (by fun_prop)).div
-            (continuous_const.mul (Complex.continuous_cos (by fun_prop))) (fun v => ?_)
+            (continuous_const.mul (Complex.continuous_cos.comp (by fun_prop))) (fun v => ?_)
           exact mul_ne_zero (by exact_mod_cast Real.pi_ne_zero) (cos_ne_zero_of_abs_lt hθ)
         · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
           have hn : ‖Complex.exp (Complex.I * s * v)‖ = 1 := by
@@ -828,8 +828,11 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
         have h_c : ∫ _ in Set.Ioc (0 : ℝ) 1, q_fn ω_min = q_fn ω_min := by
           rw [MeasureTheory.setIntegral_const, Real.volume_real_Ioc_of_le (by norm_num), smul_eq_mul]; norm_num
         rw [← h_c]
-        refine MeasureTheory.setIntegral_mono_on continuousOn_const.integrableOn_Ioc
-          hq_cont.continuousOn.integrableOn_Ioc measurableSet_Ioc fun ω hω => hω_isMin (Set.Ioc_subset_Icc_self hω)
+        have h_c_int : IntegrableOn (fun _ : ℝ => q_fn ω_min) (Set.Ioc 0 1) :=
+          (continuousOn_const : ContinuousOn (fun _ : ℝ => q_fn ω_min) (Set.Icc 0 1)).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+        have h_q_int : IntegrableOn q_fn (Set.Ioc 0 1) :=
+          (hq_cont.continuousOn : ContinuousOn q_fn (Set.Icc 0 1)).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+        refine MeasureTheory.setIntegral_mono_on h_c_int h_q_int measurableSet_Ioc fun ω hω => hω_isMin (Set.Ioc_subset_Icc_self hω)
       linarith
     rw [h_Psi_re]
     have : 0 < (∫ v in Set.Ioi (0 : ℝ), uTheta θ v * Complex.exp (Complex.I * s * v)).re := by nlinarith [Real.pi_pos]
@@ -842,7 +845,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
       · intro s
         refine Continuous.aestronglyMeasurable ?_
         refine Continuous.mul ?_ (Complex.continuous_exp.comp (by fun_prop))
-        refine continuous_const.div (Continuous.pow (Complex.continuous_cos (by fun_prop)) 2) (fun v => ?_)
+        refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => ?_)
         exact pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)
       · intro s
         filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
@@ -901,8 +904,11 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
     have h_c : ∫ _ in Set.Ioc (1 : ℝ) 2, Real.exp (-s_min * y) * Ψ s_min = Real.exp (-s_min * y) * Ψ s_min := by
       rw [MeasureTheory.setIntegral_const, Real.volume_real_Ioc_of_le (by norm_num), smul_eq_mul]; norm_num
     rw [← h_c]
-    refine MeasureTheory.setIntegral_mono_on continuousOn_const.integrableOn_Ioc
-      h_prod_cont.continuousOn.integrableOn_Ioc measurableSet_Ioc fun s hs => hs_isMin (Set.Ioc_subset_Icc_self hs)
+    have h_c_int : IntegrableOn (fun _ : ℝ => Real.exp (-s_min * y) * Ψ s_min) (Set.Ioc 1 2) :=
+      (continuousOn_const : ContinuousOn (fun _ : ℝ => Real.exp (-s_min * y) * Ψ s_min) (Set.Icc 1 2)).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+    have h_p_int : IntegrableOn (fun s : ℝ => Real.exp (-s * y) * Ψ s) (Set.Ioc 1 2) :=
+      (h_prod_cont.continuousOn : ContinuousOn (fun s : ℝ => Real.exp (-s * y) * Ψ s) (Set.Icc 1 2)).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+    refine MeasureTheory.setIntegral_mono_on h_c_int h_p_int measurableSet_Ioc fun s hs => hs_isMin (Set.Ioc_subset_Icc_self hs)
   linarith
 
 /-- **Lemma 3.3 (Part 1)**: Positivity `J(y, θ) > 0` for all `y ≠ 0`. -/
