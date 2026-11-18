@@ -546,12 +546,12 @@ private lemma majorant_contour_diff_small (θ : ℝ) (hθ : |θ| < Real.pi / 2)
             (mul_pos (pow_pos (mul_pos hc_pos (Real.exp_pos _)) 2) hΔ_pos)
             hmul
       _ = (1 / c_sin ^ 2) * Real.exp (-2 * Real.pi * Δ) := by
-          rw [mul_pow, ← Real.exp_nat_mul]; push_cast
-          rw [show (2 : ℝ) * (Real.pi * Δ) = -(-2 * Real.pi * Δ) by ring, Real.exp_neg]
-          have h_eq : Δ * 1 / (c_sin ^ 2 * (Real.exp (-2 * Real.pi * Δ))⁻¹ * Δ) =
-              (Δ * Δ⁻¹) * (c_sin ^ 2)⁻¹ * Real.exp (-2 * Real.pi * Δ) := by
-            simp only [div_eq_mul_inv, mul_inv, inv_inv, mul_one]; ring
-          rw [h_eq, mul_inv_cancel₀ hΔ_pos.ne', one_mul, one_div]
+          have h_exp : (Real.exp (Real.pi * Δ)) ^ 2 = (Real.exp (-2 * Real.pi * Δ))⁻¹ := by
+            rw [← Real.exp_nat_mul, Nat.cast_ofNat, ← Real.exp_neg]; congr 1; ring
+          rw [mul_pow, h_exp, mul_one, div_eq_mul_inv, mul_inv, mul_inv, inv_inv]
+          rw [show Δ * (Δ⁻¹ * (Real.exp (-2 * Real.pi * Δ) * (c_sin ^ 2)⁻¹)) =
+            (Δ * Δ⁻¹) * ((c_sin ^ 2)⁻¹ * Real.exp (-2 * Real.pi * Δ)) by ring]
+          rw [mul_inv_cancel₀ hΔ_pos.ne', one_mul, ← one_div]
   have h_log_nonneg : 0 ≤ Real.log (1 / |y|) := Real.log_nonneg ((one_le_div hy0).mpr hy1.le)
   have h_1_le_log : 1 ≤ 1 + Real.log (1 / |y|) := by linarith
   have h_2_le : 2 + Real.log (1 / |y|) ≤ 2 * (1 + Real.log (1 / |y|)) := by linarith
@@ -1015,18 +1015,23 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
     have h_n : |y| ≤ ‖Complex.I * (Δ : ℂ) - (y : ℂ)‖ := by
       rw [← sq_le_sq₀ (abs_nonneg y) (norm_nonneg _)]; exact h_sq
     have h_y2 : y ^ 2 ≤ |y| * ‖Complex.I * Δ - y‖ := by rw [← sq_abs y, sq]; exact mul_le_mul_of_nonneg_left h_n (abs_nonneg y)
+    have hΔ0 : 0 ≤ Δ := zero_le_one.trans hΔ
+    have hy2_pos : 0 < y ^ 2 := by rw [← sq_abs y]; exact sq_pos_of_pos hy0
+    have h_den_pos : 0 < (c_sin * Real.exp (Real.pi * Δ)) ^ 2 := pow_pos (mul_pos hc_pos (Real.exp_pos _)) 2
     have h_div1 : Δ * |Real.sin θ| / ‖Complex.sin (Real.pi * (Complex.I * Δ - α))‖ ^ 2 ≤
         Δ * 1 / (c_sin * Real.exp (Real.pi * Δ)) ^ 2 :=
-      div_le_div₀ (by positivity) (mul_le_mul_of_nonneg_left (Real.abs_sin_le_one θ) (by linarith)) (by positivity) hden
+      div_le_div₀ (mul_nonneg hΔ0 zero_le_one) (mul_le_mul_of_nonneg_left (Real.abs_sin_le_one θ) hΔ0) h_den_pos hden
     have h_div2 : Δ / (|y| * ‖Complex.I * (Δ : ℂ) - (y : ℂ)‖) ≤ Δ / y ^ 2 :=
-      div_le_div_of_nonneg_left (zero_le_one.trans hΔ) (by rw [← sq_abs y]; exact sq_pos_of_pos hy0) h_y2
+      div_le_div_of_nonneg_left hΔ0 hy2_pos h_y2
     calc Δ * |Real.sin θ| / ‖Complex.sin (Real.pi * (Complex.I * Δ - α))‖ ^ 2 * (Δ / (|y| * ‖Complex.I * (Δ : ℂ) - (y : ℂ)‖))
         ≤ Δ * 1 / (c_sin * Real.exp (Real.pi * Δ)) ^ 2 * (Δ / y ^ 2) :=
-          mul_le_mul h_div1 h_div2 (div_nonneg (by linarith) (by positivity)) (by positivity)
+          mul_le_mul h_div1 h_div2 (div_nonneg hΔ0 (mul_nonneg (abs_nonneg y) (norm_nonneg _)))
+            (div_nonneg (mul_nonneg hΔ0 zero_le_one) h_den_pos.le)
       _ = (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) / y ^ 2 := by
-          rw [mul_pow, ← Real.exp_nat_mul]; push_cast
-          rw [show (2 : ℝ) * (Real.pi * Δ) = -(-2 * Real.pi * Δ) by ring, Real.exp_neg]
-          field_simp [hc_pos.ne']
+          have h_exp : (Real.exp (Real.pi * Δ)) ^ 2 = (Real.exp (-2 * Real.pi * Δ))⁻¹ := by
+            rw [← Real.exp_nat_mul, Nat.cast_ofNat, ← Real.exp_neg]; congr 1; ring
+          rw [mul_pow, h_exp, mul_one, div_eq_mul_inv, div_eq_mul_inv, div_eq_mul_inv, mul_inv, inv_inv, one_div]
+          ring
   have h_Δ_le : Δ * Real.exp (-2 * Real.pi * Δ) ≤ Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) := by
     have : Δ ≤ Δ ^ 2 := by nlinarith
     gcongr
