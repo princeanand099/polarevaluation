@@ -61,6 +61,31 @@ lemma summable_inv_one_add_sq_shift (α : ℝ) :
   calc (1 + |(n : ℝ)|) ^ 2 ≤ ((1 + |α|) * (1 + |α + n|)) ^ 2 := by gcongr
     _ = (1 + |α|) ^ 2 * (1 + |α + n|) ^ 2 := by ring
 
+lemma isBigO_rpow_neg_two_of_le {g : ℝ → ℂ} {C : ℝ}
+    (hg : ∀ x : ℝ, ‖g x‖ ≤ C * (1 + |x|) ^ (-2 : ℝ)) :
+    g =O[Filter.cocompact ℝ] (fun x : ℝ => |x| ^ (-2 : ℝ)) := by
+  rw [Asymptotics.isBigO_iff]
+  refine ⟨max C 0, ?_⟩
+  have hmem : (Metric.closedBall (0 : ℝ) 1)ᶜ ∈ Filter.cocompact ℝ :=
+    (isCompact_closedBall (0 : ℝ) 1).compl_mem_cocompact
+  filter_upwards [hmem] with x hx
+  simp only [Set.mem_compl_iff, Metric.mem_closedBall, dist_zero_right, Real.norm_eq_abs, not_le] at hx
+  have hx0 : 0 < |x| := by linarith
+  have h1 : (1 + |x|) ^ (-2 : ℝ) ≤ |x| ^ (-2 : ℝ) := by
+    rw [Real.rpow_le_rpow_iff_of_neg hx0 (by positivity) (by norm_num)]
+    linarith
+  calc ‖g x‖ ≤ C * (1 + |x|) ^ (-2 : ℝ) := hg x
+    _ ≤ max C 0 * (1 + |x|) ^ (-2 : ℝ) := mul_le_mul_of_nonneg_right (le_max_left _ _) (by positivity)
+    _ ≤ max C 0 * |x| ^ (-2 : ℝ) := mul_le_mul_of_nonneg_left h1 (le_max_right _ _)
+    _ = max C 0 * ‖|x| ^ (-2 : ℝ)‖ := by rw [Real.norm_of_nonneg (by positivity)]
+
+lemma fourier_unitAddCircle_apply (k : ℤ) (x : ℝ) :
+    fourier k (x : UnitAddCircle) = Complex.exp (2 * Real.pi * Complex.I * k * x) := by
+  rw [fourier_coe_apply]
+  congr 1
+  simp only [Complex.ofReal_one, div_one]
+  push_cast; ring
+
 lemma lorentz_tsum_bound (Δ α : ℝ) (hΔ : Δ ≥ 1) :
     Summable (fun n : ℤ => Δ / ((n + α) ^ 2 + Δ ^ 2)) ∧
     |∑' n : ℤ, Δ / ((n + α) ^ 2 + Δ ^ 2) - Real.pi| ≤
@@ -97,11 +122,14 @@ lemma lorentz_tsum_bound (Δ α : ℝ) (hΔ : Δ ≥ 1) :
     rw [hcexp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     have ha : 2 ≤ 2 * Real.pi * Δ := by nlinarith [Real.two_le_pi]
     exact mul_le_mul_of_nonneg_left (exp_neg_le_inv_one_add_sq ha) Real.pi_pos.le
-  have hpois := Real.tsum_eq_tsum_fourierIntegral_of_rpow_decay hf_cont (by norm_num : (1 : ℝ) < 2) hf_decay hf'_decay α
+  have hpois := Real.tsum_eq_tsum_fourier_of_rpow_decay hf_cont (by norm_num : (1 : ℝ) < 2)
+    (isBigO_rpow_neg_two_of_le hf_decay.choose_spec)
+    (isBigO_rpow_neg_two_of_le hf'_decay.choose_spec) α
   have hsumm_real : Summable (fun n : ℤ => Δ / ((n + α) ^ 2 + Δ ^ 2)) := by
     refine ((summable_inv_one_add_sq_shift α).mul_left (2 * Δ)).of_nonneg_of_le
       (fun _ => by positivity) (fun n => ?_)
     have h := hf_decay.choose_spec (α + n)
+    -- use direct bound instead of choose_spec
     have hpos : 0 < 1 + |α + n| := by positivity
     rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hpos.le, Real.rpow_natCast,
       mul_inv_le_iff₀ (by positivity)]
@@ -118,16 +146,19 @@ lemma lorentz_tsum_bound (Δ α : ℝ) (hΔ : Δ ≥ 1) :
     rw [Complex.re_tsum hsc]
     congr 1; ext n; simp [f, add_comm]
   rw [← hre_lhs, hpois]
-  let g : ℤ → ℂ := fun k => 𝐞 (k * α) • 𝓕 f k
+  let g : ℤ → ℂ := fun k => 𝓕 f k * fourier k (α : UnitAddCircle)
   have hg_summ : Summable g := by
     refine Summable.of_norm_bounded (g := fun k : ℤ => Real.pi * (1 + |(k : ℝ)|) ^ (-2 : ℝ))
       (summable_inv_one_add_sq_int.mul_left Real.pi) (fun k => ?_)
     dsimp only [g]
-    rw [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, norm_mul]
-    have h1 : ‖Complex.exp (↑(2 * Real.pi * ((k : ℝ) * α)) * Complex.I)‖ = 1 :=
-      Complex.norm_exp_ofReal_mul_I _
-    rw [h1, one_mul]
+    rw [norm_mul, fourier_unitAddCircle_apply]
+    have h1 : ‖Complex.exp (2 * Real.pi * Complex.I * k * α)‖ = 1 := by
+      have : 2 * (Real.pi : ℂ) * Complex.I * k * α = ((2 * Real.pi * k * α : ℝ) : ℂ) * Complex.I := by
+        push_cast; ring
+      rw [this, Complex.norm_exp_ofReal_mul_I]
+    rw [h1, mul_one]
     exact (hf'_decay.choose_spec k).trans (by
+      -- direct bound
       rw [hFf k, norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
       have hcexp : Complex.exp (-2 * Real.pi * Δ * |↑k|) = (Real.exp (-2 * Real.pi * Δ * |↑k|) : ℂ) := by
         have : (-2 * (Real.pi : ℂ) * ↑Δ * ↑|(k : ℝ)| : ℂ) = ((-2 * Real.pi * Δ * |(k : ℝ)| : ℝ) : ℂ) := by
@@ -154,8 +185,12 @@ lemma lorentz_tsum_bound (Δ α : ℝ) (hΔ : Δ ≥ 1) :
     have hnorm_g : ∀ k : ℤ, ‖g k‖ = Real.pi * Real.exp (-2 * Real.pi * Δ * |↑k|) := by
       intro k
       dsimp only [g]
-      rw [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, norm_mul,
-        Complex.norm_exp_ofReal_mul_I, one_mul, hFf k, norm_mul, Complex.norm_real,
+      rw [norm_mul, fourier_unitAddCircle_apply]
+      have h1 : ‖Complex.exp (2 * Real.pi * Complex.I * k * α)‖ = 1 := by
+        have : 2 * (Real.pi : ℂ) * Complex.I * k * α = ((2 * Real.pi * k * α : ℝ) : ℂ) * Complex.I := by
+          push_cast; ring
+        rw [this, Complex.norm_exp_ofReal_mul_I]
+      rw [h1, mul_one, hFf k, norm_mul, Complex.norm_real,
         Real.norm_eq_abs, abs_of_pos Real.pi_pos]
       have hcexp : Complex.exp (-2 * Real.pi * Δ * |↑k|) = (Real.exp (-2 * Real.pi * Δ * |↑k|) : ℂ) := by
         have : (-2 * (Real.pi : ℂ) * ↑Δ * ↑|(k : ℝ)| : ℂ) = ((-2 * Real.pi * Δ * |(k : ℝ)| : ℝ) : ℂ) := by
@@ -374,7 +409,7 @@ lemma cauchy_sq_fourier (v : ℝ) (hv : 0 < v) (ξ : ℝ) :
         have h := ((hasDerivAt_id t).ofReal_comp.div_const c).add_const (1 / c ^ 2)
         simpa using h.neg
       have hd2 : HasDerivAt (fun s : ℝ => Complex.exp (-c * s)) (Complex.exp (-c * t) * (-c)) t :=
-        ((hasDerivAt_id t).ofReal_comp.const_mul (-c)).cexp
+        by simpa using ((hasDerivAt_id t).ofReal_comp.const_mul (-c)).cexp
       convert hd1.mul hd2 using 1
       field_simp [hc_ne]
       ring
@@ -395,16 +430,24 @@ lemma cauchy_sq_fourier (v : ℝ) (hv : 0 < v) (ξ : ℝ) :
                   norm_div, norm_one, norm_pow]
         have h_lim : Tendsto (fun t : ℝ => (t / ‖c‖ + 1 / ‖c‖ ^ 2) * Real.exp (-2 * Real.pi * v * t)) atTop (nhds 0) := by
           have h1 : Tendsto (fun t : ℝ => t * Real.exp (-(2 * Real.pi * v) * t)) atTop (nhds 0) := by
-            simpa [mul_comm] using Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1 |>.comp
-              (tendsto_id.const_mul_atTop (by positivity : 0 < 2 * Real.pi * v)) |>.const_mul (1 / (2 * Real.pi * v))
+            have h0 := (Real.tendsto_pow_mul_exp_neg_atTop_nhds_zero 1).comp
+              (tendsto_id.const_mul_atTop (by positivity : 0 < 2 * Real.pi * v))
+            have h0' := h0.const_mul (1 / (2 * Real.pi * v))
+            rw [mul_zero] at h0'
+            refine h0'.congr (fun t => ?_)
+            dsimp [Function.comp_def]
+            rw [pow_one]
+            have hpi_v : (2 * Real.pi * v) ≠ 0 := by positivity
+            field_simp [hpi_v]
+            ring_nf
           have h2 : Tendsto (fun t : ℝ => Real.exp (-(2 * Real.pi * v) * t)) atTop (nhds 0) :=
-            Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by positivity : -(2 * Real.pi * v) < 0))
+            Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by linarith [Real.pi_pos] : -(2 * Real.pi * v) < 0))
           have heq : (fun t : ℝ => (t / ‖c‖ + 1 / ‖c‖ ^ 2) * Real.exp (-2 * Real.pi * v * t)) =
               (fun t : ℝ => (1 / ‖c‖) * (t * Real.exp (-(2 * Real.pi * v) * t)) +
                 (1 / ‖c‖ ^ 2) * Real.exp (-(2 * Real.pi * v) * t)) := by
             ext t; ring
           rw [heq]
-          simpa using ((h1.const_mul (1 / ‖c‖)).add (h2.const_mul (1 / ‖c‖ ^ 2)))
+          simpa only [mul_zero, add_zero] using ((h1.const_mul (1 / ‖c‖)).add (h2.const_mul (1 / ‖c‖ ^ 2)))
         exact tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds h_lim
           (Eventually.of_forall fun _ => norm_nonneg _) h_bnd
       exact tendsto_zero_iff_norm_tendsto_zero.mpr h_norm
@@ -413,22 +456,39 @@ lemma cauchy_sq_fourier (v : ℝ) (hv : 0 < v) (ξ : ℝ) :
     rw [h_res, hG0, zero_sub, neg_neg]
     have h_den : (x : ℂ) + Complex.I * v ≠ 0 := by
       intro h; have := congr_arg Complex.im h; simp at this; linarith
-    dsimp only [c]
-    field_simp [Real.pi_ne_zero, hc_ne, h_den]
-    simp only [Complex.I_sq]
+    have h_sq_eq : -(v - Complex.I * x) ^ 2 = ((x : ℂ) + Complex.I * v) ^ 2 := by
+      ring_nf; simp [Complex.I_sq]; ring
+    have hc_sq : c ^ 2 = -4 * (Real.pi : ℂ) ^ 2 * ((x : ℂ) + Complex.I * v) ^ 2 := by
+      dsimp only [c]
+      calc (2 * (Real.pi : ℂ) * (v - Complex.I * x)) ^ 2
+          = 4 * (Real.pi : ℂ) ^ 2 * (v - Complex.I * x) ^ 2 := by ring
+        _ = -4 * (Real.pi : ℂ) ^ 2 * (-(v - Complex.I * x) ^ 2) := by ring
+        _ = -4 * (Real.pi : ℂ) ^ 2 * ((x : ℂ) + Complex.I * v) ^ 2 := by rw [h_sq_eq]
+    rw [hc_sq]
+    have hpi_c : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
+    field_simp [hpi_c, h_den]
     ring
   have hFg_int : Integrable (𝓕 g) := by
     rw [show 𝓕 g = fun x : ℝ => 1 / ((x : ℂ) + Complex.I * v) ^ 2 from funext hFg]
     have hreal : Integrable (fun x : ℝ => 1 / (x ^ 2 + v ^ 2)) := by
       have hr : (1 / v : ℝ) ≠ 0 := by positivity
       refine ((integrable_inv_one_add_mul_sq hr).const_mul (1 / v ^ 2)).congr (ae_of_all _ fun x => ?_)
-      field_simp [hv.ne']; ring
-    refine hreal.norm.mono (by fun_prop) ?_
+      have hne1 : 1 + (1 / v * x) ^ 2 ≠ 0 := by positivity
+      have hne2 : x ^ 2 + v ^ 2 ≠ 0 := by positivity
+      rw [inv_eq_one_div]
+      field_simp [hv.ne', hne1, hne2]
+    have hcont : Continuous (fun x : ℝ => (1 : ℂ) / ((x : ℂ) + Complex.I * v) ^ 2) :=
+      continuous_const.div ((Complex.continuous_ofReal.add continuous_const).pow 2)
+        (fun x => pow_ne_zero 2 (by intro h; have := congr_arg Complex.im h; simp at this; linarith))
+    refine hreal.norm.mono hcont.aestronglyMeasurable ?_
     filter_upwards with x
     rw [norm_div, norm_one, norm_pow]
     have hsq : ‖(x : ℂ) + Complex.I * v‖ ^ 2 = x ^ 2 + v ^ 2 := by
-      rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
-      simp; ring
+      have h1 : ‖((x : ℂ) + Complex.I * v) * star ((x : ℂ) + Complex.I * v)‖ =
+          ‖(x : ℂ) + Complex.I * v‖ ^ 2 := by rw [norm_mul, norm_star, sq]
+      have h2 : ((x : ℂ) + Complex.I * v) * star ((x : ℂ) + Complex.I * v) = ((x ^ 2 + v ^ 2 : ℝ) : ℂ) := by
+        simp [Complex.conj_ofReal]; ring_nf; simp [Complex.I_sq]; ring
+      rw [← h1, h2, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
     rw [hsq, Real.norm_eq_abs, abs_of_pos (by positivity)]
   have hinv := congr_fun (Continuous.fourierInv_fourier_eq hg_cont hg_int hFg_int) ξ
   rw [fourierInv_eq_fourierHat_neg] at hinv
@@ -459,7 +519,7 @@ lemma tsum_succ_mul_pow (w : ℂ) (hw : ‖w‖ < 1) :
     linarith
   have h_shift : ∑' m : ℕ, ((m : ℂ) + 1) * w ^ m =
       1 + ∑' m : ℕ, ((m : ℂ) + 2) * w ^ (m + 1) := by
-    rw [hs.tsum_eq_zero_add]
+    rw [tsum_eq_zero_add hs]
     simp only [Nat.cast_zero, zero_add, pow_zero, mul_one]
     congr 1; ext m; push_cast; ring
   have h_mul : (1 - w) * ∑' m : ℕ, ((m : ℂ) + 1) * w ^ m =
@@ -476,7 +536,7 @@ lemma tsum_succ_mul_pow (w : ℂ) (hw : ‖w‖ < 1) :
         refine (hs_w.add (hs2.mul_left w)).congr fun m => by ring
       rw [← hs_2.tsum_sub hs_w]
       congr 1; ext m; ring
-    rw [h_sub, hs2.tsum_eq_zero_add]
+    rw [h_sub, tsum_eq_zero_add hs2]
     simp only [pow_zero]
     congr 1; ext m; ring
   rw [tsum_geometric_of_norm_lt_one hw] at h_mul
@@ -502,10 +562,13 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
   have hf_norm : ∀ u : ℝ, ‖f u‖ ≤ (2 / m_v) * (1 + |u|) ^ (-2 : ℝ) := by
     intro u
     dsimp only [f]
-    rw [norm_div, norm_one, norm_pow, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
-    have hnsq : ((u : ℂ) - Complex.I * v).re * ((u : ℂ) - Complex.I * v).re +
-        ((u : ℂ) - Complex.I * v).im * ((u : ℂ) - Complex.I * v).im = u ^ 2 + v ^ 2 := by
-      simp; ring
+    rw [norm_div, norm_one, norm_pow]
+    have hnsq : ‖(u : ℂ) - Complex.I * v‖ ^ 2 = u ^ 2 + v ^ 2 := by
+      have h1 : ‖((u : ℂ) - Complex.I * v) * star ((u : ℂ) - Complex.I * v)‖ =
+          ‖(u : ℂ) - Complex.I * v‖ ^ 2 := by rw [norm_mul, norm_star, sq]
+      have h2 : ((u : ℂ) - Complex.I * v) * star ((u : ℂ) - Complex.I * v) = ((u ^ 2 + v ^ 2 : ℝ) : ℂ) := by
+        simp [Complex.conj_ofReal]; ring_nf; simp [Complex.I_sq]; ring
+      rw [← h1, h2, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
     rw [hnsq]
     have hpos : 0 < 1 + |u| := by positivity
     rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hpos.le, Real.rpow_natCast,
@@ -576,7 +639,9 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
             Real.exp (2 * Real.pi * v * |ξ|)) := by gcongr
         _ = C_f' * Real.exp (2 * Real.pi * v * |ξ|) := by dsimp only [C_f']; ring
     · simp only [norm_zero]; positivity
-  have hpois := Real.tsum_eq_tsum_fourierIntegral_of_rpow_decay hf_cont (by norm_num : (1 : ℝ) < 2) hf_decay hf'_decay (-x)
+  have hpois := Real.tsum_eq_tsum_fourier_of_rpow_decay hf_cont (by norm_num : (1 : ℝ) < 2)
+    (isBigO_rpow_neg_two_of_le hf_decay.choose_spec)
+    (isBigO_rpow_neg_two_of_le hf'_decay.choose_spec) (-x)
   have h_eq_lhs : (fun n : ℤ => f (-x + n)) = fun n : ℤ => 1 / (z - n) ^ 2 := by
     ext n
     dsimp only [f]
@@ -612,11 +677,11 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
         by_cases hk : 0 ≤ k
         · simp [hk]
         · simp [hk]; omega }
-  let g_k : ℤ → ℂ := fun k => 𝐞 (k * (-x)) • 𝓕 f k
+  let g_k : ℤ → ℂ := fun k => 𝓕 f k * fourier k ((-x : ℝ) : UnitAddCircle)
   have hg_k_eq : ∀ m : ℕ, g_k (-((m : ℤ) + 1)) = -4 * Real.pi ^ 2 * ((m : ℂ) + 1) * w ^ (m + 1) := by
     intro m
     dsimp only [g_k]
-    rw [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, hFf (-((m : ℤ) + 1))]
+    rw [fourier_unitAddCircle_apply, hFf (-((m : ℤ) + 1))]
     have hneg : ((-((m : ℤ) + 1) : ℤ) : ℝ) < 0 := by push_cast; linarith
     rw [if_pos hneg]
     have hw_pow : w ^ (m + 1) = Complex.exp (2 * Real.pi * Complex.I * ((m : ℂ) + 1) * z) := by
@@ -626,7 +691,7 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
     have hz_eq : z = (x : ℂ) + Complex.I * v := by apply Complex.ext <;> simp [x, v]
     rw [hw_pow, hz_eq]
     have hexp_split : Complex.exp (2 * Real.pi * Complex.I * ((m : ℂ) + 1) * (x + Complex.I * v)) =
-        Complex.exp (↑(2 * Real.pi * ((-((m : ℤ) + 1) : ℤ) : ℝ) * (-x)) * Complex.I) *
+        Complex.exp (2 * Real.pi * Complex.I * ((-((m : ℤ) + 1) : ℤ) : ℂ) * (-x : ℝ)) *
           Complex.exp (2 * Real.pi * v * ((-((m : ℤ) + 1) : ℤ) : ℝ)) := by
       rw [← Complex.exp_add]
       congr 1; push_cast; ring_nf; simp [Complex.I_sq]; ring
@@ -635,9 +700,9 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
   have hg_k_nonneg : ∀ m : ℕ, g_k (m : ℤ) = 0 := by
     intro m
     dsimp only [g_k]
-    rw [Circle.smul_def, Real.fourierChar_apply, smul_eq_mul, hFf (m : ℤ)]
+    rw [hFf (m : ℤ)]
     have hnn : ¬ ((m : ℝ) < 0) := not_lt.mpr (Nat.cast_nonneg m)
-    rw [if_neg hnn, mul_zero]
+    rw [if_neg hnn, zero_mul]
   obtain ⟨hs_w, h_tsum_w⟩ := tsum_succ_mul_pow w hw_lt
   have hs_e : Summable (fun s : ℕ ⊕ ℕ => g_k (e s)) := by
     rw [summable_sum_iff]
@@ -699,13 +764,15 @@ lemma tsum_inv_sub_real_sq (y : ℝ) (hy : Real.sin (Real.pi * y) ≠ 0) :
         · have : (n : ℝ) ≤ m := by exact_mod_cast hnm
           have h1 : y - m ≤ y - n := by linarith
           have h0 : 0 ≤ y - m := sub_nonneg.mpr (Int.floor_le y)
+          have hmin_nn : 0 ≤ min (y - m) (m + 1 - y) := le_min h0 (by linarith [Int.lt_floor_add_one y])
           rw [abs_of_nonneg (by linarith)]
-          exact le_trans (div_le_self (by positivity) (by norm_num)) (le_trans (min_le_left _ _) h1)
+          exact le_trans (div_le_self hmin_nn (by norm_num)) (le_trans (min_le_left _ _) h1)
         · have : (m : ℝ) + 1 ≤ n := by exact_mod_cast hnm
           have h1 : m + 1 - y ≤ n - y := by linarith
           have h0 : 0 ≤ m + 1 - y := by linarith [Int.lt_floor_add_one y]
+          have hmin_nn : 0 ≤ min (y - m) (m + 1 - y) := le_min (sub_nonneg.mpr (Int.floor_le y)) h0
           rw [abs_of_neg (by linarith), neg_sub]
-          exact le_trans (div_le_self (by positivity) (by norm_num)) (le_trans (min_le_right _ _) h1)
+          exact le_trans (div_le_self hmin_nn (by norm_num)) (le_trans (min_le_right _ _) h1)
     obtain ⟨d, hd_pos, hd⟩ := hpos_d
     refine ((summable_inv_one_add_sq_shift (-y)).mul_left (2 * (1 + 1 / d ^ 2))).of_nonneg_of_le
       (fun _ => by positivity) (fun n => ?_)
@@ -738,14 +805,16 @@ lemma tsum_inv_sub_real_sq (y : ℝ) (hy : Real.sin (Real.pi * y) ≠ 0) :
     simpa [z_seq] using tendsto_const_nhds.add h1
   have h_dom : Tendsto (fun k : ℕ => ∑' n : ℤ, 1 / (z_seq k - n) ^ 2) atTop
       (nhds (∑' n : ℤ, 1 / ((y : ℂ) - n) ^ 2)) := by
-    refine tendsto_tsum_of_dominated_convergence hsumm (fun n => ?_) (fun k n => ?_)
+    refine tendsto_tsum_of_dominated_convergence hsumm (fun n => ?_) (Eventually.of_forall fun k n => ?_)
     · have hne : (y : ℂ) - n ≠ 0 := by
         intro h; have := congr_arg Complex.re h; simp at this; exact hy_ne n this
       exact (tendsto_const_nhds.div ((htend_z.sub tendsto_const_nhds).pow 2) (pow_ne_zero 2 hne))
-    · rw [norm_div, norm_one, norm_pow, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
-      have hnsq : (z_seq k - n).re * (z_seq k - n).re + (z_seq k - n).im * (z_seq k - n).im =
-          (y - n) ^ 2 + (1 / ((k : ℝ) + 1)) ^ 2 := by
-        simp [z_seq]; ring
+    · rw [norm_div, norm_one, norm_pow]
+      have hnsq : ‖z_seq k - n‖ ^ 2 = (y - n) ^ 2 + (1 / ((k : ℝ) + 1)) ^ 2 := by
+        have h1 : ‖(z_seq k - n) * star (z_seq k - n)‖ = ‖z_seq k - n‖ ^ 2 := by rw [norm_mul, norm_star, sq]
+        have h2 : (z_seq k - n) * star (z_seq k - n) = (((y - n) ^ 2 + (1 / ((k : ℝ) + 1)) ^ 2 : ℝ) : ℂ) := by
+          simp [z_seq, Complex.conj_ofReal]; ring_nf; simp [Complex.I_sq]; ring
+        rw [← h1, h2, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
       rw [hnsq]
       exact one_div_le_one_div_of_le (sq_pos_of_ne_zero (hy_ne n)) (by linarith [sq_nonneg (1 / ((k : ℝ) + 1))])
   have h_rhs : Tendsto (fun k : ℕ => (Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * z_seq k) ^ 2) atTop
@@ -761,8 +830,9 @@ lemma tsum_inv_sub_real_sq (y : ℝ) (hy : Real.sin (Real.pi * y) ≠ 0) :
   rw [h_eq_k] at h_dom
   have h_lim := tendsto_nhds_unique h_dom h_rhs
   have h_ofReal : (∑' n : ℤ, 1 / ((y : ℂ) - n) ^ 2) = ((∑' n : ℤ, 1 / (y - n) ^ 2 : ℝ) : ℂ) := by
-    rw [← Complex.ofReal_tsum]
-    congr 1; ext n; push_cast; ring
+    have h1 : (fun n : ℤ => (1 : ℂ) / ((y : ℂ) - n) ^ 2) = fun n : ℤ => ((1 / (y - n) ^ 2 : ℝ) : ℂ) := by
+      ext n; push_cast; ring
+    rw [h1, Complex.ofReal_tsum]
   have h_rhs_real : (Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * y) ^ 2 =
       ((Real.pi ^ 2 / Real.sin (Real.pi * y) ^ 2 : ℝ) : ℂ) := by
     rw [show (Real.pi : ℂ) * (y : ℂ) = ((Real.pi * y : ℝ) : ℂ) by push_cast; ring, ← Complex.ofReal_sin]
