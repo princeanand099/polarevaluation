@@ -115,7 +115,9 @@ lemma uTheta_deriv {θ v : ℝ} (hθ : |θ| < Real.pi / 2) :
       ring
     rw [h1, show -Complex.I * ((θ : ℂ) + Complex.I * Real.pi * v) =
         -Complex.I * θ + ((Real.pi * v : ℝ) : ℂ) by push_cast; ring_nf; simp [Complex.I_sq],
-      Complex.exp_add, Complex.ofReal_exp, ← Complex.ofReal_exp, ← Complex.exp_add, ← Complex.exp_add]
+      Complex.exp_add]
+    have hexp_r : (Real.exp (-Real.pi * v) : ℂ) = Complex.exp ((-Real.pi * v : ℝ) : ℂ) := Complex.ofReal_exp _
+    rw [hexp_r, ← Complex.exp_add]
     congr 1; push_cast; ring
   dsimp only [cTheta]
   rw [hcexp]
@@ -241,6 +243,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             (contDiff_const (𝕜 := ℝ)).add ((contDiff_const (𝕜 := ℝ)).mul Complex.ofRealCLM.contDiff)
           have hcos_c : ContDiff ℝ 1 (fun t : ℝ => Complex.cos ((θ : ℂ) + Complex.I * Real.pi * t) ^ 2) :=
             ((Complex.contDiff_cos.restrict_scalars ℝ).comp hw_c).pow 2
+          dsimp only [cTheta]
           exact (contDiff_const (𝕜 := ℝ)).div hcos_c (fun t => pow_ne_zero 2 (cos_ne_zero_of_abs_lt (v := t) hθ))
         exact (hc_c1.continuous_deriv (by norm_num) |> fun h => (Complex.continuous_re.comp h).norm).congr fun t => by
           dsimp only [Function.comp_def]; rw [hderiv_eq t]
@@ -802,10 +805,12 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   have hc_int := cTheta_integrableOn hθ
   have h_int_1_c : IntegrableOn (fun v : ℝ => cTheta θ v / (y : ℂ)) (Set.Ioi 0) :=
     IntegrableOn.congr_fun (Integrable.const_mul hc_int ((1 : ℂ) / y))
-      (fun v _ => by simp only [div_eq_mul_inv, one_div, mul_comm]) measurableSet_Ioi
+      (fun v _ => by simp only [div_eq_mul_inv, one_div, mul_one, mul_comm]) measurableSet_Ioi
   have h_int_1 : IntegrableOn (fun v : ℝ => (cTheta θ v / (y : ℂ)).im) (Set.Ioi 0) := h_int_1_c.im
-  have h_int_2 : IntegrableOn (fun v : ℝ => (Complex.I * ((v : ℂ) * cTheta θ v) / (y : ℂ) ^ 2).im) (Set.Ioi 0) :=
-    (IntegrableOn.congr_fun (Integrable.const_mul h_vc_int (Complex.I / (y : ℂ) ^ 2)) (fun v _ => by ring) measurableSet_Ioi).im
+  have h_int_2_c : IntegrableOn (fun v : ℝ => Complex.I * ((v : ℂ) * cTheta θ v) / (y : ℂ) ^ 2) (Set.Ioi 0) :=
+    IntegrableOn.congr_fun (Integrable.const_mul h_vc_int (Complex.I / (y : ℂ) ^ 2))
+      (fun v _ => by ring) measurableSet_Ioi
+  have h_int_2 : IntegrableOn (fun v : ℝ => (Complex.I * ((v : ℂ) * cTheta θ v) / (y : ℂ) ^ 2).im) (Set.Ioi 0) := h_int_2_c.im
   have h_int_3 : IntegrableOn (fun v : ℝ => ((cTheta θ v * (v : ℂ) ^ 2) / ((y : ℂ) ^ 2 * ((y : ℂ) - Complex.I * v))).im) (Set.Ioi 0) := by
     refine (h_v2c_int.div_const (|y| ^ 3)).mono' (Continuous.aestronglyMeasurable (Complex.continuous_im.comp (by
       refine Continuous.div ?_ ?_ (fun v => ?_)
