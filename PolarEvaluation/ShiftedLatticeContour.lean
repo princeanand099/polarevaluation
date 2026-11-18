@@ -65,13 +65,15 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
         exact hxv (Complex.ofReal_eq_zero.mp hden.symm)
       have hinv : 1 / ((x : ℂ) - Complex.I * v) =
           ((x : ℂ) + Complex.I * v) / ((x ^ 2 + v ^ 2 : ℝ) : ℂ) := by
-        rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr hxv), one_mul]
+        rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr hxv), one_mul, mul_comm]
         exact hden.symm
       rw [div_eq_mul_inv, ← one_div, hinv, mul_div_assoc', Complex.div_ofReal_im]
       have hexp : Complex.exp (-Complex.I * θ) =
           ((Real.cos θ : ℝ) : ℂ) - ((Real.sin θ : ℝ) : ℂ) * Complex.I := by
-        rw [show -Complex.I * (θ : ℂ) = -((θ : ℂ) * Complex.I) by ring,
-          Complex.exp_neg_mul_I, ← Complex.ofReal_cos, ← Complex.ofReal_sin]
+        rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
+          Complex.exp_mul_I]
+        simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
+        ring
       rw [hexp]
       simp only [Complex.sub_mul, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
         Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul, add_zero, sub_zero,
@@ -167,12 +169,14 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
     simp at him
     linarith
   have hinv_Δ : 1 / ((x : ℂ) - Complex.I * Δ) = ((x : ℂ) + Complex.I * Δ) / ((x ^ 2 + Δ ^ 2 : ℝ) : ℂ) := by
-    rw [div_eq_div_iff hne_Δ (Complex.ofReal_ne_zero.mpr (by positivity)), one_mul]
+    rw [div_eq_div_iff hne_Δ (Complex.ofReal_ne_zero.mpr (by positivity)), one_mul, mul_comm]
     exact hden_Δ.symm
   have hexp : Complex.exp (-Complex.I * θ) =
       ((Real.cos θ : ℝ) : ℂ) - ((Real.sin θ : ℝ) : ℂ) * Complex.I := by
-    rw [show -Complex.I * (θ : ℂ) = -((θ : ℂ) * Complex.I) by ring,
-      Complex.exp_neg_mul_I, ← Complex.ofReal_cos, ← Complex.ofReal_sin]
+    rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
+      Complex.exp_mul_I]
+    simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
+    ring
   have hH_Δ : H Δ = -(x * Real.cos θ + Δ * Real.sin θ) / (x ^ 2 + Δ ^ 2) := by
     dsimp only [H]
     rw [div_eq_mul_inv, ← one_div, hinv_Δ, mul_div_assoc', Complex.div_ofReal_re, hexp]
@@ -192,7 +196,7 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
   have hbd_re : (Δ * Real.sin θ / ((Complex.I * Δ - x) ^ 2)).re =
       Δ * Real.sin θ * (x ^ 2 - Δ ^ 2) / (x ^ 2 + Δ ^ 2) ^ 2 := by
     have hsq : (Complex.I * Δ - x) ^ 2 = ((x : ℂ) - Complex.I * Δ) ^ 2 := by ring
-    rw [hsq, div_eq_mul_inv, ← one_div, one_div_pow, hinv_Δ, div_pow, mul_div_assoc',
+    rw [hsq, div_eq_mul_inv, ← one_div, ← one_div_pow, hinv_Δ, div_pow, mul_div_assoc',
       ← Complex.ofReal_pow, Complex.div_ofReal_re]
     have hnum : ((x : ℂ) + Complex.I * Δ) ^ 2 =
         ((x ^ 2 - Δ ^ 2 : ℝ) : ℂ) + ((2 * x * Δ : ℝ) : ℂ) * Complex.I := by
@@ -335,7 +339,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
             push_cast; ring_nf; simp [Complex.I_sq]; ring
           have hinv : 1 / (((n + α : ℝ) : ℂ) - Complex.I * Δ) =
               (((n + α : ℝ) : ℂ) + Complex.I * Δ) / (((n + α) ^ 2 + Δ ^ 2 : ℝ) : ℂ) := by
-            rw [div_eq_div_iff hw (Complex.ofReal_ne_zero.mpr (by positivity)), one_mul]
+            rw [div_eq_div_iff hw (Complex.ofReal_ne_zero.mpr (by positivity)), one_mul, mul_comm]
             exact hden.symm
           rw [hinv, Complex.div_ofReal_re]
           simp
@@ -632,7 +636,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
               ((y ^ 2 + Δ ^ 2 : ℝ) : ℂ) := by
             push_cast; ring_nf; simp [Complex.I_sq]; ring
           have hinv : 1 / ((y : ℂ) - Complex.I * Δ) = ((y : ℂ) + Complex.I * Δ) / ((y ^ 2 + Δ ^ 2 : ℝ) : ℂ) := by
-            rw [div_eq_div_iff hy_ne_c (Complex.ofReal_ne_zero.mpr (by positivity)), one_mul]
+            rw [div_eq_div_iff hy_ne_c (Complex.ofReal_ne_zero.mpr (by positivity)), one_mul, mul_comm]
             exact hden.symm
           rw [hinv, Complex.div_ofReal_re]
           simp
@@ -738,18 +742,24 @@ lemma cTheta_re_pos {θ v : ℝ} (hθ : |θ| < Real.pi / 2) (hv : 0 ≤ v) :
       rw [hcos_c]
       have hch := Real.cosh_sq (Real.pi * v)
       have hcs := Real.cos_sq_add_sin_sq θ
-      push_cast; ring_nf; simp only [Complex.I_sq]; push_cast; nlinarith
+      apply Complex.ext
+      · simp [Complex.mul_re, Complex.add_re, Complex.sub_re]
+        nlinarith
+      · simp [Complex.mul_im, Complex.add_im, Complex.sub_im]
+        ring
     have hinv : 1 / Complex.cos (θ + Complex.I * Real.pi * v) =
         (((Real.cos θ * Real.cosh (Real.pi * v) : ℝ) : ℂ) +
           ((Real.sin θ * Real.sinh (Real.pi * v) : ℝ) : ℂ) * Complex.I) /
         ((Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2 : ℝ) : ℂ) := by
-      rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr hD_pos.ne'), one_mul]
+      rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr hD_pos.ne'), one_mul, mul_comm]
       exact hconj.symm
     have hexp : Complex.exp (-Complex.I * θ) =
         ((Real.cos θ : ℝ) : ℂ) - ((Real.sin θ : ℝ) : ℂ) * Complex.I := by
-      rw [show -Complex.I * (θ : ℂ) = -((θ : ℂ) * Complex.I) by ring,
-        Complex.exp_neg_mul_I, ← Complex.ofReal_cos, ← Complex.ofReal_sin]
-    rw [div_eq_mul_inv, ← one_div, one_div_pow, hinv, div_pow, mul_div_assoc',
+      rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
+        Complex.exp_mul_I]
+      simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
+      ring
+    rw [div_eq_mul_inv, ← one_div, ← one_div_pow, hinv, div_pow, mul_div_assoc',
       ← Complex.ofReal_pow, Complex.div_ofReal_re, hexp]
     simp only [Complex.sub_mul, Complex.add_mul, Complex.mul_re, Complex.ofReal_re,
       Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul,
@@ -806,19 +816,25 @@ lemma cTheta_im_eq {θ v : ℝ} (hθ : |θ| < Real.pi / 2) :
     rw [hcos_c]
     have hch := Real.cosh_sq (Real.pi * v)
     have hcs := Real.cos_sq_add_sin_sq θ
-    push_cast; ring_nf; simp only [Complex.I_sq]; push_cast; nlinarith
+    apply Complex.ext
+    · simp [Complex.mul_re, Complex.add_re, Complex.sub_re]
+      nlinarith
+    · simp [Complex.mul_im, Complex.add_im, Complex.sub_im]
+      ring
   have hinv : 1 / Complex.cos (θ + Complex.I * Real.pi * v) =
       (((Real.cos θ * Real.cosh (Real.pi * v) : ℝ) : ℂ) +
         ((Real.sin θ * Real.sinh (Real.pi * v) : ℝ) : ℂ) * Complex.I) /
       ((Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2 : ℝ) : ℂ) := by
-    rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr hD_pos.ne'), one_mul]
+    rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr hD_pos.ne'), one_mul, mul_comm]
     exact hconj.symm
   have hexp : Complex.exp (-Complex.I * θ) =
       ((Real.cos θ : ℝ) : ℂ) - ((Real.sin θ : ℝ) : ℂ) * Complex.I := by
-    rw [show -Complex.I * (θ : ℂ) = -((θ : ℂ) * Complex.I) by ring,
-      Complex.exp_neg_mul_I, ← Complex.ofReal_cos, ← Complex.ofReal_sin]
+    rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
+      Complex.exp_mul_I]
+    simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
+    ring
   dsimp only [cTheta]
-  rw [div_eq_mul_inv, ← one_div, one_div_pow, hinv, div_pow, mul_div_assoc',
+  rw [div_eq_mul_inv, ← one_div, ← one_div_pow, hinv, div_pow, mul_div_assoc',
     ← Complex.ofReal_pow, Complex.div_ofReal_im, hexp]
   simp only [Complex.sub_mul, Complex.add_mul, Complex.mul_im, Complex.ofReal_re,
     Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul,
@@ -828,6 +844,7 @@ lemma cTheta_im_eq {θ v : ℝ} (hθ : |θ| < Real.pi / 2) :
 
 lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi / 2)
     (hy : y < 0) : 0 < limitingJ y θ := by
+  have hy_sq : 0 < y ^ 2 := sq_pos_of_neg hy
   have hθ_abs : |θ| < Real.pi / 2 := abs_lt.mpr ⟨by linarith [Real.pi_pos], hθ_lt⟩
   have hcos_pos : 0 < Real.cos θ := Real.cos_pos_of_mem_Ioo (abs_lt.mp hθ_abs)
   have hc_int := cTheta_integrableOn hθ_abs
@@ -837,16 +854,17 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
         v * (cTheta θ v).re / (y ^ 2 + v ^ 2) + y * (cTheta θ v).im / (y ^ 2 + v ^ 2) := by
     intro v
     have hden : ((y : ℂ) - Complex.I * v) * ((y : ℂ) + Complex.I * v) = ((y ^ 2 + v ^ 2 : ℝ) : ℂ) := by
-      push_cast; ring_nf; simp [Complex.I_sq]; ring
+      push_cast; ring_nf; simp [Complex.I_sq]
     have hne : (y : ℂ) - Complex.I * v ≠ 0 := by
       intro h0; have hre := congr_arg Complex.re h0; simp at hre; linarith
     have hinv : 1 / ((y : ℂ) - Complex.I * v) = ((y : ℂ) + Complex.I * v) / ((y ^ 2 + v ^ 2 : ℝ) : ℂ) := by
-      rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr (by positivity)), one_mul]
+      rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr (by positivity)), one_mul, mul_comm]
       exact hden.symm
     have heq : Complex.exp (-Complex.I * θ) /
         (Complex.cos (θ + Complex.I * Real.pi * v) ^ 2 * (y - Complex.I * v)) =
         cTheta θ v * (1 / ((y : ℂ) - Complex.I * v)) := by
-      dsimp only [cTheta]; ring
+      dsimp only [cTheta]
+      field_simp [pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ_abs), hne]
     rw [heq, hinv, mul_div_assoc', Complex.div_ofReal_im]
     simp only [Complex.mul_im, Complex.add_re, Complex.ofReal_re, Complex.mul_re,
       Complex.I_re, mul_zero, Complex.ofReal_im, Complex.I_im, mul_one, sub_zero,
@@ -857,7 +875,7 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
         (volume.restrict (Set.Ioi 0)) := by
       refine Continuous.aestronglyMeasurable ?_
       refine ((continuous_id.mul (Complex.continuous_re.comp ?_)).div (by fun_prop) (fun v => by positivity))
-      refine continuous_const.div (Continuous.pow (Complex.continuous_cos (by fun_prop)) 2) (fun v => ?_)
+      refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => ?_)
       exact pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ_abs)
     refine (hc_int.norm.const_mul (1 / |y|)).mono' h_meas ?_
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
@@ -869,16 +887,15 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
     rw [Real.norm_eq_abs, abs_div, abs_mul, abs_of_pos (by positivity : 0 < y ^ 2 + v ^ 2)]
     calc |v| * |(cTheta θ v).re| / (y ^ 2 + v ^ 2)
         = (|v| / (y ^ 2 + v ^ 2)) * |(cTheta θ v).re| := by ring
-      _ ≤ (1 / |y|) * ‖cTheta θ v‖ := by
-          gcongr
-          · exact h2.trans (by gcongr; linarith [abs_pos.mpr hy.ne])
-          · exact Complex.abs_re_le_norm _
+      _ ≤ (1 / |y|) * ‖cTheta θ v‖ :=
+          mul_le_mul (h2.trans (div_le_div_of_nonneg_left (by norm_num) (abs_pos.mpr hy.ne)
+            (by linarith [abs_pos.mpr hy.ne]))) (Complex.abs_re_le_norm _) (abs_nonneg _) (by positivity)
   have h_int_im : IntegrableOn (fun v : ℝ => y * (cTheta θ v).im / (y ^ 2 + v ^ 2)) (Set.Ioi 0) := by
     have h_meas : AEStronglyMeasurable (fun v : ℝ => y * (cTheta θ v).im / (y ^ 2 + v ^ 2))
         (volume.restrict (Set.Ioi 0)) := by
       refine Continuous.aestronglyMeasurable ?_
       refine ((continuous_const.mul (Complex.continuous_im.comp ?_)).div (by fun_prop) (fun v => by positivity))
-      refine continuous_const.div (Continuous.pow (Complex.continuous_cos (by fun_prop)) 2) (fun v => ?_)
+      refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => ?_)
       exact pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ_abs)
     refine (hc_int.norm.const_mul (1 / |y|)).mono' h_meas ?_
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
@@ -899,9 +916,9 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
     let g : ℝ → ℝ := fun v => v * (cTheta θ v).re / (y ^ 2 + v ^ 2)
     have hg_cont : Continuous g := by
       refine ((continuous_id.mul (Complex.continuous_re.comp ?_)).div (by fun_prop) (fun v => by positivity))
-      refine continuous_const.div (Continuous.pow (Complex.continuous_cos (by fun_prop)) 2) (fun v => ?_)
+      refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => ?_)
       exact pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ_abs)
-    obtain ⟨v_min, hv_min, hv_isMin⟩ := isCompact_Icc.exists_isMinOn
+    obtain ⟨v_min, hv_min, hv_isMin⟩ := (isCompact_Icc (a := (1 : ℝ)) (b := 2)).exists_isMinOn
       ⟨(1 : ℝ), by norm_num⟩ hg_cont.continuousOn
     have hg_min_pos : 0 < g v_min := by
       have hv1 : 1 ≤ v_min := hv_min.1
@@ -918,8 +935,12 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
         rw [MeasureTheory.setIntegral_const, Real.volume_real_Ioc_of_le (by norm_num), smul_eq_mul]
         norm_num
       rw [← h_const]
-      refine MeasureTheory.setIntegral_mono_on continuousOn_const.integrableOn_Ioc
-        (hg_cont.continuousOn.integrableOn_Ioc) measurableSet_Ioc fun v hv => hv_isMin (Set.Ioc_subset_Icc_self hv)
+      have h_c_int : IntegrableOn (fun _ : ℝ => g v_min) (Set.Ioc 1 2) :=
+        (continuousOn_const : ContinuousOn (fun _ : ℝ => g v_min) (Set.Icc 1 2)).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+      have h_g_int : IntegrableOn g (Set.Ioc 1 2) :=
+        (hg_cont.continuousOn : ContinuousOn g (Set.Icc 1 2)).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+      refine MeasureTheory.setIntegral_mono_on h_c_int h_g_int measurableSet_Ioc
+        fun v hv => hv_isMin (Set.Ioc_subset_Icc_self hv)
     linarith
   have h_nonneg_second : 0 ≤ ∫ v in Set.Ioi (0 : ℝ), y * (cTheta θ v).im / (y ^ 2 + v ^ 2) := by
     by_cases hθ0 : θ = 0
@@ -928,7 +949,7 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
         simp
       have : (fun v : ℝ => y * (cTheta θ v).im / (y ^ 2 + v ^ 2)) = 0 := by
         ext v; rw [hθ0, him0]; simp
-      rw [this, MeasureTheory.integral_zero]
+      simp [this]
     · have hθ_pos : 0 < θ := lt_of_le_of_ne hθ (Ne.symm hθ0)
       have hsin_pos : 0 < Real.sin θ := Real.sin_pos_of_pos_of_lt_pi hθ_pos (by linarith [Real.pi_pos])
       let t : ℝ → ℝ := fun v => Real.sinh (Real.pi * v) / Real.cosh (Real.pi * v)
@@ -938,21 +959,19 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
         have ha_eq : t a = 1 - 2 / (Real.exp (2 * Real.pi * a) + 1) := by
           dsimp only [t]
           rw [Real.sinh_eq, Real.cosh_eq]
-          have he : Real.exp (Real.pi * a) * Real.exp (Real.pi * a) = Real.exp (2 * Real.pi * a) := by
+          have he : Real.exp (2 * Real.pi * a) = Real.exp (Real.pi * a) * Real.exp (Real.pi * a) := by
             rw [← Real.exp_add]; ring_nf
-          have he2 : Real.exp (Real.pi * a) * Real.exp (-(Real.pi * a)) = 1 := by
-            rw [← Real.exp_add]; simp
-          field_simp [(Real.exp_pos _).ne', (by positivity : Real.exp (Real.pi * a) + Real.exp (-(Real.pi * a)) ≠ 0)]
-          nlinarith
+          rw [he, Real.exp_neg]
+          field_simp [(Real.exp_pos (Real.pi * a)).ne', (by positivity : Real.exp (Real.pi * a) + (Real.exp (Real.pi * a))⁻¹ ≠ 0), (by positivity : Real.exp (Real.pi * a) * Real.exp (Real.pi * a) + 1 ≠ 0)]
+          ring
         have hb_eq : t b = 1 - 2 / (Real.exp (2 * Real.pi * b) + 1) := by
           dsimp only [t]
           rw [Real.sinh_eq, Real.cosh_eq]
-          have he : Real.exp (Real.pi * b) * Real.exp (Real.pi * b) = Real.exp (2 * Real.pi * b) := by
+          have he : Real.exp (2 * Real.pi * b) = Real.exp (Real.pi * b) * Real.exp (Real.pi * b) := by
             rw [← Real.exp_add]; ring_nf
-          have he2 : Real.exp (Real.pi * b) * Real.exp (-(Real.pi * b)) = 1 := by
-            rw [← Real.exp_add]; simp
-          field_simp [(Real.exp_pos _).ne', (by positivity : Real.exp (Real.pi * b) + Real.exp (-(Real.pi * b)) ≠ 0)]
-          nlinarith
+          rw [he, Real.exp_neg]
+          field_simp [(Real.exp_pos (Real.pi * b)).ne', (by positivity : Real.exp (Real.pi * b) + (Real.exp (Real.pi * b))⁻¹ ≠ 0), (by positivity : Real.exp (Real.pi * b) * Real.exp (Real.pi * b) + 1 ≠ 0)]
+          ring
         rw [ha_eq, hb_eq]
         have hexp : Real.exp (2 * Real.pi * a) < Real.exp (2 * Real.pi * b) := by
           gcongr
@@ -974,11 +993,10 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
         nlinarith [sq_pos_of_pos hcos_pos, sq_nonneg (Real.sin θ)]
       have hh_cont : Continuous h := by
         dsimp only [h, t]
-        refine Continuous.add (Continuous.add continuous_const ?_) ?_
-        · exact continuous_const.mul ((Real.continuous_sinh.comp (by fun_prop)).div
-            (Real.continuous_cosh.comp (by fun_prop)) (fun v => (Real.cosh_pos _).ne')).pow 2
-        · exact continuous_const.mul ((Real.continuous_sinh.comp (by fun_prop)).div
-            (Real.continuous_cosh.comp (by fun_prop)) (fun v => (Real.cosh_pos _).ne'))
+        have ht_cont : Continuous (fun v : ℝ => Real.sinh (Real.pi * v) / Real.cosh (Real.pi * v)) :=
+          (Real.continuous_sinh.comp (continuous_const.mul continuous_id)).div
+            (Real.continuous_cosh.comp (continuous_const.mul continuous_id)) (fun v => (Real.cosh_pos _).ne')
+        exact (continuous_const.add (continuous_const.mul (ht_cont.pow 2))).add (continuous_const.mul ht_cont)
       have hh_0 : h 0 < 0 := by
         dsimp only [h, t]
         simp [Real.sinh_zero]
@@ -987,12 +1005,11 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
         have h_lim_t : Tendsto t atTop (nhds 1) := by
           have heq : t = fun v => 1 - 2 / (Real.exp (2 * Real.pi * v) + 1) := by
             ext v; dsimp only [t]; rw [Real.sinh_eq, Real.cosh_eq]
-            have he : Real.exp (Real.pi * v) * Real.exp (Real.pi * v) = Real.exp (2 * Real.pi * v) := by
+            have he : Real.exp (2 * Real.pi * v) = Real.exp (Real.pi * v) * Real.exp (Real.pi * v) := by
               rw [← Real.exp_add]; ring_nf
-            have he2 : Real.exp (Real.pi * v) * Real.exp (-(Real.pi * v)) = 1 := by
-              rw [← Real.exp_add]; simp
-            field_simp [(Real.exp_pos _).ne', (by positivity : Real.exp (Real.pi * v) + Real.exp (-(Real.pi * v)) ≠ 0)]
-            nlinarith
+            rw [he, Real.exp_neg]
+            field_simp [(Real.exp_pos (Real.pi * v)).ne', (by positivity : Real.exp (Real.pi * v) + (Real.exp (Real.pi * v))⁻¹ ≠ 0), (by positivity : Real.exp (Real.pi * v) * Real.exp (Real.pi * v) + 1 ≠ 0)]
+            ring
           rw [heq]
           have h_exp : Tendsto (fun v : ℝ => Real.exp (2 * Real.pi * v)) atTop atTop :=
             Real.tendsto_exp_atTop.comp (tendsto_id.const_mul_atTop (by positivity))
@@ -1004,8 +1021,10 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
               atTop (nhds (-Real.cos θ ^ 2 + Real.sin θ ^ 2 * 1 ^ 2 + 2 * Real.cos θ ^ 2 * 1)) := by
             exact ((tendsto_const_nhds.add ((h_lim_t.pow 2).const_mul _)).add (h_lim_t.const_mul _))
           have hcs := Real.cos_sq_add_sin_sq θ
-          simpa [show -Real.cos θ ^ 2 + Real.sin θ ^ 2 * 1 ^ 2 + 2 * Real.cos θ ^ 2 * 1 = 1 by linarith] using h1
-        obtain ⟨V, hV⟩ := (h_lim_h.eventually (eventually_gt_nhds (0 : ℝ))).exists_forall_of_atTop
+          change Tendsto h atTop (nhds 1)
+          rw [show (1 : ℝ) = -Real.cos θ ^ 2 + Real.sin θ ^ 2 * 1 ^ 2 + 2 * Real.cos θ ^ 2 * 1 by linarith]
+          exact h1
+        obtain ⟨V, hV⟩ := (h_lim_h.eventually (eventually_gt_nhds (by norm_num : (0 : ℝ) < 1))).exists_forall_of_atTop
         refine ⟨max V 1, by positivity, hV (max V 1) (le_max_left _ _)⟩
       obtain ⟨V, hV_pos, hV_gt⟩ := hh_lim
       obtain ⟨v₀, hv₀_mem, hv₀_eq⟩ := intermediate_value_Icc hV_pos.le hh_cont.continuousOn ⟨hh_0.le, hV_gt.le⟩
@@ -1016,7 +1035,6 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
         dsimp only [h, t]
         have hch_ne : Real.cosh (Real.pi * v) ≠ 0 := (Real.cosh_pos _).ne'
         field_simp [hch_ne]
-        ring
       have h_int_sub : IntegrableOn (fun v : ℝ => (cTheta θ v).im / (y ^ 2 + v ^ 2)) (Set.Ioi 0) := by
         have h_eq : (fun v : ℝ => (cTheta θ v).im / (y ^ 2 + v ^ 2)) =
             fun v => (1 / y) * (y * (cTheta θ v).im / (y ^ 2 + v ^ 2)) := by
@@ -1027,8 +1045,9 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
       have h_zero_const : ∫ v in Set.Ioi (0 : ℝ), (cTheta θ v).im / (y ^ 2 + v₀ ^ 2) = 0 := by
         rw [MeasureTheory.integral_div, cTheta_im_integral_zero hθ_abs, zero_div]
       have h_le_zero : ∫ v in Set.Ioi (0 : ℝ), (cTheta θ v).im / (y ^ 2 + v ^ 2) ≤ 0 := by
-        rw [← sub_zero (∫ v in Set.Ioi (0 : ℝ), (cTheta θ v).im / (y ^ 2 + v ^ 2)), ← h_zero_const,
-          ← MeasureTheory.integral_sub h_int_sub h_int_const]
+        rw [← sub_zero (∫ v in Set.Ioi (0 : ℝ), (cTheta θ v).im / (y ^ 2 + v ^ 2))]
+        nth_rw 2 [← h_zero_const]
+        rw [← MeasureTheory.integral_sub h_int_sub h_int_const]
         refine MeasureTheory.setIntegral_nonpos measurableSet_Ioi fun v hv => ?_
         have hv_nonneg : 0 ≤ v := hv.le
         rw [h_im_h v]
