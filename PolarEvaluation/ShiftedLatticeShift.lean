@@ -16,8 +16,7 @@ lemma sin_norm_ge_sinh (x y : ℝ) :
       rw [mul_comm, Complex.cos_mul_I]; simp [Complex.ofReal_cosh]
     have h2 : Complex.sin (Complex.I * y) = Complex.I * Real.sinh y := by
       rw [mul_comm, Complex.sin_mul_I]; simp [Complex.ofReal_sinh]; ring
-    rw [h1, h2]
-    simp only [Complex.sin_ofReal_re, Complex.cos_ofReal_re, Complex.ofReal_sin, Complex.ofReal_cos]
+    rw [h1, h2, ← Complex.ofReal_sin, ← Complex.ofReal_cos]
     push_cast; ring
   have hsq : Real.sinh |y| ^ 2 ≤ ‖Complex.sin ((x : ℂ) + Complex.I * y)‖ ^ 2 := by
     rw [← Complex.normSq_eq_norm_sq, hsin, Complex.normSq_apply]
@@ -56,7 +55,9 @@ lemma complex_inv_sin_sq_bound (Δ : ℝ) (hΔ : Δ ≥ 1) (t : ℝ) :
     rw [heq]
     have hs1 := sin_norm_ge_sinh (-Real.pi * t) (Real.pi * Δ)
     rw [abs_of_pos (by positivity)] at hs1
-    exact (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs1
+    have hs1' : Real.sinh (Real.pi * Δ) ≤ ‖Complex.sin (((-Real.pi * t : ℝ) : ℂ) + Complex.I * ((Real.pi : ℂ) * Δ))‖ := by
+      convert hs1 using 3; push_cast; ring
+    exact (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs1'
   have hpos_lb : 0 < ((1 - Real.exp (-2 * Real.pi)) / 2) * Real.exp (Real.pi * Δ) := by positivity
   rw [norm_div, norm_pow, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
   calc Real.pi ^ 2 / ‖Complex.sin (Real.pi * ((-t : ℂ) + Complex.I * Δ))‖ ^ 2
@@ -84,7 +85,9 @@ lemma complex_inv_sin_sq_lipschitz (Δ : ℝ) (hΔ : Δ ≥ 1) {α β : ℝ} (h�
     have hs2 := sin_norm_ge_sinh (-Real.pi * t) (Real.pi * Δ)
     rw [abs_of_pos (by positivity)] at hs2
     have hs3 := (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs2
-    rw [← heq] at hs3
+    have hs3' : ((1 - Real.exp (-2 * Real.pi)) / 2) * Real.exp (Real.pi * Δ) ≤ ‖Complex.sin (↑(-Real.pi * t) + Complex.I * (↑Real.pi * ↑Δ))‖ := by
+      convert hs3 using 3; push_cast; ring
+    rw [← heq] at hs3'
     linarith
   have hderiv : ∀ t : ℝ, HasDerivAt h
       (2 * (Real.pi : ℂ) ^ 3 * Complex.cos (Real.pi * ((-t : ℂ) + Complex.I * Δ)) /
@@ -92,7 +95,7 @@ lemma complex_inv_sin_sq_lipschitz (Δ : ℝ) (hΔ : Δ ≥ 1) {α β : ℝ} (h�
     intro t
     have h_in : HasDerivAt (fun s : ℝ => (Real.pi : ℂ) * ((-s : ℂ) + Complex.I * Δ)) (-Real.pi) t := by
       have h1 := ((hasDerivAt_id' t).ofReal_comp.neg.add_const (Complex.I * Δ)).const_mul (Real.pi : ℂ)
-      convert h1 using 1; ring
+      convert h1 using 1; push_cast; ring
     have h_sin : HasDerivAt (fun s : ℝ => Complex.sin (Real.pi * ((-s : ℂ) + Complex.I * Δ)))
         (Complex.cos (Real.pi * ((-t : ℂ) + Complex.I * Δ)) * (-Real.pi)) t :=
       (Complex.hasDerivAt_sin _).comp t h_in
@@ -126,7 +129,7 @@ lemma complex_inv_sin_sq_lipschitz (Δ : ℝ) (hΔ : Δ ≥ 1) {α β : ℝ} (h�
         _ ≤ 1 * Real.cosh (Real.pi * Δ) + 1 * |Real.sinh (Real.pi * Δ)| := by
             rw [norm_mul, norm_mul]
             gcongr
-            · rw [Complex.norm_real, Real.norm_eq_abs]; exact Real.abs_cos_le_one _
+            · rw [← Complex.ofReal_cos, Complex.norm_real, Real.norm_eq_abs]; exact Real.abs_cos_le_one _
             · rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.cosh_pos _)]
             · rw [← Complex.ofReal_sin, Complex.norm_real, Real.norm_eq_abs]; exact Real.abs_sin_le_one _
             · rw [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs]
@@ -138,8 +141,9 @@ lemma complex_inv_sin_sq_lipschitz (Δ : ℝ) (hΔ : Δ ≥ 1) {α β : ℝ} (h�
       rw [heq]
       have hs1 := sin_norm_ge_sinh (-Real.pi * t) (Real.pi * Δ)
       rw [abs_of_pos (by positivity)] at hs1
-      push_cast at hs1
-      exact (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs1
+      have hs1' : Real.sinh (Real.pi * Δ) ≤ ‖Complex.sin (((-Real.pi * t : ℝ) : ℂ) + Complex.I * ((Real.pi : ℂ) * Δ))‖ := by
+        convert hs1 using 3; push_cast; ring
+      exact (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs1'
     rw [norm_div, norm_mul, norm_mul, Complex.norm_ofNat, norm_pow, norm_pow,
       Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
     calc 2 * Real.pi ^ 3 * ‖Complex.cos (Real.pi * ((-t : ℂ) + Complex.I * Δ))‖ /
@@ -154,7 +158,7 @@ lemma complex_inv_sin_sq_lipschitz (Δ : ℝ) (hΔ : Δ ≥ 1) {α β : ℝ} (h�
           field_simp [h1m.ne', (Real.exp_pos (Real.pi * Δ)).ne', (Real.exp_pos (2 * Real.pi * Δ)).ne']
           ring
   have hmvt := (convex_Icc α β).norm_image_sub_le_of_norm_deriv_le
-    (fun t _ => (hderiv t).differentiableAt.differentiableWithinAt)
+    (fun t _ => (hderiv t).differentiableAt)
     (fun t ht => by rw [(hderiv t).deriv]; exact hnorm_bd t ht)
     (Set.left_mem_Icc.mpr hαβ) (Set.right_mem_Icc.mpr hαβ)
   simpa [h, Real.norm_eq_abs, abs_of_nonneg (sub_nonneg.mpr hαβ)] using hmvt
@@ -171,7 +175,7 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
     intro N
     have h_each : ∀ n : ℤ, AEStronglyMeasurable (d n) (volume.restrict (Set.Ioc a b)) := fun n =>
       ((hd_cont n).mono Set.Ioc_subset_Icc_self).aestronglyMeasurable measurableSet_Ioc
-    exact Finset.aestronglyMeasurable_sum _ fun n _ => h_each n
+    exact Finset.aestronglyMeasurable_sum (Finset.Icc (-(N : ℤ)) (N : ℤ)) fun n _ => h_each n
   have hM_nonneg : ∀ n : ℤ, 0 ≤ M n := fun n => (norm_nonneg (d n a)).trans (hd_bd n a (Set.left_mem_Icc.mpr hab))
   have hS_bd : ∀ N : ℕ, ∀ᵐ t ∂(volume.restrict (Set.Ioc a b)), ‖S N t‖ ≤ ∑' n : ℤ, M n := by
     intro N
@@ -185,6 +189,7 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
     have h_has : HasSum (fun n : ℤ => d n t) (∑' n : ℤ, d n t) :=
       (hd_summ_t t (Set.Ioc_subset_Icc_self ht)).hasSum
     rw [HasSum] at h_has
+    change Tendsto _ atTop _ at h_has
     rw [tendsto_atTop_nhds] at h_has ⊢
     intro U hU_mem hU_open
     obtain ⟨s, hs⟩ := h_has U hU_mem hU_open
@@ -214,6 +219,7 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
       atTop (nhds (∑' n : ℤ, ∫ t in a..b, d n t)) := by
     have h_has := h_summ_int.hasSum
     rw [HasSum] at h_has
+    change Tendsto _ atTop _ at h_has
     rw [tendsto_atTop_nhds] at h_has ⊢
     intro U hU_mem hU_open
     obtain ⟨s, hs⟩ := h_has U hU_mem hU_open
@@ -274,7 +280,9 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_quad : 1 + Real.pi * Δ + (Real.pi * Δ) ^ 2 / 2 ≤ Real.exp (Real.pi * Δ) := by
         simpa [Finset.sum_range_succ, pow_two] using Real.sum_le_exp_of_nonneg (by positivity : 0 ≤ Real.pi * Δ) 3
       have h_pi_gt : 2 < Real.pi := by linarith [Real.pi_gt_three]
-      nlinarith [sq_nonneg (Real.pi * Δ), hΔ_ge_1]
+      have hKΔ : K_big * Δ < Real.pi * Δ ^ 2 := by nlinarith
+      have hpi2 : Real.pi * Δ ^ 2 < (Real.pi * Δ) ^ 2 / 2 := by nlinarith [sq_pos_of_pos hΔ_pos]
+      linarith
     have h_exp2 : Real.exp (-2 * Real.pi * Δ) = (Real.exp (Real.pi * Δ) * Real.exp (Real.pi * Δ))⁻¹ := by
       rw [← Real.exp_add, show Real.pi * Δ + Real.pi * Δ = 2 * Real.pi * Δ by ring, ← Real.exp_neg]
       congr 1; ring
@@ -295,9 +303,10 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   have h_mono_bd : (C_sin + C_lip * Δ) * Real.exp (-2 * Real.pi * Δ) < Real.cos θ * Real.pi ^ 2 / 2 := by
     have hK : (C_sin + C_lip) / (Real.cos θ * Real.pi ^ 2 / 2) ≤ K_big := le_max_left _ _
     have hK_pos : 0 < K_big := lt_of_lt_of_le zero_lt_one (le_trans (le_max_right _ _) (le_max_right _ _))
+    have h_cl : C_sin + C_lip * Δ ≤ (C_sin + C_lip) * Δ := by nlinarith
     calc (C_sin + C_lip * Δ) * Real.exp (-2 * Real.pi * Δ)
         ≤ (C_sin + C_lip) * (Δ * Real.exp (-2 * Real.pi * Δ)) := by
-          nlinarith [Real.exp_pos (-2 * Real.pi * Δ), hΔ_ge_1, hC_sin_pos.le]
+          rw [← mul_assoc]; exact mul_le_mul_of_nonneg_right h_cl (Real.exp_pos _).le
       _ < (C_sin + C_lip) * (1 / K_big) := by gcongr
       _ ≤ Real.cos θ * Real.pi ^ 2 / 2 := by
           rw [mul_one_div, div_le_iff₀ hK_pos, mul_comm _ K_big]
@@ -349,8 +358,9 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have hne2 : (n + α) ^ 2 + Δ ^ 2 ≠ 0 := by positivity
     calc 2 * Δ ^ 3 / ((n + α) ^ 2 + Δ ^ 2) ^ 2
         = (2 * Δ / ((n + α) ^ 2 + Δ ^ 2)) * (Δ ^ 2 / ((n + α) ^ 2 + Δ ^ 2)) := by
-          field_simp [hne2]; ring
-      _ ≤ (2 * Δ / ((n + α) ^ 2 + Δ ^ 2)) * 1 := by gcongr
+          field_simp [hne2]
+      _ ≤ (2 * Δ / ((n + α) ^ 2 + Δ ^ 2)) * 1 := by
+          gcongr; exact (div_le_one (by positivity)).mpr h1
       _ = 2 * (Δ / ((n + α) ^ 2 + Δ ^ 2)) := by ring
   have h_summ_all : ∀ α ∈ Set.Ioo (0 : ℝ) 1, Summable (fun n : ℤ => rescaledFDeriv θ Δ (n + α)) := by
     intro α hα
@@ -380,7 +390,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             change f₁ (((-n - 1 : ℤ) : ℝ) + 1 / 2) = -f₁ ((n : ℝ) + 1 / 2)
             dsimp only [f₁]; push_cast
             have : -(n : ℝ) - 1 + 1 / 2 = -((n : ℝ) + 1 / 2) := by ring
-            rw [this]; ring
+            rw [this, one_div, one_div, inv_neg]; ring
         _ = -g₁ (1 / 2) := tsum_neg
     linarith
   have hg1_diff : ∀ {a b : ℝ}, a ∈ Set.Ioo (0 : ℝ) 1 → b ∈ Set.Ioo (0 : ℝ) 1 → a ≤ b →
@@ -421,8 +431,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             linarith [ht_mem.1]
         have h1 : HasDerivAt (fun s : ℝ => 1 / ((n : ℝ) + s)) (-1 / ((n : ℝ) + t) ^ 2) t := by
           have := ((hasDerivAt_id t).const_add (n : ℝ)).inv hne
-          convert this using 1; · ext s; simp [one_div]
-          · simp only [id_eq]; ring
+          convert this using 1; simp only [one_div, id_eq]
         have h2 : HasDerivAt (fun s : ℝ => ((n : ℝ) + s) / (((n : ℝ) + s) ^ 2 + Δ ^ 2))
             ((((n : ℝ) + t) ^ 2 + Δ ^ 2 - 2 * ((n : ℝ) + t) ^ 2) / (((n : ℝ) + t) ^ 2 + Δ ^ 2) ^ 2) t := by
           have ha' : HasDerivAt (fun s : ℝ => (n : ℝ) + s) 1 t :=
@@ -1189,7 +1198,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_p_main : Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_plus) ≥ Real.pi * (2 * r) := by
       calc Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_plus)
           ≥ Real.pi * (2 * r) / 1 :=
-            div_le_div₀ (mul_nonneg Real.pi_pos.le (mul_nonneg zero_le_two hr_pos.le))
+            div_le_div₀ (mul_nonneg Real.pi_pos.le (le_trans (mul_nonneg zero_le_two hr_pos.le) hsin_r_ge))
               (mul_le_mul_of_nonneg_left hsin_r_ge Real.pi_pos.le) hsin_p hsin_p_le
         _ = Real.pi * (2 * r) := div_one _
     have hg_p_lt : g alpha_plus < 0 := by
@@ -1207,7 +1216,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       rw [show -Real.pi * Real.sin (Real.pi * (-r)) = Real.pi * Real.sin (Real.pi * r) by rw [mul_neg, Real.sin_neg]; ring]
       calc Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_minus)
           ≥ Real.pi * (2 * r) / 1 :=
-            div_le_div₀ (mul_nonneg Real.pi_pos.le (mul_nonneg zero_le_two hr_pos.le))
+            div_le_div₀ (mul_nonneg Real.pi_pos.le (le_trans (mul_nonneg zero_le_two hr_pos.le) hsin_r_ge))
               (mul_le_mul_of_nonneg_left hsin_r_ge Real.pi_pos.le) hsin_m hsin_m_le
         _ = Real.pi * (2 * r) := div_one _
     have hg_m_gt : 0 < g alpha_minus := by
