@@ -33,7 +33,8 @@ lemma complex_cos_sub_one_le {w : ℂ} (hw : ‖w‖ ≤ 1) :
     intro t ht
     rw [norm_mul, norm_neg]
     have hsin : ‖Complex.sin (t * w)‖ ≤ Real.exp 1 := by
-      rw [Complex.sin_apply]
+      have hsin_def : ∀ z : ℂ, Complex.sin z = (Complex.exp (-z * Complex.I) - Complex.exp (z * Complex.I)) * Complex.I / 2 := by intro z; unfold Complex.sin; ring_nf
+      rw [hsin_def]
       have h1 : ‖Complex.exp (-(t * w) * Complex.I)‖ ≤ Real.exp 1 := by
         rw [Complex.norm_exp]
         refine Real.exp_le_exp.mpr ?_
@@ -136,7 +137,8 @@ lemma sincPi_bound (u : ℂ) :
     ‖u * sincPi u ^ 2‖ ≤ Real.exp (2 * Real.pi * |u.im| + 4) := by
   have hsin_bd : ∀ w : ℂ, ‖Complex.sin w‖ ≤ Real.exp |w.im| := by
     intro w
-    rw [Complex.sin_apply]
+    have hsin_def : ∀ z : ℂ, Complex.sin z = (Complex.exp (-z * Complex.I) - Complex.exp (z * Complex.I)) * Complex.I / 2 := by intro z; unfold Complex.sin; ring_nf
+      rw [hsin_def]
     have h1 : ‖Complex.exp (-w * Complex.I)‖ ≤ Real.exp |w.im| := by
       rw [Complex.norm_exp]; exact Real.exp_le_exp.mpr (by
         simp [Complex.mul_re]; exact le_abs_self _)
@@ -765,21 +767,21 @@ lemma limitingJ_lower_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   have hδ₀_le_Y₁ : δ₀ ≤ Y₁ := le_trans hδ₀_le hY₁_ge1
   have hcont_pos : ContinuousOn (fun y : ℝ => limitingJ y θ) (Set.Icc δ₀ Y₁) :=
     limitingJ_continuousOn_Icc θ hθ hδ₀_le_Y₁ (fun h => by linarith [h.1])
-  obtain ⟨y₊, hy₊_mem, hy₊_min⟩ := isCompact_Icc.exists_isMinOn ⟨δ₀, left_mem_Icc.mpr hδ₀_le_Y₁⟩ hcont_pos
+  obtain ⟨y_plus, hy_plus_mem, hy_plus_min⟩ := isCompact_Icc.exists_isMinOn ⟨δ₀, left_mem_Icc.mpr hδ₀_le_Y₁⟩ hcont_pos
   have hcont_neg : ContinuousOn (fun y : ℝ => limitingJ y θ) (Set.Icc (-Y₁) (-δ₀)) :=
     limitingJ_continuousOn_Icc θ hθ (by linarith) (fun h => by linarith [h.2])
-  obtain ⟨y₋, hy₋_mem, hy₋_min⟩ := isCompact_Icc.exists_isMinOn ⟨-δ₀, right_mem_Icc.mpr (by linarith)⟩ hcont_neg
-  have hy₊_pos : 0 < limitingJ y₊ θ := limitingJ_pos θ hθ y₊ (by linarith [hy₊_mem.1])
-  have hy₋_pos : 0 < limitingJ y₋ θ := limitingJ_pos θ hθ y₋ (by linarith [hy₋_mem.2])
-  let m : ℝ := min (limitingJ y₊ θ) (limitingJ y₋ θ)
-  have hm_pos : 0 < m := lt_min hy₊_pos hy₋_pos
+  obtain ⟨y_minus, hy_minus_mem, hy_minus_min⟩ := isCompact_Icc.exists_isMinOn ⟨-δ₀, right_mem_Icc.mpr (by linarith)⟩ hcont_neg
+  have hy_plus_pos : 0 < limitingJ y_plus θ := limitingJ_pos θ hθ y_plus (by linarith [hy_plus_mem.1])
+  have hy_minus_pos : 0 < limitingJ y_minus θ := limitingJ_pos θ hθ y_minus (by linarith [hy_minus_mem.2])
+  let m : ℝ := min (limitingJ y_plus θ) (limitingJ y_minus θ)
+  have hm_pos : 0 < m := lt_min hy_plus_pos hy_minus_pos
   have h_mid : ∀ y : ℝ, δ₀ ≤ |y| → |y| ≤ Y₁ → m ≤ limitingJ y θ := by
     intro y hy1 hy2
     rcases le_total 0 y with hy0 | hy0
     · rw [abs_of_nonneg hy0] at hy1 hy2
-      exact (min_le_left _ _).trans (hy₊_min ⟨hy1, hy2⟩)
+      exact (min_le_left _ _).trans (hy_plus_min ⟨hy1, hy2⟩)
     · rw [abs_of_nonpos hy0] at hy1 hy2
-      exact (min_le_right _ _).trans (hy₋_min ⟨by linarith, by linarith⟩)
+      exact (min_le_right _ _).trans (hy_minus_min ⟨by linarith, by linarith⟩)
   have h_small : ∀ y : ℝ, 0 < |y| → |y| ≤ δ₀ →
       min (1 / (2 * Real.cos θ)) 1 * (1 + Real.log (1 / |y|)) ≤ limitingJ y θ := by
     intro y hy0 hy_le
@@ -898,9 +900,9 @@ lemma sin_pi_iv_beta_lb {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
     rw [Real.sin_neg, abs_neg, abs_of_pos (Real.sin_pos_of_pos_of_lt_pi (by positivity)
       (by nlinarith [Real.pi_pos]))]
     rcases le_total β (1 / 2) with hβ | hβ
-    · exact Real.sin_le_sin_of_nonneg_of_le_pi_div_two (by positivity) (by nlinarith [Real.pi_pos]) (by nlinarith [Real.pi_pos])
+    · exact Real.strictMonoOn_sin.monotoneOn ⟨by linarith [Real.pi_pos], by nlinarith [Real.pi_pos]⟩ ⟨by linarith [Real.pi_pos], by nlinarith [Real.pi_pos]⟩ (by nlinarith [Real.pi_pos])
     · rw [← Real.sin_pi_sub (Real.pi * β)]
-      exact Real.sin_le_sin_of_nonneg_of_le_pi_div_two (by positivity) (by nlinarith [Real.pi_pos]) (by nlinarith [Real.pi_pos])
+      exact Real.strictMonoOn_sin.monotoneOn ⟨by linarith [Real.pi_pos], by nlinarith [Real.pi_pos]⟩ ⟨by linarith [Real.pi_pos], by nlinarith [Real.pi_pos]⟩ (by nlinarith [Real.pi_pos])
   have hsin_δ_pos : 0 < Real.sin (Real.pi * δ) :=
     Real.sin_pos_of_pos_of_lt_pi (by positivity) (by nlinarith [Real.pi_pos])
   rcases le_or_gt v 1 with hv1 | hv1
@@ -963,7 +965,8 @@ lemma sin_pi_iv_alpha_diff {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
   have hz₂_ne : Complex.sin z₂ ≠ 0 := norm_ne_zero_iff.mp (by linarith [mul_pos hc_pos (Real.exp_pos (Real.pi * v))])
   have h_sin_bd : ∀ w : ℂ, ‖Complex.sin w‖ ≤ Real.exp |w.im| := by
     intro w
-    rw [Complex.sin_apply]
+    have hsin_def : ∀ z : ℂ, Complex.sin z = (Complex.exp (-z * Complex.I) - Complex.exp (z * Complex.I)) * Complex.I / 2 := by intro z; unfold Complex.sin; ring_nf
+      rw [hsin_def]
     have h1 : ‖Complex.exp (-w * Complex.I)‖ ≤ Real.exp |w.im| := by
       rw [Complex.norm_exp]; exact Real.exp_le_exp.mpr (by simp [Complex.mul_re]; exact le_abs_self _)
     have h2 : ‖Complex.exp (w * Complex.I)‖ ≤ Real.exp |w.im| := by
@@ -976,7 +979,9 @@ lemma sin_pi_iv_alpha_diff {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
       _ = Real.exp |w.im| := by ring
   have h_cos_bd : ∀ w : ℂ, ‖Complex.cos w‖ ≤ Real.exp |w.im| := by
     intro w
-    rw [Complex.cos_apply]
+    have hcos_def : Complex.cos w = (Complex.exp (w * Complex.I) + Complex.exp (-w * Complex.I)) / 2 := by
+      unfold Complex.cos; ring_nf
+    rw [hcos_def]
     have h1 : ‖Complex.exp (w * Complex.I)‖ ≤ Real.exp |w.im| := by
       rw [Complex.norm_exp]; exact Real.exp_le_exp.mpr (by simp [Complex.mul_re]; exact neg_le_abs _)
     have h2 : ‖Complex.exp (-w * Complex.I)‖ ≤ Real.exp |w.im| := by
