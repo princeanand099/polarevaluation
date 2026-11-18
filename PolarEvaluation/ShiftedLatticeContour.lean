@@ -145,7 +145,7 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
       (hasDerivAt_const v (Complex.exp (-Complex.I * θ))).div hd_den hne
     have hd_re : HasDerivAt (fun t : ℝ => (Complex.exp (-Complex.I * θ) / ((x : ℂ) - Complex.I * t)).re)
         ((-Complex.exp (-Complex.I * θ) * (-Complex.I) / ((x : ℂ) - Complex.I * v) ^ 2).re) v :=
-      Complex.reCLM.hasDerivAt.comp v hd_inv
+      Complex.reCLM.hasDerivAt.comp v (hd_inv.restrictScalars ℝ)
     refine hd_re.neg.congr_deriv ?_
     have hmul : -(-Complex.exp (-Complex.I * θ) * (-Complex.I) / ((x : ℂ) - Complex.I * v) ^ 2) =
         (-Complex.I) * (Complex.exp (-Complex.I * θ) / ((x : ℂ) - Complex.I * v) ^ 2) := by ring
@@ -155,7 +155,7 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
       (Set.uIcc 0 Δ) := by
     refine Complex.continuous_im.comp_continuousOn ?_
     refine continuousOn_const.div (ContinuousOn.pow (by fun_prop) 2) (fun v _ h => ?_)
-    have h0 := pow_eq_zero h
+    have h0 := sq_eq_zero_iff.mp h
     have hre := congr_arg Complex.re h0
     simp at hre
     exact hx hre
@@ -180,9 +180,9 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
   have hH_Δ : H Δ = -(x * Real.cos θ + Δ * Real.sin θ) / (x ^ 2 + Δ ^ 2) := by
     dsimp only [H]
     rw [div_eq_mul_inv, ← one_div, hinv_Δ, mul_div_assoc', Complex.div_ofReal_re, hexp]
-    simp only [Complex.sub_mul, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
-      Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul, add_zero, sub_zero,
-      Complex.add_re, Complex.add_im]
+    simp only [sub_mul, Complex.sub_re, Complex.sub_im, Complex.mul_re, Complex.mul_im,
+      Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, mul_one,
+      zero_mul, add_zero, sub_zero, Complex.add_re, Complex.add_im]
     ring
   have hH_0 : H 0 = -(Real.cos θ / x) := by
     dsimp only [H]
@@ -190,8 +190,8 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
     rw [div_eq_mul_inv, hexp]
     have hx_inv : ((x : ℂ))⁻¹ = ((x⁻¹ : ℝ) : ℂ) := (Complex.ofReal_inv x).symm
     rw [hx_inv]
-    simp only [Complex.sub_mul, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im,
-      Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero]
+    simp only [sub_mul, Complex.sub_re, Complex.sub_im, Complex.mul_re, Complex.mul_im,
+      Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero]
     ring
   have hbd_re : (Δ * Real.sin θ / ((Complex.I * Δ - x) ^ 2)).re =
       Δ * Real.sin θ * (x ^ 2 - Δ ^ 2) / (x ^ 2 + Δ ^ 2) ^ 2 := by
@@ -202,8 +202,9 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
         ((x ^ 2 - Δ ^ 2 : ℝ) : ℂ) + ((2 * x * Δ : ℝ) : ℂ) * Complex.I := by
       push_cast; ring_nf; simp [Complex.I_sq]; ring
     rw [hnum]
-    simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, Complex.add_re,
-      Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero]
+    simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
+      Complex.add_re, Complex.add_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul,
+      sub_zero, add_zero, zero_add]
     ring
   rw [hH_Δ, hH_0, hbd_re]
   unfold rescaledFDeriv
@@ -225,15 +226,15 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
         (Real.sin (Real.pi * (y - α))) ^ 2 *
           ((∫ v in Set.Ioo (0 : ℝ) Δ,
             (Complex.exp (-Complex.I * θ) /
-              (Complex.sin (Complex.pi * (Complex.I * v - α)) ^ 2 * (y - Complex.I * v))).im) -
+              (Complex.sin (Real.pi * (Complex.I * v - α)) ^ 2 * (y - Complex.I * v))).im) -
             (Δ * Real.sin θ /
-              (Complex.sin (Complex.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ - y))).re) := by
+              (Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ - y))).re) := by
   intro y hy_ne
   by_cases hlat : ∃ n : ℤ, y = n + α
   · obtain ⟨n, rfl⟩ := hlat
     have hM : vaalerInterpolant θ Δ α (n + α) = rescaledF θ Δ (n + α) := by
       unfold vaalerInterpolant
-      simp only [if_pos ⟨n, rfl⟩]
+      simp only [if_pos (⟨n, rfl⟩ : ∃ m : ℤ, (n : ℝ) + α = m + α)]
     have hsin : Real.sin (Real.pi * ((n : ℝ) + α - α)) = 0 := by
       rw [show (n : ℝ) + α - α = (n : ℝ) by ring, mul_comm]
       exact Real.sin_int_mul_pi n
@@ -285,7 +286,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
         refine ContinuousOn.intervalIntegrable ?_
         refine Complex.continuous_im.comp_continuousOn ?_
         refine continuousOn_const.div (ContinuousOn.pow (by fun_prop) 2) (fun v _ h0 => ?_)
-        have h1 := pow_eq_zero h0
+        have h1 := sq_eq_zero_iff.mp h0
         have hre := congr_arg Complex.re h1
         simp at hre
         exact hx_ne n hre
@@ -295,8 +296,8 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
           (∫ v in (0 : ℝ)..Δ, (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2).im) /
             (y - n - α) =
           ∫ v in (0 : ℝ)..Δ, d n v := by
-        rw [← intervalIntegral.integral_div, ← intervalIntegral.integral_div,
-          ← intervalIntegral.integral_neg, ← intervalIntegral.integral_add hF_int.div_const.neg hFd_int.div_const]
+        rw [← intervalIntegral.integral_neg, ← intervalIntegral.integral_div, ← intervalIntegral.integral_div,
+          ← intervalIntegral.integral_add hF_int.neg.div_const hFd_int.div_const]
         congr 1; ext v
         have ha : (y : ℂ) - Complex.I * v ≠ 0 := by
           intro h0; have hre := congr_arg Complex.re h0; simp at hre; exact hy_ne hre
@@ -355,18 +356,17 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
               (Δ * Real.sin θ / ((Complex.I * Δ - (n + α)) ^ 2)) / ((y - n - α : ℝ) : ℂ) := by
             have hsq : (Complex.I * Δ - (n + α)) ^ 2 = (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2 := by ring
             have hsq_ne : (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2 ≠ 0 := pow_ne_zero 2 hw
-            field_simp [hu, hsq_ne]; rw [hsq]; ring
+            rw [hsq]; field_simp [hu, hsq_ne]; ring
           rw [hmul, Complex.div_ofReal_re]
         rw [neg_div, h1, h2, ← Complex.neg_re, ← Complex.add_re]
         dsimp only [b]
         congr 1
-        calc ((Δ * Real.sin θ : ℝ) : ℂ) *
-              (-(1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * Δ))) +
-                1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2))
-            = ((Δ * Real.sin θ : ℝ) : ℂ) *
-                (-1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * Δ)) +
-                  1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2)) := by ring_nf
-          _ = _ := by rw [hpf]; push_cast; ring
+        rw [show -(((Δ * Real.sin θ : ℝ) : ℂ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * Δ)))) +
+              ((Δ * Real.sin θ : ℝ) : ℂ) * (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2)) =
+            ((Δ * Real.sin θ : ℝ) : ℂ) *
+              (-1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * Δ)) +
+                1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2)) by ring, hpf]
+        push_cast; ring
       rw [hF, hFd, ← h_int_comb, ← hb_eq]
       have h_cast : (Complex.I * Δ - (((n : ℝ) + α : ℝ) : ℂ)) ^ 2 = (Complex.I * Δ - ((n : ℂ) + α)) ^ 2 := by
         push_cast; ring
