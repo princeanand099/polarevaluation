@@ -1152,13 +1152,19 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         Real.sin θ * (g₂ (α_star + s) - Real.pi) := by
       dsimp only [g]; linarith
     rw [h_diff]
-    calc |Real.cos θ * _ - Real.sin θ * _|
-        ≤ |Real.cos θ * _| + |Real.sin θ * _| := abs_sub _ _
-      _ = |Real.cos θ| * |_| + |Real.sin θ| * |_| := by rw [abs_mul, abs_mul]
-      _ ≤ 1 * (C_sin * Real.exp (-2 * Real.pi * Δ)) + 1 * ((C_lor + C_sin * Δ) * Real.exp (-2 * Real.pi * Δ)) := by
-          gcongr
-          · exact Real.abs_cos_le_one _
-          · exact Real.abs_sin_le_one _
+    have ht1 : |Real.cos θ * (g₁ (α_star + s) - Real.pi * Real.cos (Real.pi * (α_star + s)) / Real.sin (Real.pi * (α_star + s)))| ≤ C_sin * Real.exp (-2 * Real.pi * Δ) := by
+      calc |Real.cos θ * (g₁ (α_star + s) - Real.pi * Real.cos (Real.pi * (α_star + s)) / Real.sin (Real.pi * (α_star + s)))|
+          = |Real.cos θ| * |g₁ (α_star + s) - Real.pi * Real.cos (Real.pi * (α_star + s)) / Real.sin (Real.pi * (α_star + s))| := abs_mul _ _
+        _ ≤ 1 * (C_sin * Real.exp (-2 * Real.pi * Δ)) := mul_le_mul (Real.abs_cos_le_one θ) h1 (abs_nonneg _) zero_le_one
+        _ = C_sin * Real.exp (-2 * Real.pi * Δ) := one_mul _
+    have ht2 : |Real.sin θ * (g₂ (α_star + s) - Real.pi)| ≤ (C_lor + C_sin * Δ) * Real.exp (-2 * Real.pi * Δ) := by
+      calc |Real.sin θ * (g₂ (α_star + s) - Real.pi)|
+          = |Real.sin θ| * |g₂ (α_star + s) - Real.pi| := abs_mul _ _
+        _ ≤ 1 * ((C_lor + C_sin * Δ) * Real.exp (-2 * Real.pi * Δ)) := mul_le_mul (Real.abs_sin_le_one θ) h2 (abs_nonneg _) zero_le_one
+        _ = (C_lor + C_sin * Δ) * Real.exp (-2 * Real.pi * Δ) := one_mul _
+    calc |Real.cos θ * (g₁ (α_star + s) - Real.pi * Real.cos (Real.pi * (α_star + s)) / Real.sin (Real.pi * (α_star + s))) - Real.sin θ * (g₂ (α_star + s) - Real.pi)|
+        ≤ |Real.cos θ * (g₁ (α_star + s) - Real.pi * Real.cos (Real.pi * (α_star + s)) / Real.sin (Real.pi * (α_star + s)))| + |Real.sin θ * (g₂ (α_star + s) - Real.pi)| := abs_sub _ _
+      _ ≤ C_sin * Real.exp (-2 * Real.pi * Δ) + (C_lor + C_sin * Δ) * Real.exp (-2 * Real.pi * Δ) := add_le_add ht1 ht2
       _ = (C_sin + C_lor + C_sin * Δ) * Real.exp (-2 * Real.pi * Δ) := by ring
       _ ≤ C_tot * Δ * Real.exp (-2 * Real.pi * Δ) := by
           have : C_sin + C_lor + C_sin * Δ ≤ C_tot * Δ := by
@@ -1183,8 +1189,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_p_main : Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_plus) ≥ Real.pi * (2 * r) := by
       calc Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_plus)
           ≥ Real.pi * (2 * r) / 1 :=
-            div_le_div₀ (mul_nonneg Real.pi_pos.le (mul_nonneg (by norm_num) hr_pos.le))
-              (mul_le_mul_of_nonneg_left hsin_r_ge Real.pi_pos.le) zero_lt_one hsin_p_le
+            div_le_div₀ (mul_nonneg Real.pi_pos.le (mul_nonneg zero_le_two hr_pos.le))
+              (mul_le_mul_of_nonneg_left hsin_r_ge Real.pi_pos.le) hsin_p hsin_p_le
         _ = Real.pi * (2 * r) := div_one _
     have hg_p_lt : g alpha_plus < 0 := by
       have h_p2 := (abs_le.mp h_p).2
@@ -1201,13 +1207,13 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       rw [show -Real.pi * Real.sin (Real.pi * (-r)) = Real.pi * Real.sin (Real.pi * r) by rw [mul_neg, Real.sin_neg]; ring]
       calc Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_minus)
           ≥ Real.pi * (2 * r) / 1 :=
-            div_le_div₀ (mul_nonneg Real.pi_pos.le (mul_nonneg (by norm_num) hr_pos.le))
-              (mul_le_mul_of_nonneg_left hsin_r_ge Real.pi_pos.le) zero_lt_one hsin_m_le
+            div_le_div₀ (mul_nonneg Real.pi_pos.le (mul_nonneg zero_le_two hr_pos.le))
+              (mul_le_mul_of_nonneg_left hsin_r_ge Real.pi_pos.le) hsin_m hsin_m_le
         _ = Real.pi * (2 * r) := div_one _
     have hg_m_gt : 0 < g alpha_minus := by
       have h_m1 := (abs_le.mp h_m).1
       dsimp only [alpha_minus] at h_m_main ⊢
-      rw [sub_eq_add_neg]
+      rw [sub_eq_add_neg] at h_m_main ⊢
       linarith
     exact ⟨hg_p_lt, hg_m_gt⟩
   have h_ivt := intermediate_value_Icc' (by linarith : alpha_minus ≤ alpha_plus) (hg_cont.mono hIcc_sub)
