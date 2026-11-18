@@ -247,12 +247,8 @@ lemma chebyshev_theta_le : ∀ N : ℕ,
           -- Now bound ∑_{m+2 ≤ p ≤ 2m+1} log p ≤ m * log 4
           set s := (Finset.Icc (m + 2) (2 * m + 1)).filter Nat.Prime
           have hdvd : ∏ p ∈ s, p ∣ Nat.choose (2 * m + 1) m := by
-            apply Finset.prod_dvd_of_coprime
-            · intro p hp q hq hpq
-              have hp' := (Finset.mem_filter.mp hp).2
-              have hq' := (Finset.mem_filter.mp hq).2
-              exact ((Nat.coprime_primes hp' hq').mpr hpq).isCoprime
-            · intro p hp
+            have h_each : ∀ p ∈ s, p ∣ Nat.choose (2 * m + 1) m := by
+              intro p hp
               simp only [s, Finset.mem_filter, Finset.mem_Icc] at hp
               have hchoose := Nat.choose_mul_factorial_mul_factorial (by omega : m ≤ 2 * m + 1)
               have hsub : 2 * m + 1 - m = m + 1 := by omega
@@ -268,6 +264,22 @@ lemma chebyshev_theta_le : ∀ N : ℕ,
                 · exact h1a
                 · exact absurd h1b hp_not_m
               · exact absurd h2 hp_not_m1
+            have h_ind : ∀ t : Finset ℕ, (∀ p ∈ t, Nat.Prime p) →
+                (∀ p ∈ t, p ∣ Nat.choose (2 * m + 1) m) →
+                ∏ p ∈ t, p ∣ Nat.choose (2 * m + 1) m := by
+              intro t ht_p ht_d
+              induction t using Finset.induction_on with
+              | empty => simp
+              | @insert a t ha ih =>
+                rw [Finset.prod_insert ha]
+                have ha_p : Nat.Prime a := ht_p a (Finset.mem_insert_self a t)
+                have hcop : Nat.Coprime a (∏ p ∈ t, p) :=
+                  Nat.Coprime.prod_right fun p hp =>
+                    (Nat.coprime_primes ha_p (ht_p p (Finset.mem_insert_of_mem hp))).mpr (fun h => ha (h ▸ hp))
+                exact hcop.mul_dvd_of_dvd_of_dvd (ht_d a (Finset.mem_insert_self a t))
+                  (ih (fun p hp => ht_p p (Finset.mem_insert_of_mem hp))
+                    (fun p hp => ht_d p (Finset.mem_insert_of_mem hp)))
+            exact h_ind s (fun p hp => (Finset.mem_filter.mp hp).2) h_each
           have hchoose_pos : 0 < Nat.choose (2 * m + 1) m := Nat.choose_pos (by omega)
           have hprod_le_choose : ∏ p ∈ s, p ≤ Nat.choose (2 * m + 1) m := Nat.le_of_dvd hchoose_pos hdvd
           have hchoose_le : Nat.choose (2 * m + 1) m ≤ 4 ^ m := by
@@ -821,7 +833,7 @@ theorem prime_power_tail_bounds (θ C_L1 Δ₀ : ℝ) (hθ : |θ| ≤ Real.pi / 
       · nlinarith [hp.1.1]
       · refine Nat.le_floor ?_
         have hp_le : (p : ℝ) ≤ Real.sqrt X := (Nat.le_floor_iff (Real.sqrt_nonneg X)).mp hp.1.2
-        have hsq : (p : ℝ) ^ 2 ≤ Real.sqrt X ^ 2 := by nlinarith [Nat.cast_nonneg p]
+        have hsq : (p : ℝ) ^ 2 ≤ Real.sqrt X ^ 2 := by nlinarith [(Nat.cast_nonneg p : (0 : ℝ) ≤ p)]
         rw [Real.sq_sqrt (by linarith)] at hsq; push_cast; exact hsq
       · intro hmem
         rcases hmem.2.eq_one_or_self_of_dvd p (dvd_pow_self p two_ne_zero) with h1 | h2
