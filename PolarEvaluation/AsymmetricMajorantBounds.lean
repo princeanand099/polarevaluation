@@ -358,9 +358,8 @@ lemma kernelK_bound_large (θ : ℝ) {u : ℝ} (hu : 1 ≤ |u|) :
           _ ≤ |x| ^ 2 * 1 := mul_le_mul_of_nonneg_left hx_le (sq_nonneg _)
           _ = |x| ^ 2 := mul_one _
       · have hmvt := (convex_Icc (-|x|) |x|).norm_image_sub_le_of_norm_deriv_le
-          hf_diff hbd' ⟨_root_.neg_le_self (abs_nonneg x), by linarith [abs_nonneg x]⟩ ⟨by linarith [abs_nonneg x], abs_nonneg x⟩
-        simp only [f, Real.arctan_zero, sub_zero, Real.norm_eq_abs, zero_sub, abs_neg] at hmvt
-        rw [abs_sub_comm] at hmvt
+          hf_diff hbd' (x := x) ⟨neg_abs_le x, le_abs_self x⟩ (y := 0) ⟨neg_nonpos.mpr (abs_nonneg x), abs_nonneg x⟩
+        simp only [f, Real.arctan_zero, sub_zero, Real.norm_eq_abs] at hmvt
         calc |Real.arctan x - x| ≤ |x| ^ 2 * |x| := hmvt
           _ ≤ |x| ^ 2 * 1 := mul_le_mul_of_nonneg_left hx_le (sq_nonneg _)
           _ = |x| ^ 2 := mul_one _
@@ -434,8 +433,20 @@ lemma kernelK_bound_small (θ : ℝ) {u : ℝ} (hu0 : 0 < |u|) (hu1 : |u| ≤ 1)
 
 lemma integrable_log_inv_Ioo : IntegrableOn (fun x : ℝ => Real.log (1 / |x|)) (Set.Ioo (-1 : ℝ) 1) := by
   have h_half : IntegrableOn (fun x : ℝ => Real.log (1 / x)) (Set.Ioo (0 : ℝ) 1) := by
-    have h_int : IntegrableOn (fun x : ℝ => -Real.log x) (Set.Ioo (0 : ℝ) 1) :=
-      (intervalIntegral.intervalIntegrable_log.1.mono_set Set.Ioo_subset_Ioc_self).neg
+    have h_rpow : IntegrableOn (fun x : ℝ => 2 * x ^ (-1 / 2 : ℝ)) (Set.Ioo (0 : ℝ) 1) :=
+      ((intervalIntegral.intervalIntegrable_rpow (a := (0 : ℝ)) (b := 1) (by norm_num : (-1 : ℝ) < -1 / 2)).1.mono_set
+        Set.Ioo_subset_Ioc_self).const_mul 2
+    have h_int : IntegrableOn (fun x : ℝ => -Real.log x) (Set.Ioo (0 : ℝ) 1) := by
+      refine h_rpow.mono' (ContinuousOn.aestronglyMeasurable
+        (fun x hx => (Real.continuousAt_log hx.1.ne').neg.continuousWithinAt) measurableSet_Ioo) ?_
+      filter_upwards [ae_restrict_mem measurableSet_Ioo] with x hx
+      have hx0 : 0 < x := hx.1
+      have hlog_nonneg : 0 ≤ -Real.log x := neg_nonneg.mpr (Real.log_nonpos hx0.le hx.2.le)
+      rw [Real.norm_eq_abs, abs_of_nonneg hlog_nonneg]
+      have hle : Real.log (x ^ (-1 / 2 : ℝ)) ≤ x ^ (-1 / 2 : ℝ) - 1 :=
+        Real.log_le_sub_one_of_pos (Real.rpow_pos_of_pos hx0 _)
+      rw [Real.log_rpow hx0] at hle
+      linarith
     refine h_int.congr_fun (fun x hx => ?_) measurableSet_Ioo
     rw [one_div, Real.log_inv]
   have h_neg : IntegrableOn (fun x : ℝ => Real.log (1 / |x|)) (Set.Ioo (-1 : ℝ) 0) := by
@@ -814,12 +825,10 @@ lemma limitingJ_continuousOn_Icc (θ : ℝ) (hθ : |θ| < Real.pi / 2)
       exact div_le_div_of_nonneg_left (norm_nonneg _) hδ_pos hden
     · exact (cTheta_integrableOn hθ).norm.div_const δ
     · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
-      have h_cont : Continuous (fun y : Set.Icc a b => cTheta θ v / ((y : ℝ) - Complex.I * v)) := by
-        refine Continuous.div continuous_const (((continuous_subtype_val : Continuous (fun y : Set.Icc a b => (y : ℝ))).ofReal_comp).sub continuous_const) ?_
-        intro ⟨y, hy⟩ h
-        have hre := congr_arg Complex.re h; simp at hre
-        have := hδ_lb y hy; rw [hre, abs_zero] at this; linarith
-      exact h_cont.continuousAt
+      refine Continuous.div continuous_const ((Complex.continuous_ofReal.comp continuous_subtype_val).sub continuous_const) ?_
+      intro ⟨y, hy⟩ h
+      have hre := congr_arg Complex.re h; simp at hre
+      have := hδ_lb y hy; rw [hre, abs_zero] at this; linarith
   refine (Complex.continuous_im.comp h_cont_c).congr ?_
   · intro ⟨y, hy⟩
     unfold limitingJ cTheta
@@ -1345,7 +1354,7 @@ private lemma contour_c0_rhs_bd (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
       _ = (Δ ^ 2 / c_sin ^ 2) / m := by ring
   exact (abs_sub _ _).trans ((add_le_add hI_bd hR_bd).trans_eq (by ring))
 
-set_option maxHeartbeats 400000 in
+set_option maxHeartbeats 800000 in
 private lemma contour_c0_lhs_ha_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
     (m : ℕ) (hm : m ≥ Nat.ceil (2 * Δ) + 2) (y : ℝ) (hy : y = (m : ℝ) + α + 1 / 2)
     (ha_s : Summable (fun n : ℤ => rescaledF θ Δ (n + α) / (y - n - α) ^ 2)) :
@@ -1422,6 +1431,8 @@ private lemma contour_c0_lhs_ha_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α �
     ((ha_summ.mul_left (4 / y)).congr (fun n => by ring)).add (h_s_inv.mul_left (16 * Δ ^ 2 / y))
   let f_a : ℤ → ℝ := fun n => y * (rescaledF θ Δ (n + α) / (y - n - α) ^ 2)
   have hf_a_s : Summable f_a := ha_s.mul_left y
+  have hf_a_abs : Summable (fun n : ℤ => |f_a n|) := hf_a_s.abs
+  have h_term' : ∀ n : ℤ, |f_a n| ≤ 4 * |rescaledF θ Δ (n + α)| / y + 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2) := h_term
   have h_abs_tsum : |∑' n : ℤ, f_a n| ≤ ∑' n : ℤ, |f_a n| := by
     have h := norm_tsum_le_tsum_norm hf_a_s
     simp only [Real.norm_eq_abs] at h
@@ -1429,7 +1440,7 @@ private lemma contour_c0_lhs_ha_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α �
   calc |∑' n : ℤ, f_a n|
       ≤ ∑' n : ℤ, |f_a n| := h_abs_tsum
     _ ≤ ∑' n : ℤ, (4 * |rescaledF θ Δ (n + α)| / y + 16 * Δ ^ 2 / y * (1 / (y - n - α) ^ 2)) :=
-        Summable.tsum_le_tsum h_term hf_a_s.abs h_sum_term
+        Summable.tsum_le_tsum h_term' hf_a_abs h_sum_term
     _ = 4 * (∑' n : ℤ, |rescaledF θ Δ (n + α)|) / y + 16 * Δ ^ 2 * (∑' k : ℤ, 1 / ((k : ℝ) + 1 / 2) ^ 2) / y := by
         rw [Summable.tsum_add ((ha_summ.mul_left (4 / y)).congr (fun n => by ring)) (h_s_inv.mul_left (16 * Δ ^ 2 / y))]
         rw [show (fun n : ℤ => 4 * |rescaledF θ Δ (n + α)| / y) = fun n : ℤ => (4 / y) * |rescaledF θ Δ (n + α)| by ext n; ring,
@@ -1439,7 +1450,7 @@ private lemma contour_c0_lhs_ha_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α �
         rw [← add_div]
         exact div_le_div_of_nonneg_left (by positivity) hm_pos hy_ge_m
 
-set_option maxHeartbeats 400000 in
+set_option maxHeartbeats 800000 in
 private lemma contour_c0_lhs_hb_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
     (m : ℕ) (hm : m ≥ Nat.ceil (2 * Δ) + 2) (y : ℝ) (hy : y = (m : ℝ) + α + 1 / 2) :
     |∑' n : ℤ, (n + α) * rescaledFDeriv θ Δ (n + α) / (y - n - α)| ≤
@@ -1537,6 +1548,8 @@ private lemma contour_c0_lhs_hb_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α �
     ((hb_mul_summ.mul_left (2 / y)).congr (fun n => by ring)).add hg_summ
   let f_b : ℤ → ℝ := fun n => (n + α) * rescaledFDeriv θ Δ (n + α) / (y - n - α)
   have hf_b_s : Summable f_b := h_bm_s
+  have hf_b_abs : Summable (fun n : ℤ => |f_b n|) := hf_b_s.abs
+  have h_term' : ∀ n : ℤ, |f_b n| ≤ 2 * |(n + α) * rescaledFDeriv θ Δ (n + α)| / y + g_fin n := h_term
   have h_abs_tsum : |∑' n : ℤ, f_b n| ≤ ∑' n : ℤ, |f_b n| := by
     have h := norm_tsum_le_tsum_norm hf_b_s
     simp only [Real.norm_eq_abs] at h
@@ -1544,7 +1557,7 @@ private lemma contour_c0_lhs_hb_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α �
   calc |∑' n : ℤ, f_b n|
       ≤ ∑' n : ℤ, |f_b n| := h_abs_tsum
     _ ≤ ∑' n : ℤ, (2 * |(n + α) * rescaledFDeriv θ Δ (n + α)| / y + g_fin n) :=
-        Summable.tsum_le_tsum h_term hf_b_s.abs h_sum_term
+        Summable.tsum_le_tsum h_term' hf_b_abs h_sum_term
     _ = 2 * (∑' n : ℤ, |(n + α) * rescaledFDeriv θ Δ (n + α)|) / y + ∑' n : ℤ, g_fin n := by
         rw [Summable.tsum_add ((hb_mul_summ.mul_left (2 / y)).congr (fun n => by ring)) hg_summ,
           show (fun n : ℤ => 2 * |(n + α) * rescaledFDeriv θ Δ (n + α)| / y) =
