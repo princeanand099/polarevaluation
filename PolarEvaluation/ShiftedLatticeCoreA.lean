@@ -782,7 +782,7 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
     dsimp only [w]; rw [← Complex.exp_add]; convert Complex.exp_zero using 2; ring
   field_simp [h1w, hexp_ne]
   try rw [show -(Real.pi * 2 * Complex.I * z) = -2 * Complex.I * Real.pi * z by ring]
-  rw [hw_prod]; ring
+  rw [hw_prod]
 
 lemma tsum_inv_sub_real_sq (y : ℝ) (hy : Real.sin (Real.pi * y) ≠ 0) :
     Summable (fun n : ℤ => 1 / (y - n) ^ 2) ∧
