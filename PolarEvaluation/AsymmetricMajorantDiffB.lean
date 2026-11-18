@@ -39,7 +39,9 @@ lemma sincPi_deriv_bound (R : ℝ) (hR : 0 ≤ R) :
       have hpi : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
       field_simp [hpi, hu_ne]; ring
     have h_sin_bd : ∀ w : ℂ, ‖Complex.sin w‖ ≤ Real.exp |w.im| := by
-      intro w; rw [Complex.sin_apply]
+      intro w
+      have hsin_def : Complex.sin w = (Complex.exp (-w * Complex.I) - Complex.exp (w * Complex.I)) * Complex.I / 2 := by unfold Complex.sin; ring_nf
+      rw [hsin_def]
       have h1 : ‖Complex.exp (-w * Complex.I)‖ ≤ Real.exp |w.im| := by
         rw [Complex.norm_exp]; exact Real.exp_le_exp.mpr (by simp [Complex.mul_re]; exact le_abs_self _)
       have h2 : ‖Complex.exp (w * Complex.I)‖ ≤ Real.exp |w.im| := by
@@ -51,7 +53,10 @@ lemma sincPi_deriv_bound (R : ℝ) (hR : 0 ≤ R) :
         _ ≤ (Real.exp |w.im| + Real.exp |w.im|) / 2 := by gcongr
         _ = Real.exp |w.im| := by ring
     have h_cos_bd : ∀ w : ℂ, ‖Complex.cos w‖ ≤ Real.exp |w.im| := by
-      intro w; rw [Complex.cos_apply]
+      intro w
+      have hcos_def : Complex.cos w = (Complex.exp (w * Complex.I) + Complex.exp (-w * Complex.I)) / 2 := by
+        unfold Complex.cos; ring_nf
+      rw [hcos_def]
       have h1 : ‖Complex.exp (w * Complex.I)‖ ≤ Real.exp |w.im| := by
         rw [Complex.norm_exp]; exact Real.exp_le_exp.mpr (by simp [Complex.mul_re]; exact neg_le_abs _)
       have h2 : ‖Complex.exp (-w * Complex.I)‖ ≤ Real.exp |w.im| := by
@@ -164,7 +169,8 @@ lemma majorantEntire_props (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.I
           field_simp [hpi, h0]
         rw [h_eq, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
         have h_sin_bd : ‖Complex.sin (Real.pi * u)‖ ≤ Real.exp |(Real.pi * u).im| := by
-          rw [Complex.sin_apply]
+          have hsin_def : Complex.sin (Real.pi * u) = (Complex.exp (-(Real.pi * u) * Complex.I) - Complex.exp ((Real.pi * u) * Complex.I)) * Complex.I / 2 := by unfold Complex.sin; ring_nf
+          rw [hsin_def]
           have h1 : ‖Complex.exp (-(Real.pi * u) * Complex.I)‖ ≤ Real.exp |(Real.pi * u).im| := by
             rw [Complex.norm_exp]; exact Real.exp_le_exp.mpr (by simp [Complex.mul_re]; exact le_abs_self _)
           have h2 : ‖Complex.exp ((Real.pi * u) * Complex.I)‖ ≤ Real.exp |(Real.pi * u).im| := by
