@@ -175,7 +175,8 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
     intro N
     have h_each : ∀ n : ℤ, AEStronglyMeasurable (d n) (volume.restrict (Set.Ioc a b)) := fun n =>
       ((hd_cont n).mono Set.Ioc_subset_Icc_self).aestronglyMeasurable measurableSet_Ioc
-    exact Finset.aestronglyMeasurable_sum (Finset.Icc (-(N : ℤ)) (N : ℤ)) fun n _ => h_each n
+    convert Finset.aestronglyMeasurable_sum (Finset.Icc (-(N : ℤ)) (N : ℤ)) (fun n _ => h_each n) using 1
+    ext t; simp [S]
   have hM_nonneg : ∀ n : ℤ, 0 ≤ M n := fun n => (norm_nonneg (d n a)).trans (hd_bd n a (Set.left_mem_Icc.mpr hab))
   have hS_bd : ∀ N : ℕ, ∀ᵐ t ∂(volume.restrict (Set.Ioc a b)), ‖S N t‖ ≤ ∑' n : ℤ, M n := by
     intro N
@@ -281,7 +282,10 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         simpa [Finset.sum_range_succ, pow_two] using Real.sum_le_exp_of_nonneg (by positivity : 0 ≤ Real.pi * Δ) 3
       have h_pi_gt : 2 < Real.pi := by linarith [Real.pi_gt_three]
       have hKΔ : K_big * Δ < Real.pi * Δ ^ 2 := by nlinarith
-      have hpi2 : Real.pi * Δ ^ 2 < (Real.pi * Δ) ^ 2 / 2 := by nlinarith [sq_pos_of_pos hΔ_pos]
+      have hpi_half : Real.pi < Real.pi ^ 2 / 2 := by nlinarith [Real.pi_gt_three]
+      have hpi2 : Real.pi * Δ ^ 2 < (Real.pi * Δ) ^ 2 / 2 := by
+        calc Real.pi * Δ ^ 2 < (Real.pi ^ 2 / 2) * Δ ^ 2 := mul_lt_mul_of_pos_right hpi_half (sq_pos_of_pos hΔ_pos)
+          _ = (Real.pi * Δ) ^ 2 / 2 := by ring
       linarith
     have h_exp2 : Real.exp (-2 * Real.pi * Δ) = (Real.exp (Real.pi * Δ) * Real.exp (Real.pi * Δ))⁻¹ := by
       rw [← Real.exp_add, show Real.pi * Δ + Real.pi * Δ = 2 * Real.pi * Δ by ring, ← Real.exp_neg]
@@ -430,8 +434,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           · have hn' : (0 : ℝ) ≤ n := by exact_mod_cast (by omega : 0 ≤ n)
             linarith [ht_mem.1]
         have h1 : HasDerivAt (fun s : ℝ => 1 / ((n : ℝ) + s)) (-1 / ((n : ℝ) + t) ^ 2) t := by
-          have := ((hasDerivAt_id t).const_add (n : ℝ)).inv hne
-          convert this using 1; simp only [one_div, id_eq]
+          have := ((hasDerivAt_id' t).const_add (n : ℝ)).inv hne
+          simpa only [one_div] using this
         have h2 : HasDerivAt (fun s : ℝ => ((n : ℝ) + s) / (((n : ℝ) + s) ^ 2 + Δ ^ 2))
             ((((n : ℝ) + t) ^ 2 + Δ ^ 2 - 2 * ((n : ℝ) + t) ^ 2) / (((n : ℝ) + t) ^ 2 + Δ ^ 2) ^ 2) t := by
           have ha' : HasDerivAt (fun s : ℝ => (n : ℝ) + s) 1 t :=
