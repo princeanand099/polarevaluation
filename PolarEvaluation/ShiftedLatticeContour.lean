@@ -118,7 +118,7 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
   have hfrac_eq : Δ * x / (x ^ 2 + Δ ^ 2) = (x / Δ) / ((x / Δ) ^ 2 + 1) := by
     field_simp [hΔ.ne', hx]
   unfold rescaledF kernelK
-  rw [hlog_sub, hatan_eq, hfrac_eq]
+  rw [← hlog_sub, ← hatan_eq, ← hfrac_eq]
   ring
 
 lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
@@ -296,7 +296,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
           ∫ v in (0 : ℝ)..Δ, d n v := by
         have h_add := intervalIntegral.integral_add (hF_int.neg.div_const ((y - n - α) ^ 2))
           (hFd_int.div_const (y - n - α))
-        dsimp only at h_add
+        simp only [Pi.neg_apply] at h_add
         rw [← intervalIntegral.integral_neg, ← intervalIntegral.integral_div, ← intervalIntegral.integral_div,
           ← h_add]
         congr 1; ext v
@@ -349,7 +349,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
             ((Δ * Real.sin θ : ℝ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * Δ)))).re := by
           have hmul : ((Δ * Real.sin θ : ℝ) : ℂ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * Δ))) =
               ((Δ * Real.sin θ / (y - n - α) ^ 2 : ℝ) : ℂ) * (1 / (((n + α : ℝ) : ℂ) - Complex.I * Δ)) := by
-            field_simp [hu, hw]; push_cast; ring
+            rw [Complex.ofReal_div, Complex.ofReal_pow, div_mul_div_comm, mul_one, mul_one_div]
           rw [hmul, Complex.re_ofReal_mul, h_re1]; ring
         have h2 : (Δ * Real.sin θ / ((Complex.I * Δ - (n + α)) ^ 2)).re / (y - n - α) =
             ((Δ * Real.sin θ : ℝ) * (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2))).re := by
