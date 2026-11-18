@@ -552,7 +552,11 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
             ((1 : ℂ) / ((y - n - α : ℝ) : ℂ) ^ 2) +
            Complex.exp (-Complex.I * θ) / ((y : ℂ) - Complex.I * v) *
             ((1 : ℂ) / (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2)).im) := by
-        ext n; dsimp only [d]; congr 1; ring
+        ext n; dsimp only [d]; congr 1
+        have hu' : ((y - n - α : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (hu_ne n)
+        have hw' : ((n + α : ℝ) : ℂ) - Complex.I * v ≠ 0 := by
+          intro h0; have hre := congr_arg Complex.re h0; simp at hre; exact hx_ne n hre
+        field_simp [ha, hu', hw']
       rw [h_eq_c]
       have h_im_tsum : (∑' n : ℤ,
           (-Complex.exp (-Complex.I * θ) / ((y : ℂ) - Complex.I * v) *
@@ -565,7 +569,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
              Complex.exp (-Complex.I * θ) / ((y : ℂ) - Complex.I * v) *
               ((1 : ℂ) / (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2))).im :=
         (Complex.im_tsum (h_summ_c1.add h_summ_c2)).symm
-      rw [h_im_tsum, tsum_add h_summ_c1 h_summ_c2, tsum_mul_left, tsum_mul_left, h_tsum_u, h_tsum_w v hv.1]
+      rw [h_im_tsum, h_summ_c1.tsum_add h_summ_c2, tsum_mul_left, tsum_mul_left, h_tsum_u, h_tsum_w v hv.1]
       have h1 : (-Complex.exp (-Complex.I * θ) / ((y : ℂ) - Complex.I * v) *
           ((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * (y - α)) ^ 2)).im =
           -(Complex.exp (-Complex.I * θ) / ((y : ℂ) - Complex.I * v)).im *
@@ -618,8 +622,14 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
             ((1 : ℂ) / ((y - n - α : ℝ) : ℂ) ^ 2) +
            ((Δ * Real.sin θ : ℝ) : ℂ) / ((y : ℂ) - Complex.I * Δ) *
             ((1 : ℂ) / (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2)).re) := by
-        ext n; dsimp only [b]; congr 1; push_cast; ring
-      rw [h_eq_c, ← Complex.re_tsum (h_summ_c1.add h_summ_c2), tsum_add h_summ_c1 h_summ_c2,
+        ext n; dsimp only [b]; congr 1
+        have ha' : (y : ℂ) - Complex.I * Δ ≠ 0 := by
+          intro h0; have hre := congr_arg Complex.re h0; simp at hre; exact hy_ne hre
+        have hu' : ((y - n - α : ℝ) : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr (hu_ne n)
+        have hw' : ((n + α : ℝ) : ℂ) - Complex.I * Δ ≠ 0 := by
+          intro h0; have hre := congr_arg Complex.re h0; simp at hre; exact hx_ne n hre
+        field_simp [ha', hu', hw']
+      rw [h_eq_c, ← Complex.re_tsum (h_summ_c1.add h_summ_c2), h_summ_c1.tsum_add h_summ_c2,
         tsum_mul_left, tsum_mul_left, h_tsum_u, h_tsum_w Δ hΔ_pos]
       have h1 : (-((Δ * Real.sin θ : ℝ) : ℂ) / ((y : ℂ) - Complex.I * Δ) *
           ((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * (y - α)) ^ 2)).re =
@@ -690,7 +700,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
         refine continuousOn_const.mul (Complex.continuous_im.comp_continuousOn ?_)
         refine continuousOn_const.div (ContinuousOn.mul (ContinuousOn.pow (Complex.continuous_sin.comp_continuousOn (by fun_prop)) 2) (by fun_prop)) (fun v _ h0 => ?_)
         rcases mul_eq_zero.mp h0 with hsin | hden
-        · have hsin0 := pow_eq_zero hsin
+        · have hsin0 := sq_eq_zero_iff.mp hsin
           rw [Complex.sin_eq_zero_iff] at hsin0
           obtain ⟨k, hk⟩ := hsin0
           have hre := congr_arg Complex.re hk
@@ -706,7 +716,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
         MeasureTheory.integral_neg, MeasureTheory.integral_const_mul]
     rw [hM]
     simp_rw [h_term]
-    rw [tsum_add h_summ_int hb_summ, ← h_fubini, h_int_split, hb_tsum]
+    rw [h_summ_int.tsum_add hb_summ, ← h_fubini, h_int_split, hb_tsum]
     have hFy := rescaledF_integral_rep θ Δ y hΔ_pos hy_ne
     rw [hFy]
     field_simp [Real.pi_ne_zero, hsin_ne]
@@ -721,7 +731,7 @@ lemma cTheta_re_pos {θ v : ℝ} (hθ : |θ| < Real.pi / 2) (hv : 0 ≤ v) :
     rw [Complex.cos_add]
     have h1 : Complex.cos (Complex.I * Real.pi * v) = Real.cosh (Real.pi * v) := by
       rw [show Complex.I * ↑π * ↑v = ↑(π * v) * Complex.I by push_cast; ring, Complex.cos_mul_I]
-      simp [Complex.ofReal_cosh]
+      rw [← Complex.ofReal_cosh]
     have h2 : Complex.sin (Complex.I * Real.pi * v) = Complex.I * Real.sinh (Real.pi * v) := by
       rw [show Complex.I * ↑π * ↑v = ↑(π * v) * Complex.I by push_cast; ring, Complex.sin_mul_I]
       simp [Complex.ofReal_sinh]; ring
@@ -742,17 +752,20 @@ lemma cTheta_re_pos {θ v : ℝ} (hθ : |θ| < Real.pi / 2) (hv : 0 ≤ v) :
       rw [hcos_c]
       have hch := Real.cosh_sq (Real.pi * v)
       have hcs := Real.cos_sq_add_sin_sq θ
-      apply Complex.ext
-      · simp [Complex.mul_re, Complex.add_re, Complex.sub_re]
-        nlinarith
-      · simp [Complex.mul_im, Complex.add_im, Complex.sub_im]
-        ring
+      calc (((Real.cos θ * Real.cosh (Real.pi * v) : ℝ) : ℂ) -
+              ((Real.sin θ * Real.sinh (Real.pi * v) : ℝ) : ℂ) * Complex.I) *
+            (((Real.cos θ * Real.cosh (Real.pi * v) : ℝ) : ℂ) +
+              ((Real.sin θ * Real.sinh (Real.pi * v) : ℝ) : ℂ) * Complex.I)
+          = (((Real.cos θ * Real.cosh (Real.pi * v)) ^ 2 +
+              (Real.sin θ * Real.sinh (Real.pi * v)) ^ 2 : ℝ) : ℂ) := by
+            push_cast; ring_nf; rw [Complex.I_sq]; ring
+        _ = ((Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2 : ℝ) : ℂ) := by
+            congr 1; nlinarith
     have hinv : 1 / Complex.cos (θ + Complex.I * Real.pi * v) =
         (((Real.cos θ * Real.cosh (Real.pi * v) : ℝ) : ℂ) +
           ((Real.sin θ * Real.sinh (Real.pi * v) : ℝ) : ℂ) * Complex.I) /
         ((Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2 : ℝ) : ℂ) := by
-      rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr hD_pos.ne'), one_mul, mul_comm]
-      exact hconj.symm
+      rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr hD_pos.ne'), one_mul, ← hconj]; ring
     have hexp : Complex.exp (-Complex.I * θ) =
         ((Real.cos θ : ℝ) : ℂ) - ((Real.sin θ : ℝ) : ℂ) * Complex.I := by
       rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
@@ -761,7 +774,7 @@ lemma cTheta_re_pos {θ v : ℝ} (hθ : |θ| < Real.pi / 2) (hv : 0 ≤ v) :
       ring
     rw [div_eq_mul_inv, ← one_div, ← one_div_pow, hinv, div_pow, mul_div_assoc',
       ← Complex.ofReal_pow, Complex.div_ofReal_re, hexp]
-    simp only [Complex.sub_mul, Complex.add_mul, Complex.mul_re, Complex.ofReal_re,
+    simp only [sub_mul, add_mul, Complex.mul_re, Complex.ofReal_re,
       Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul,
       add_zero, sub_zero, Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im,
       sq, Complex.I_sq]
@@ -800,7 +813,7 @@ lemma cTheta_im_eq {θ v : ℝ} (hθ : |θ| < Real.pi / 2) :
     rw [Complex.cos_add]
     have h1 : Complex.cos (Complex.I * Real.pi * v) = Real.cosh (Real.pi * v) := by
       rw [show Complex.I * ↑π * ↑v = ↑(π * v) * Complex.I by push_cast; ring, Complex.cos_mul_I]
-      simp [Complex.ofReal_cosh]
+      rw [← Complex.ofReal_cosh]
     have h2 : Complex.sin (Complex.I * Real.pi * v) = Complex.I * Real.sinh (Real.pi * v) := by
       rw [show Complex.I * ↑π * ↑v = ↑(π * v) * Complex.I by push_cast; ring, Complex.sin_mul_I]
       simp [Complex.ofReal_sinh]; ring
@@ -816,17 +829,20 @@ lemma cTheta_im_eq {θ v : ℝ} (hθ : |θ| < Real.pi / 2) :
     rw [hcos_c]
     have hch := Real.cosh_sq (Real.pi * v)
     have hcs := Real.cos_sq_add_sin_sq θ
-    apply Complex.ext
-    · simp [Complex.mul_re, Complex.add_re, Complex.sub_re]
-      nlinarith
-    · simp [Complex.mul_im, Complex.add_im, Complex.sub_im]
-      ring
+    calc (((Real.cos θ * Real.cosh (Real.pi * v) : ℝ) : ℂ) -
+            ((Real.sin θ * Real.sinh (Real.pi * v) : ℝ) : ℂ) * Complex.I) *
+          (((Real.cos θ * Real.cosh (Real.pi * v) : ℝ) : ℂ) +
+            ((Real.sin θ * Real.sinh (Real.pi * v) : ℝ) : ℂ) * Complex.I)
+        = (((Real.cos θ * Real.cosh (Real.pi * v)) ^ 2 +
+            (Real.sin θ * Real.sinh (Real.pi * v)) ^ 2 : ℝ) : ℂ) := by
+          push_cast; ring_nf; rw [Complex.I_sq]; ring
+      _ = ((Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2 : ℝ) : ℂ) := by
+          congr 1; nlinarith
   have hinv : 1 / Complex.cos (θ + Complex.I * Real.pi * v) =
       (((Real.cos θ * Real.cosh (Real.pi * v) : ℝ) : ℂ) +
         ((Real.sin θ * Real.sinh (Real.pi * v) : ℝ) : ℂ) * Complex.I) /
       ((Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2 : ℝ) : ℂ) := by
-    rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr hD_pos.ne'), one_mul, mul_comm]
-    exact hconj.symm
+    rw [div_eq_div_iff hne (Complex.ofReal_ne_zero.mpr hD_pos.ne'), one_mul, ← hconj]; ring
   have hexp : Complex.exp (-Complex.I * θ) =
       ((Real.cos θ : ℝ) : ℂ) - ((Real.sin θ : ℝ) : ℂ) * Complex.I := by
     rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
@@ -836,7 +852,7 @@ lemma cTheta_im_eq {θ v : ℝ} (hθ : |θ| < Real.pi / 2) :
   dsimp only [cTheta]
   rw [div_eq_mul_inv, ← one_div, ← one_div_pow, hinv, div_pow, mul_div_assoc',
     ← Complex.ofReal_pow, Complex.div_ofReal_im, hexp]
-  simp only [Complex.sub_mul, Complex.add_mul, Complex.mul_im, Complex.ofReal_re,
+  simp only [sub_mul, add_mul, Complex.mul_im, Complex.ofReal_re,
     Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul,
     add_zero, sub_zero, Complex.add_re, Complex.add_im, Complex.sub_re, Complex.sub_im,
     sq, Complex.I_sq]
@@ -922,6 +938,7 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
       ⟨(1 : ℝ), by norm_num⟩ hg_cont.continuousOn
     have hg_min_pos : 0 < g v_min := by
       have hv1 : 1 ≤ v_min := hv_min.1
+      have hv_pos : 0 < v_min := by linarith
       have hre_pos := cTheta_re_pos hθ_abs (by linarith)
       dsimp only [g]
       positivity
@@ -1056,8 +1073,9 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
             rcases eq_or_lt_of_le hle with rfl | hlt
             · exact hv₀_eq.le
             · rw [← hv₀_eq]; exact (hh_strict hv_nonneg hv₀_mem.1 hlt).le
-          have hden_le : 1 / (y ^ 2 + v₀ ^ 2) ≤ 1 / (y ^ 2 + v ^ 2) := by
-            gcongr; exact sq_le_sq' (by linarith) hle
+          have hden_le : 1 / (y ^ 2 + v₀ ^ 2) ≤ 1 / (y ^ 2 + v ^ 2) :=
+            div_le_div_of_nonneg_left zero_le_one (by positivity)
+              (add_le_add_left (sq_le_sq' (by linarith) hle) _)
           have h_im_nonpos : Real.sin θ * Real.cosh (Real.pi * v) ^ 2 * h v /
               (Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2) ^ 2 ≤ 0 := by
             exact div_nonpos_of_nonpos_of_nonneg
@@ -1070,8 +1088,9 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
             rcases eq_or_lt_of_le hge with rfl | hlt
             · exact hv₀_eq.ge
             · rw [← hv₀_eq]; exact (hh_strict hv₀_mem.1 hv_nonneg hlt).le
-          have hden_ge : 1 / (y ^ 2 + v ^ 2) ≤ 1 / (y ^ 2 + v₀ ^ 2) := by
-            gcongr; exact sq_le_sq' (by linarith [hv₀_mem.1]) hge
+          have hden_ge : 1 / (y ^ 2 + v ^ 2) ≤ 1 / (y ^ 2 + v₀ ^ 2) :=
+            div_le_div_of_nonneg_left zero_le_one (by positivity)
+              (add_le_add_left (sq_le_sq' (by linarith [hv₀_mem.1]) hge) _)
           have h_im_nonneg : 0 ≤ Real.sin θ * Real.cosh (Real.pi * v) ^ 2 * h v /
               (Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2) ^ 2 := by
             positivity
