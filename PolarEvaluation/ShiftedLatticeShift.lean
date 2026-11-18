@@ -86,13 +86,13 @@ lemma complex_inv_sin_sq_lipschitz (Δ : ℝ) (hΔ : Δ ≥ 1) {α β : ℝ} (h�
     have hs3 := (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs2
     rw [← heq] at hs3
     linarith
-  have hderiv : ∀ t ∈ Set.Icc α β, HasDerivWithinAt h
+  have hderiv : ∀ t : ℝ, HasDerivAt h
       (2 * (Real.pi : ℂ) ^ 3 * Complex.cos (Real.pi * ((-t : ℂ) + Complex.I * Δ)) /
-        Complex.sin (Real.pi * ((-t : ℂ) + Complex.I * Δ)) ^ 3) (Set.Icc α β) t := by
-    intro t _
+        Complex.sin (Real.pi * ((-t : ℂ) + Complex.I * Δ)) ^ 3) t := by
+    intro t
     have h_in : HasDerivAt (fun s : ℝ => (Real.pi : ℂ) * ((-s : ℂ) + Complex.I * Δ)) (-Real.pi) t := by
-      have h1 := ((hasDerivAt_id t).ofReal_comp.neg.add_const (Complex.I * Δ)).const_mul (Real.pi : ℂ)
-      convert h1 using 1; simp
+      have h1 := ((hasDerivAt_id' t).ofReal_comp.neg.add_const (Complex.I * Δ)).const_mul (Real.pi : ℂ)
+      convert h1 using 1; ring
     have h_sin : HasDerivAt (fun s : ℝ => Complex.sin (Real.pi * ((-s : ℂ) + Complex.I * Δ)))
         (Complex.cos (Real.pi * ((-t : ℂ) + Complex.I * Δ)) * (-Real.pi)) t :=
       (Complex.hasDerivAt_sin _).comp t h_in
@@ -101,7 +101,7 @@ lemma complex_inv_sin_sq_lipschitz (Δ : ℝ) (hΔ : Δ ≥ 1) {α β : ℝ} (h�
           (Complex.cos (Real.pi * ((-t : ℂ) + Complex.I * Δ)) * (-Real.pi))) t :=
       h_sin.pow 2
     have h_div := (hasDerivAt_const t ((Real.pi : ℂ) ^ 2)).div h_sq (pow_ne_zero 2 (hsin_ne t))
-    refine (h_div.congr_deriv ?_).hasDerivWithinAt
+    refine h_div.congr_deriv ?_
     have hne := hsin_ne t
     field_simp [hne]; ring
   have hnorm_bd : ∀ t ∈ Set.Icc α β,
@@ -124,8 +124,9 @@ lemma complex_inv_sin_sq_lipschitz (Δ : ℝ) (hΔ : Δ ≥ 1) {α β : ℝ} (h�
           ≤ ‖Complex.cos ((-Real.pi * t : ℝ) : ℂ) * Real.cosh (Real.pi * Δ)‖ +
             ‖Complex.sin ((-Real.pi * t : ℝ) : ℂ) * (Complex.I * Real.sinh (Real.pi * Δ))‖ := norm_sub_le _ _
         _ ≤ 1 * Real.cosh (Real.pi * Δ) + 1 * |Real.sinh (Real.pi * Δ)| := by
+            rw [norm_mul, norm_mul]
             gcongr
-            · rw [← Complex.ofReal_cos, Complex.norm_real, Real.norm_eq_abs]; exact Real.abs_cos_le_one _
+            · rw [Complex.norm_real, Real.norm_eq_abs]; exact Real.abs_cos_le_one _
             · rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.cosh_pos _)]
             · rw [← Complex.ofReal_sin, Complex.norm_real, Real.norm_eq_abs]; exact Real.abs_sin_le_one _
             · rw [norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs]
@@ -137,8 +138,9 @@ lemma complex_inv_sin_sq_lipschitz (Δ : ℝ) (hΔ : Δ ≥ 1) {α β : ℝ} (h�
       rw [heq]
       have hs1 := sin_norm_ge_sinh (-Real.pi * t) (Real.pi * Δ)
       rw [abs_of_pos (by positivity)] at hs1
+      push_cast at hs1
       exact (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs1
-    rw [norm_div, norm_mul, norm_mul, norm_ofNat, norm_pow, norm_pow,
+    rw [norm_div, norm_mul, norm_mul, Complex.norm_ofNat, norm_pow, norm_pow,
       Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
     calc 2 * Real.pi ^ 3 * ‖Complex.cos (Real.pi * ((-t : ℂ) + Complex.I * Δ))‖ /
           ‖Complex.sin (Real.pi * ((-t : ℂ) + Complex.I * Δ))‖ ^ 3
@@ -151,7 +153,9 @@ lemma complex_inv_sin_sq_lipschitz (Δ : ℝ) (hΔ : Δ ≥ 1) {α β : ℝ} (h�
             show 3 * Real.pi * Δ = 2 * Real.pi * Δ + Real.pi * Δ by ring, Real.exp_add]
           field_simp [h1m.ne', (Real.exp_pos (Real.pi * Δ)).ne', (Real.exp_pos (2 * Real.pi * Δ)).ne']
           ring
-  have hmvt := (convex_Icc α β).norm_image_sub_le_of_norm_deriv_le hderiv hnorm_bd
+  have hmvt := (convex_Icc α β).norm_image_sub_le_of_norm_deriv_le
+    (fun t _ => (hderiv t).differentiableAt.differentiableWithinAt)
+    (fun t ht => by rw [(hderiv t).deriv]; exact hnorm_bd t ht)
     (Set.left_mem_Icc.mpr hαβ) (Set.right_mem_Icc.mpr hαβ)
   simpa [h, Real.norm_eq_abs, abs_of_nonneg (sub_nonneg.mpr hαβ)] using hmvt
 
@@ -165,8 +169,9 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
   let S : ℕ → ℝ → ℝ := fun N t => ∑ n ∈ Finset.Icc (-(N : ℤ)) (N : ℤ), d n t
   have hS_meas : ∀ N : ℕ, AEStronglyMeasurable (S N) (volume.restrict (Set.Ioc a b)) := by
     intro N
-    refine Finset.aestronglyMeasurable_sum _ fun n _ => ?_
-    exact ((hd_cont n).mono Set.Ioc_subset_Icc_self).aestronglyMeasurable measurableSet_Ioc
+    have h_each : ∀ n : ℤ, AEStronglyMeasurable (d n) (volume.restrict (Set.Ioc a b)) := fun n =>
+      ((hd_cont n).mono Set.Ioc_subset_Icc_self).aestronglyMeasurable measurableSet_Ioc
+    exact Finset.aestronglyMeasurable_sum _ fun n _ => h_each n
   have hM_nonneg : ∀ n : ℤ, 0 ≤ M n := fun n => (norm_nonneg (d n a)).trans (hd_bd n a (Set.left_mem_Icc.mpr hab))
   have hS_bd : ∀ N : ℕ, ∀ᵐ t ∂(volume.restrict (Set.Ioc a b)), ‖S N t‖ ≤ ∑' n : ℤ, M n := by
     intro N
@@ -179,7 +184,8 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
     filter_upwards [ae_restrict_mem measurableSet_Ioc] with t ht
     have h_has : HasSum (fun n : ℤ => d n t) (∑' n : ℤ, d n t) :=
       (hd_summ_t t (Set.Ioc_subset_Icc_self ht)).hasSum
-    rw [HasSum, tendsto_atTop_nhds] at h_has ⊢
+    rw [HasSum] at h_has
+    rw [tendsto_atTop_nhds] at h_has ⊢
     intro U hU_mem hU_open
     obtain ⟨s, hs⟩ := h_has U hU_mem hU_open
     let M₀ : ℕ := s.sup (fun n : ℤ => n.natAbs)
@@ -199,7 +205,7 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
     rw [intervalIntegral.integral_of_le hab]
     calc ‖∫ t in Set.Ioc a b, d n t‖ ≤ ∫ t in Set.Ioc a b, ‖d n t‖ := norm_integral_le_integral_norm _
       _ ≤ ∫ t in Set.Ioc a b, M n := setIntegral_mono_on
-          (((hd_cont n).mono Set.Ioc_subset_Icc_self).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self |>.norm)
+          ((hd_cont n).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self |>.norm)
           (continuousOn_const.integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self) measurableSet_Ioc
           (fun t ht => hd_bd n t (Set.Ioc_subset_Icc_self ht))
       _ = M n * (b - a) := by
@@ -207,7 +213,8 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
   have h_lim_sum : Tendsto (fun N : ℕ => ∑ n ∈ Finset.Icc (-(N : ℤ)) (N : ℤ), ∫ t in a..b, d n t)
       atTop (nhds (∑' n : ℤ, ∫ t in a..b, d n t)) := by
     have h_has := h_summ_int.hasSum
-    rw [HasSum, tendsto_atTop_nhds] at h_has ⊢
+    rw [HasSum] at h_has
+    rw [tendsto_atTop_nhds] at h_has ⊢
     intro U hU_mem hU_open
     obtain ⟨s, hs⟩ := h_has U hU_mem hU_open
     let M₀ : ℕ := s.sup (fun n : ℤ => n.natAbs)
@@ -218,8 +225,8 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
   rw [intervalIntegral.integral_of_le hab]
   exact tendsto_nhds_unique h_dom h_lim_sum
 
-/-- **Lemma 3.1** (Optimal lattice shift `α_Δ ∈ (0, 1)`). -/
 set_option maxHeartbeats 2000000 in
+/-- **Lemma 3.1** (Optimal lattice shift `α_Δ ∈ (0, 1)`). -/
 theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ (Δ₁ C_α : ℝ), Δ₁ ≥ 1 ∧ C_α > 0 ∧
       ∀ Δ ≥ Δ₁, ∃! α : ℝ, α ∈ Set.Ioo (0 : ℝ) 1 ∧
@@ -264,8 +271,10 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have h1 : K_big / Real.pi + 1 ≤ Δ := le_trans (le_max_right _ _) hΔ
         have h3 := (div_le_iff₀ Real.pi_pos).mp (by linarith : K_big / Real.pi ≤ Δ - 1)
         linarith [Real.pi_pos]
-      have h_lin : Real.pi * Δ ≤ Real.exp (Real.pi * Δ) := by linarith [Real.add_one_le_exp (Real.pi * Δ)]
-      nlinarith
+      have h_quad : 1 + Real.pi * Δ + (Real.pi * Δ) ^ 2 / 2 ≤ Real.exp (Real.pi * Δ) := by
+        simpa [Finset.sum_range_succ, pow_two] using Real.sum_le_exp_of_nonneg (by positivity : 0 ≤ Real.pi * Δ) 3
+      have h_pi_gt : 2 < Real.pi := by linarith [Real.pi_gt_three]
+      nlinarith [sq_nonneg (Real.pi * Δ), hΔ_ge_1]
     have h_exp2 : Real.exp (-2 * Real.pi * Δ) = (Real.exp (Real.pi * Δ) * Real.exp (Real.pi * Δ))⁻¹ := by
       rw [← Real.exp_add, show Real.pi * Δ + Real.pi * Δ = 2 * Real.pi * Δ by ring, ← Real.exp_neg]
       congr 1; ring
@@ -279,18 +288,19 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have hK_pos : 0 < K_big := lt_of_lt_of_le zero_lt_one (le_trans (le_max_right _ _) (le_max_right _ _))
     calc C_α * Δ * Real.exp (-2 * Real.pi * Δ)
         = C_α * (Δ * Real.exp (-2 * Real.pi * Δ)) := by ring
-      _ ≤ C_α * (1 / K_big) := by gcongr; exact h_small_exp.le
+      _ ≤ C_α * (1 / K_big) := by gcongr
       _ ≤ min δ_star (1 / 4) := by
-          rw [mul_one_div, div_le_iff₀ hK_pos]
+          rw [mul_one_div, div_le_iff₀ hK_pos, mul_comm (min δ_star (1 / 4)) K_big]
           exact (div_le_iff₀ hmin_pos).mp hK
   have h_mono_bd : (C_sin + C_lip * Δ) * Real.exp (-2 * Real.pi * Δ) < Real.cos θ * Real.pi ^ 2 / 2 := by
     have hK : (C_sin + C_lip) / (Real.cos θ * Real.pi ^ 2 / 2) ≤ K_big := le_max_left _ _
     have hK_pos : 0 < K_big := lt_of_lt_of_le zero_lt_one (le_trans (le_max_right _ _) (le_max_right _ _))
     calc (C_sin + C_lip * Δ) * Real.exp (-2 * Real.pi * Δ)
-        ≤ (C_sin + C_lip) * (Δ * Real.exp (-2 * Real.pi * Δ)) := by nlinarith [Real.exp_pos (-2 * Real.pi * Δ)]
+        ≤ (C_sin + C_lip) * (Δ * Real.exp (-2 * Real.pi * Δ)) := by
+          nlinarith [Real.exp_pos (-2 * Real.pi * Δ), hΔ_ge_1, hC_sin_pos.le]
       _ < (C_sin + C_lip) * (1 / K_big) := by gcongr
       _ ≤ Real.cos θ * Real.pi ^ 2 / 2 := by
-          rw [mul_one_div, div_le_iff₀ hK_pos]
+          rw [mul_one_div, div_le_iff₀ hK_pos, mul_comm _ K_big]
           exact (div_le_iff₀ (by positivity : 0 < Real.cos θ * Real.pi ^ 2 / 2)).mp hK
   let f₁ : ℝ → ℝ := fun y => 1 / y - y / (y ^ 2 + Δ ^ 2)
   let f₂ : ℝ → ℝ := fun y => 2 * Δ ^ 3 / (y ^ 2 + Δ ^ 2) ^ 2
@@ -299,7 +309,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   let g : ℝ → ℝ := fun α => Real.cos θ * g₁ α - Real.sin θ * g₂ α
   have h_sin_ne : ∀ α ∈ Set.Ioo (0 : ℝ) 1, Real.sin (Real.pi * α) ≠ 0 := by
     intro α hα
-    exact (Real.sin_pos_of_pos_of_lt_pi (by positivity) (by nlinarith [Real.pi_pos, hα.2])).ne'
+    exact (Real.sin_pos_of_pos_of_lt_pi (mul_pos Real.pi_pos hα.1) (by nlinarith [Real.pi_pos, hα.2])).ne'
   have h_summ_1 : ∀ α ∈ Set.Ioo (0 : ℝ) 1, Summable (fun n : ℤ => f₁ (n + α)) := by
     intro α hα
     have hs := (tsum_inv_sub_real_sq (-α) (by rw [mul_neg, Real.sin_neg, neg_ne_zero]; exact h_sin_ne α hα)).1
@@ -308,8 +318,10 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have hne : (n : ℝ) + α ≠ 0 := by
       intro h
       rcases le_or_gt n (-1) with hn | hn
-      · have : (n : ℝ) ≤ -1 := by exact_mod_cast hn; linarith [hα.2]
-      · have : (0 : ℝ) ≤ n := by exact_mod_cast (by omega : 0 ≤ n); linarith [hα.1]
+      · have hn' : (n : ℝ) ≤ -1 := by exact_mod_cast hn
+        linarith [hα.2]
+      · have hn' : (0 : ℝ) ≤ n := by exact_mod_cast (by omega : 0 ≤ n)
+        linarith [hα.1]
     have h_abs_ge : min α (1 - α) ≤ |(n : ℝ) + α| := by
       rcases le_or_gt n (-1) with hn | hn
       · have : (n : ℝ) ≤ -1 := by exact_mod_cast hn
@@ -338,21 +350,20 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     calc 2 * Δ ^ 3 / ((n + α) ^ 2 + Δ ^ 2) ^ 2
         = (2 * Δ / ((n + α) ^ 2 + Δ ^ 2)) * (Δ ^ 2 / ((n + α) ^ 2 + Δ ^ 2)) := by
           field_simp [hne2]; ring
-      _ ≤ (2 * Δ / ((n + α) ^ 2 + Δ ^ 2)) * 1 := by
-          gcongr; exact div_le_one_of_le₀ h1 (by positivity)
+      _ ≤ (2 * Δ / ((n + α) ^ 2 + Δ ^ 2)) * 1 := by gcongr
       _ = 2 * (Δ / ((n + α) ^ 2 + Δ ^ 2)) := by ring
   have h_summ_all : ∀ α ∈ Set.Ioo (0 : ℝ) 1, Summable (fun n : ℤ => rescaledFDeriv θ Δ (n + α)) := by
     intro α hα
     have heq : (fun n : ℤ => rescaledFDeriv θ Δ (n + α)) =
         fun n : ℤ => Real.cos θ * f₁ (n + α) - Real.sin θ * f₂ (n + α) := by
-      ext n; unfold rescaledFDeriv; dsimp only [f₁, f₂]; ring
+      ext n; unfold rescaledFDeriv; dsimp only [f₁, f₂]
     rw [heq]
     exact ((h_summ_1 α hα).mul_left _).sub ((h_summ_2 α).mul_left _)
   have hg_eq : ∀ α ∈ Set.Ioo (0 : ℝ) 1, ∑' n : ℤ, rescaledFDeriv θ Δ (n + α) = g α := by
     intro α hα
     have heq : (fun n : ℤ => rescaledFDeriv θ Δ (n + α)) =
         fun n : ℤ => Real.cos θ * f₁ (n + α) - Real.sin θ * f₂ (n + α) := by
-      ext n; unfold rescaledFDeriv; dsimp only [f₁, f₂]; ring
+      ext n; unfold rescaledFDeriv; dsimp only [f₁, f₂]
     rw [heq, ((h_summ_1 α hα).mul_left _).tsum_sub ((h_summ_2 α).mul_left _),
       tsum_mul_left, tsum_mul_left]
   have hg1_half : g₁ (1 / 2) = 0 := by
@@ -365,7 +376,9 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have heq : g₁ (1 / 2) = -g₁ (1 / 2) := by
       calc g₁ (1 / 2) = ∑' n : ℤ, f₁ ((e n : ℝ) + 1 / 2) := (e.tsum_eq (fun n : ℤ => f₁ (n + 1 / 2))).symm
         _ = ∑' n : ℤ, -f₁ (n + 1 / 2) := by
-            congr 1; ext n; dsimp only [e, f₁]; push_cast
+            congr 1; ext n
+            change f₁ (((-n - 1 : ℤ) : ℝ) + 1 / 2) = -f₁ ((n : ℝ) + 1 / 2)
+            dsimp only [f₁]; push_cast
             have : -(n : ℝ) - 1 + 1 / 2 = -((n : ℝ) + 1 / 2) := by ring
             rw [this]; ring
         _ = -g₁ (1 / 2) := tsum_neg
@@ -1141,7 +1154,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     rw [h_diff]
     calc |Real.cos θ * _ - Real.sin θ * _|
         ≤ |Real.cos θ * _| + |Real.sin θ * _| := abs_sub _ _
-      _ = |Real.cos θ| * |_ | + |Real.sin θ| * |_ | := by rw [abs_mul, abs_mul]
+      _ = |Real.cos θ| * |_| + |Real.sin θ| * |_| := by rw [abs_mul, abs_mul]
       _ ≤ 1 * (C_sin * Real.exp (-2 * Real.pi * Δ)) + 1 * ((C_lor + C_sin * Δ) * Real.exp (-2 * Real.pi * Δ)) := by
           gcongr
           · exact Real.abs_cos_le_one _
