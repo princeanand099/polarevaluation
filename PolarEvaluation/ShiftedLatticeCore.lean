@@ -163,8 +163,7 @@ lemma cTheta_integral_eq {θ : ℝ} (hθ : |θ| < Real.pi / 2) :
           have hch : Real.exp (Real.pi * v) / 2 ≤ Real.cosh (Real.pi * v) := by
             rw [Real.cosh_eq]; linarith [Real.exp_pos (-(Real.pi * v))]
           have h1 : Real.cos θ ^ 2 * Real.cosh (Real.pi * v) ^ 2 ≤ Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2 := by
-            have := Real.cosh_sq (Real.pi * v)
-            have := Real.cos_sq_add_sin_sq θ
+            have := Real.cosh_sq (Real.pi * v); have := Real.cos_sq_add_sin_sq θ
             nlinarith [sq_nonneg (Real.sin θ), sq_nonneg (Real.sinh (Real.pi * v))]
           rw [cos_normSq_eq]
           nlinarith [sq_le_sq' (by linarith [Real.exp_pos (Real.pi * v)]) hch]
@@ -251,6 +250,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have hq := (hasDerivAt_const t (Complex.exp (-Complex.I * θ))).div hsq_d (pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
           refine hq.congr_deriv ?_
           have hne := cos_ne_zero_of_abs_lt (v := t) hθ
+          dsimp only [Function.comp_def, Pi.pow_apply]
           field_simp [hne]; ring
         have hderiv_eq : ∀ t : ℝ, deriv (fun s : ℝ => (cTheta θ s).re) t =
             (2 * Complex.exp (-Complex.I * θ) * Complex.sin ((θ : ℂ) + Complex.I * Real.pi * t) * (Complex.I * Real.pi) /
@@ -263,7 +263,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           refine Continuous.div ?_ (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 3)
             (fun t => pow_ne_zero 3 (cos_ne_zero_of_abs_lt hθ))
           exact (continuous_const.mul (Complex.continuous_sin.comp (by fun_prop))).mul continuous_const
-        exact hcont_g.norm.congr fun t => (hderiv_eq t).symm
+        exact hcont_g.norm.congr fun t => congr_arg (‖·‖) (hderiv_eq t).symm
       obtain ⟨v₀, _, hv₀⟩ := isCompact_Icc.exists_isMaxOn (⟨0, by norm_num, by norm_num⟩ : (Set.Icc (0 : ℝ) 1).Nonempty) hf_cont.continuousOn
       refine ⟨max 1 (f v₀), by positivity, fun v hv => (hv₀ hv).trans (le_max_right _ _)⟩
     obtain ⟨C_A, hC_A, hbd⟩ := hderiv_bd
