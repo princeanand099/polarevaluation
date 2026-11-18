@@ -126,7 +126,8 @@ lemma tsum_int_split (φ : ℤ → ℝ) (hφ : Summable φ) :
   have he : Summable (fun s => φ (e s)) := e.summable_iff.mpr hφ
   have he2 : Summable (fun s : ℕ ⊕ ℕ => φ (e (Sum.inr s))) := he.comp_injective Sum.inr_injective
   rw [← e.tsum_eq, Summable.tsum_sum (he.comp_injective Sum.inl_injective) he2, Summable.tsum_sum (he2.comp_injective Sum.inl_injective) (he2.comp_injective Sum.inr_injective)]
-  simp only [tsum_unique, e, Function.comp_def]
+  rw [tsum_eq_single () (fun u hu => absurd (Subsingleton.elim u ()) hu)]
+  simp only [e, Function.comp_def]
   ring
 
 lemma lorentz_tsum_bound (Δ α : ℝ) (hΔ : Δ ≥ 1) :
@@ -499,7 +500,7 @@ lemma cauchy_sq_fourier (v : ℝ) (hv : 0 < v) (ξ : ℝ) :
     have hcont : Continuous (fun x : ℝ => (1 : ℂ) / ((x : ℂ) + Complex.I * v) ^ 2) :=
       continuous_const.div ((Complex.continuous_ofReal.add continuous_const).pow 2)
         (fun x => pow_ne_zero 2 (by intro h; have := congr_arg Complex.im h; simp at this; linarith))
-    refine hreal.norm.mono hcont.aestronglyMeasurable ?_
+    refine hreal.mono' hcont.aestronglyMeasurable ?_
     filter_upwards with x
     rw [norm_div, norm_one, norm_pow]
     have hsq : ‖(x : ℂ) + Complex.I * v‖ ^ 2 = x ^ 2 + v ^ 2 := by
@@ -508,7 +509,7 @@ lemma cauchy_sq_fourier (v : ℝ) (hv : 0 < v) (ξ : ℝ) :
       have h2 : ((x : ℂ) + Complex.I * v) * star ((x : ℂ) + Complex.I * v) = ((x ^ 2 + v ^ 2 : ℝ) : ℂ) := by
         simp [Complex.conj_ofReal]; ring_nf; simp [Complex.I_sq]
       rw [← h1, h2, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
-    rw [hsq]; exact le_norm_self _
+    rw [hsq]
   have hinv := congr_fun (Continuous.fourierInv_fourier_eq hg_cont hg_int hFg_int) ξ
   rw [fourierInv_eq_fourierHat_neg] at hinv
   have heq_f : fourierHat (𝓕 g) (-ξ) = fourierHat (fun u : ℝ => 1 / ((u : ℂ) - Complex.I * v) ^ 2) ξ := by
@@ -613,12 +614,11 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
     rw [← fourierHat_eq_fourier]
     exact cauchy_sq_fourier v hv ξ
   set C_f' : ℝ := 4 * Real.pi ^ 2 * (2 / (2 * Real.pi * v) + 12 / (2 * Real.pi * v) ^ 3)
-  have hf'_decay : ∃ C, ∀ ξ : ℝ, ‖𝓕 f ξ‖ ≤ C * (1 + |ξ|) ^ (-2 : ℝ) := by
-    refine ⟨C_f', fun ξ => ?_⟩
+  have hf'_all : ∀ ξ : ℝ, ‖𝓕 f ξ‖ ≤ C_f' * (1 + |ξ|) ^ (-2 : ℝ) := by
+    intro ξ
     rw [hFf ξ]
     split_ifs with hξ
-    · have hξ_neg : 0 < -ξ := neg_pos.mpr hξ
-      have habs : |ξ| = -ξ := abs_of_neg hξ
+    · have habs : |ξ| = -ξ := abs_of_neg hξ
       have ha_pos : 0 < 2 * Real.pi * v := by positivity
       have hcexp : Complex.exp (2 * Real.pi * v * ξ) = (Real.exp (-2 * Real.pi * v * |ξ|) : ℂ) := by
         rw [habs, Complex.ofReal_exp]; congr 1; push_cast; ring
@@ -653,13 +653,15 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
       conv_rhs => rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hpos.le, Real.rpow_natCast]
       rw [le_mul_inv_iff₀ (by positivity)]
       rw [show -2 * Real.pi * v * |ξ| = -(2 * Real.pi * v * |ξ|) by ring, Real.exp_neg,
-        mul_comm (Real.exp (2 * Real.pi * v * |ξ|))⁻¹ ((1 + |ξ|) ^ 2), ← mul_assoc, mul_inv_le_iff₀ (Real.exp_pos _)]
+        mul_assoc (4 * Real.pi ^ 2 * |ξ|), mul_comm (Real.exp (2 * Real.pi * v * |ξ|))⁻¹ ((1 + |ξ|) ^ 2),
+        ← mul_assoc, mul_inv_le_iff₀ (Real.exp_pos _)]
       calc 4 * Real.pi ^ 2 * |ξ| * (1 + |ξ|) ^ 2
           = 4 * Real.pi ^ 2 * (|ξ| * (1 + |ξ|) ^ 2) := by ring
         _ ≤ 4 * Real.pi ^ 2 * ((2 / (2 * Real.pi * v) + 12 / (2 * Real.pi * v) ^ 3) *
             Real.exp (2 * Real.pi * v * |ξ|)) := by gcongr
         _ = C_f' * Real.exp (2 * Real.pi * v * |ξ|) := by dsimp only [C_f']; ring
     · simp only [norm_zero]; positivity
+  have hf'_decay : ∃ C, ∀ ξ : ℝ, ‖𝓕 f ξ‖ ≤ C * (1 + |ξ|) ^ (-2 : ℝ) := ⟨C_f', hf'_all⟩
   have hpois := Real.tsum_eq_tsum_fourier_of_rpow_decay hf_cont (by norm_num : (1 : ℝ) < 2)
     (isBigO_rpow_neg_two_of_le hf_decay.choose_spec)
     (isBigO_rpow_neg_two_of_le hf'_decay.choose_spec) (-x)
@@ -738,55 +740,7 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
         push_cast; ring
       rw [this, Complex.norm_exp_ofReal_mul_I]
     rw [h1, mul_one]
-    have hk_bd : ‖𝓕 f k‖ ≤ C_f' * (1 + |(k : ℝ)|) ^ (-2 : ℝ) := by
-      have h_all : ∀ ξ : ℝ, ‖𝓕 f ξ‖ ≤ C_f' * (1 + |ξ|) ^ (-2 : ℝ) := by
-        intro ξ
-        rw [hFf ξ]
-        split_ifs with hξ
-        · have habs : |ξ| = -ξ := abs_of_neg hξ
-          have ha_pos : 0 < 2 * Real.pi * v := by positivity
-          have hcexp : Complex.exp (2 * Real.pi * v * ξ) = (Real.exp (-2 * Real.pi * v * |ξ|) : ℂ) := by
-            rw [habs, Complex.ofReal_exp]; congr 1; push_cast; ring
-          rw [hcexp, norm_mul, norm_mul, norm_mul]
-          simp only [Complex.norm_real, Complex.norm_ofNat, Complex.norm_pow, Real.norm_eq_abs,
-            abs_of_pos (Real.exp_pos _), abs_of_pos Real.pi_pos]
-          have h_s := Real.sum_le_exp_of_nonneg (by positivity : 0 ≤ 2 * Real.pi * v * |ξ|) 4
-          simp only [Finset.sum_range_succ, Finset.range_zero, Finset.sum_empty, zero_add,
-            pow_zero, Nat.factorial_zero, Nat.cast_one, div_one, pow_one, Nat.factorial_one,
-            Nat.factorial_two, Nat.cast_ofNat] at h_s
-          have h3f : (Nat.factorial 3 : ℝ) = 6 := by norm_num
-          rw [h3f] at h_s
-          have h_lin : 2 * Real.pi * v * |ξ| ≤ Real.exp (2 * Real.pi * v * |ξ|) := by
-            linarith [sq_nonneg (2 * Real.pi * v * |ξ|), pow_nonneg (by positivity : 0 ≤ 2 * Real.pi * v * |ξ|) 3]
-          have h_cub : (2 * Real.pi * v * |ξ|) ^ 3 / 6 ≤ Real.exp (2 * Real.pi * v * |ξ|) := by
-            linarith [sq_nonneg (2 * Real.pi * v * |ξ|), (by positivity : 0 ≤ 2 * Real.pi * v * |ξ|)]
-          have h1 : |ξ| ≤ (1 / (2 * Real.pi * v)) * Real.exp (2 * Real.pi * v * |ξ|) := by
-            rw [one_div_mul_eq_div, le_div_iff₀ ha_pos]; linarith
-          have h3 : |ξ| ^ 3 ≤ (6 / (2 * Real.pi * v) ^ 3) * Real.exp (2 * Real.pi * v * |ξ|) := by
-            rw [div_mul_eq_mul_div, le_div_iff₀ (pow_pos ha_pos 3)]
-            nlinarith [show (2 * Real.pi * v * |ξ|) ^ 3 = (2 * Real.pi * v) ^ 3 * |ξ| ^ 3 by ring]
-          have h_1u : |ξ| * (1 + |ξ|) ^ 2 ≤ (2 / (2 * Real.pi * v) + 12 / (2 * Real.pi * v) ^ 3) *
-              Real.exp (2 * Real.pi * v * |ξ|) := by
-            have hsq : (1 + |ξ|) ^ 2 ≤ 2 + 2 * |ξ| ^ 2 := by
-              have : (1 - |ξ|) ^ 2 ≥ 0 := sq_nonneg _; nlinarith [sq_abs ξ]
-            calc |ξ| * (1 + |ξ|) ^ 2 ≤ |ξ| * (2 + 2 * |ξ| ^ 2) := by gcongr
-              _ = 2 * |ξ| + 2 * |ξ| ^ 3 := by ring
-              _ ≤ 2 * ((1 / (2 * Real.pi * v)) * Real.exp (2 * Real.pi * v * |ξ|)) +
-                  2 * ((6 / (2 * Real.pi * v) ^ 3) * Real.exp (2 * Real.pi * v * |ξ|)) := by gcongr
-              _ = (2 / (2 * Real.pi * v) + 12 / (2 * Real.pi * v) ^ 3) * Real.exp (2 * Real.pi * v * |ξ|) := by ring
-          have hpos : 0 < 1 + |ξ| := by positivity
-          conv_rhs => rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hpos.le, Real.rpow_natCast]
-          rw [le_mul_inv_iff₀ (by positivity)]
-          rw [show -2 * Real.pi * v * |ξ| = -(2 * Real.pi * v * |ξ|) by ring, Real.exp_neg,
-            mul_comm (Real.exp (2 * Real.pi * v * |ξ|))⁻¹ ((1 + |ξ|) ^ 2), ← mul_assoc, mul_inv_le_iff₀ (Real.exp_pos _)]
-          calc 4 * Real.pi ^ 2 * |ξ| * (1 + |ξ|) ^ 2
-              = 4 * Real.pi ^ 2 * (|ξ| * (1 + |ξ|) ^ 2) := by ring
-            _ ≤ 4 * Real.pi ^ 2 * ((2 / (2 * Real.pi * v) + 12 / (2 * Real.pi * v) ^ 3) *
-                Real.exp (2 * Real.pi * v * |ξ|)) := by gcongr
-            _ = C_f' * Real.exp (2 * Real.pi * v * |ξ|) := by dsimp only [C_f']; ring
-        · simp only [norm_zero]; positivity
-      exact h_all k
-    exact hk_bd
+    exact hf'_all k
   have hs_e : Summable (fun s : ℕ ⊕ ℕ => g_k (e s)) := e.summable_iff.mpr hs_gk
   rw [← e.tsum_eq, hs_e.tsum_sum]
   simp only [e, Sum.elim_inl, Sum.elim_inr, hg_k_nonneg, tsum_zero, zero_add]
