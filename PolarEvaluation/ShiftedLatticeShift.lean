@@ -575,8 +575,10 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             (Real.pi * (-Real.sin (Real.pi * t) * Real.pi)) t := by
           have := ((Real.hasDerivAt_cos (Real.pi * t)).comp t ((hasDerivAt_id t).const_mul Real.pi)).const_mul Real.pi
           convert this using 1; ring
-        have h2 : HasDerivAt (fun s => Real.sin (Real.pi * s)) (Real.cos (Real.pi * t) * Real.pi) t :=
-          (Real.hasDerivAt_sin (Real.pi * t)).comp t ((hasDerivAt_id t).const_mul Real.pi)
+        have h2 : HasDerivAt (fun s => Real.sin (Real.pi * s)) (Real.cos (Real.pi * t) * Real.pi) t := by
+          have hd : HasDerivAt (fun s => Real.pi * s) Real.pi t := by
+            simpa using (hasDerivAt_id t).const_mul Real.pi
+          exact (Real.hasDerivAt_sin (Real.pi * t)).comp t hd
         convert h1.div h2 hne using 1
         have hsc := Real.sin_sq_add_cos_sq (Real.pi * t)
         field_simp [hne]; nlinarith
@@ -652,7 +654,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       rw [hsq]
       simp only [Complex.sub_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, mul_zero,
         Complex.ofReal_im, Complex.I_im, mul_one, sub_zero, Complex.sub_im, Complex.mul_im, zero_sub]
-      have hden : ((n + α : ℝ) ^ 2 - Δ ^ 2) ^ 2 + (-(2 * (n + α : ℝ) * Δ)) ^ 2 =
+      have hden : ((n + α : ℝ) ^ 2 - Δ ^ 2) * ((n + α : ℝ) ^ 2 - Δ ^ 2) +
+          -(2 * (n + α : ℝ) * Δ + 0) * -(2 * (n + α : ℝ) * Δ + 0) =
           ((n + α : ℝ) ^ 2 + Δ ^ 2) ^ 2 := by ring
       rw [hden]; ring
     have hg2_split : g₂ α = (∑' n : ℤ, Δ / ((n + α) ^ 2 + Δ ^ 2)) +
@@ -667,7 +670,6 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_eq : (∑' n : ℤ, Δ * (Δ ^ 2 - (n + α) ^ 2) / ((n + α) ^ 2 + Δ ^ 2) ^ 2) =
           -Δ * ((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * ((-α : ℂ) + Complex.I * Δ)) ^ 2).re := by
         rw [← hs2.2, Complex.re_tsum hs2.1, ← tsum_mul_left]
-        dsimp only [h_rem]
         congr 1; ext n
         have heq : ((-α : ℂ) + Complex.I * Δ) - n = -((n + α : ℝ) : ℂ) + Complex.I * Δ := by
           push_cast; ring
@@ -678,7 +680,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [hsq]
         simp only [Complex.sub_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, mul_zero,
           Complex.ofReal_im, Complex.I_im, mul_one, sub_zero, Complex.sub_im, Complex.mul_im, zero_sub]
-        have hden : ((n + α : ℝ) ^ 2 - Δ ^ 2) ^ 2 + (-(2 * (n + α : ℝ) * Δ)) ^ 2 =
+        have hden : ((n + α : ℝ) ^ 2 - Δ ^ 2) * ((n + α : ℝ) ^ 2 - Δ ^ 2) +
+            -(2 * (n + α : ℝ) * Δ + 0) * -(2 * (n + α : ℝ) * Δ + 0) =
             ((n + α : ℝ) ^ 2 + Δ ^ 2) ^ 2 := by ring
         rw [hden]; ring
       rw [h_eq, abs_mul, abs_neg, abs_of_pos hΔ_pos]
@@ -688,7 +691,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         _ ≤ Δ * (C_sin * Real.exp (-2 * Real.pi * Δ)) := by
             gcongr; exact complex_inv_sin_sq_bound Δ hΔ_ge_1 α
         _ = C_sin * Δ * Real.exp (-2 * Real.pi * Δ) := by ring
-    rw [hg2_split, add_sub_assoc']
+    rw [hg2_split, add_sub_right_comm]
     calc |(∑' n : ℤ, Δ / ((n + α) ^ 2 + Δ ^ 2) - Real.pi) +
           ∑' n : ℤ, Δ * (Δ ^ 2 - (n + α) ^ 2) / ((n + α) ^ 2 + Δ ^ 2) ^ 2|
         ≤ |∑' n : ℤ, Δ / ((n + α) ^ 2 + Δ ^ 2) - Real.pi| +
@@ -717,7 +720,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [hsq]
         simp only [Complex.sub_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, mul_zero,
           Complex.ofReal_im, Complex.I_im, mul_one, sub_zero, Complex.sub_im, Complex.mul_im, zero_sub]
-        have hden : ((n + α : ℝ) ^ 2 - Δ ^ 2) ^ 2 + (-(2 * (n + α : ℝ) * Δ)) ^ 2 = ((n + α : ℝ) ^ 2 + Δ ^ 2) ^ 2 := by ring
+        have hden : ((n + α : ℝ) ^ 2 - Δ ^ 2) * ((n + α : ℝ) ^ 2 - Δ ^ 2) +
+            -(2 * (n + α : ℝ) * Δ + 0) * -(2 * (n + α : ℝ) * Δ + 0) = ((n + α : ℝ) ^ 2 + Δ ^ 2) ^ 2 := by ring
         rw [hden]; ring
       dsimp only [g₂, f₂, h_lor, h_rem]
       rw [← hlor.tsum_add hre_summ]
@@ -734,8 +738,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         apply intervalIntegral.integral_eq_sub_of_hasDerivAt (f := fun t => Δ / ((n + t) ^ 2 + Δ ^ 2))
         · intro t _
           have hb' := ((hasDerivAt_pow 2 ((n : ℝ) + t)).comp t ((hasDerivAt_id t).const_add (n : ℝ))).add_const (Δ ^ 2)
-          convert (hasDerivAt_const t Δ).div hb' (by positivity) using 1
-          dsimp only [d₂]; ring
+          convert (hasDerivAt_const t Δ).div hb' (ne_of_gt (add_pos_of_nonneg_of_pos (sq_nonneg _) (sq_pos_of_pos hΔ_pos))) using 1
+          ring
         · exact (hd₂_cont n).mono (by rw [Set.uIcc_of_le hab]) |>.intervalIntegrable
       let M₂ : ℤ → ℝ := fun n => 4 * (1 + (|a| + |b|)) ^ 2 * Δ * (1 + |(n : ℝ)|) ^ (-2 : ℝ)
       have hM₂_summ : Summable M₂ := summable_inv_one_add_sq_int.mul_left (4 * (1 + (|a| + |b|)) ^ 2 * Δ)
@@ -841,7 +845,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [hsq]
         simp only [Complex.sub_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, mul_zero,
           Complex.ofReal_im, Complex.I_im, mul_one, sub_zero, Complex.sub_im, Complex.mul_im, zero_sub]
-        have hden : ((n + α : ℝ) ^ 2 - Δ ^ 2) ^ 2 + (-(2 * (n + α : ℝ) * Δ)) ^ 2 = ((n + α : ℝ) ^ 2 + Δ ^ 2) ^ 2 := by ring
+        have hden : ((n + α : ℝ) ^ 2 - Δ ^ 2) * ((n + α : ℝ) ^ 2 - Δ ^ 2) +
+            -(2 * (n + α : ℝ) * Δ + 0) * -(2 * (n + α : ℝ) * Δ + 0) = ((n + α : ℝ) ^ 2 + Δ ^ 2) ^ 2 := by ring
         rw [hden]; ring
       rw [h_eq b, h_eq a, show -Δ * ((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * ((-b : ℂ) + Complex.I * Δ)) ^ 2).re -
           -Δ * ((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * ((-a : ℂ) + Complex.I * Δ)) ^ 2).re =
