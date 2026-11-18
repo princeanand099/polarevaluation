@@ -90,45 +90,48 @@ lemma fourier_unitAddCircle_apply (k : ℤ) (x : ℝ) :
   congr 1
   simp only [Complex.ofReal_one, div_one]
 
+private def intSplitEquiv : Unit ⊕ (ℕ ⊕ ℕ) ≃ ℤ where
+  toFun s := match s with
+    | Sum.inl () => 0
+    | Sum.inr (Sum.inl n) => (n : ℤ) + 1
+    | Sum.inr (Sum.inr n) => -((n : ℤ) + 1)
+  invFun k :=
+    if k = 0 then Sum.inl ()
+    else if 0 < k then Sum.inr (Sum.inl (Int.natAbs k - 1))
+    else Sum.inr (Sum.inr (Int.natAbs k - 1))
+  left_inv s := by
+    rcases s with ⟨⟩ | (n | n)
+    · simp
+    · have hne : (n : ℤ) + 1 ≠ 0 := by omega
+      have hpos : (0 : ℤ) < (n : ℤ) + 1 := by omega
+      simp only [hne, ↓reduceIte, hpos]
+      rw [show (n : ℤ) + 1 = ((n + 1 : ℕ) : ℤ) by omega, Int.natAbs_natCast]; simp
+    · have hne : -((n : ℤ) + 1) ≠ 0 := by omega
+      have hnp : ¬ (0 : ℤ) < -((n : ℤ) + 1) := by omega
+      simp only [hne, ↓reduceIte, hnp]
+      rw [Int.natAbs_neg, show (n : ℤ) + 1 = ((n + 1 : ℕ) : ℤ) by omega, Int.natAbs_natCast]; simp
+  right_inv k := by
+    rcases lt_trichotomy k 0 with hk | rfl | hk
+    · have hne : k ≠ 0 := hk.ne
+      have hn : ¬ (0 < k) := not_lt.mpr hk.le
+      simp only [hne, ↓reduceIte, hn]
+      have : ((Int.natAbs k - 1 : ℕ) : ℤ) + 1 = -k := by omega
+      linarith
+    · simp
+    · have hne : k ≠ 0 := hk.ne'
+      simp only [hne, ↓reduceIte, hk]
+      omega
+
 lemma tsum_int_split (φ : ℤ → ℝ) (hφ : Summable φ) :
     ∑' k : ℤ, φ k = φ 0 + (∑' n : ℕ, φ ((n : ℤ) + 1)) + ∑' n : ℕ, φ (-((n : ℤ) + 1)) := by
-  let e : Unit ⊕ (ℕ ⊕ ℕ) ≃ ℤ :=
-    { toFun := fun s => match s with
-        | Sum.inl () => 0
-        | Sum.inr (Sum.inl n) => (n : ℤ) + 1
-        | Sum.inr (Sum.inr n) => -((n : ℤ) + 1)
-      invFun := fun k =>
-        if k = 0 then Sum.inl ()
-        else if 0 < k then Sum.inr (Sum.inl (Int.natAbs k - 1))
-        else Sum.inr (Sum.inr (Int.natAbs k - 1))
-      left_inv := fun s => by
-        rcases s with ⟨⟩ | (n | n)
-        · simp
-        · have hne : (n : ℤ) + 1 ≠ 0 := by omega
-          have hpos : (0 : ℤ) < (n : ℤ) + 1 := by omega
-          simp only [hne, ↓reduceIte, hpos]
-          rw [show (n : ℤ) + 1 = ((n + 1 : ℕ) : ℤ) by omega, Int.natAbs_natCast]; simp
-        · have hne : -((n : ℤ) + 1) ≠ 0 := by omega
-          have hnp : ¬ (0 : ℤ) < -((n : ℤ) + 1) := by omega
-          simp only [hne, ↓reduceIte, hnp]
-          rw [Int.natAbs_neg, show (n : ℤ) + 1 = ((n + 1 : ℕ) : ℤ) by omega, Int.natAbs_natCast]; simp
-      right_inv := fun k => by
-        rcases lt_trichotomy k 0 with hk | rfl | hk
-        · have hne : k ≠ 0 := hk.ne
-          have hn : ¬ (0 < k) := not_lt.mpr hk.le
-          simp only [hne, ↓reduceIte, hn]
-          have : ((Int.natAbs k - 1 : ℕ) : ℤ) + 1 = -k := by omega
-          linarith
-        · simp
-        · have hne : k ≠ 0 := hk.ne'
-          simp only [hne, ↓reduceIte, hk]
-          omega }
-  have he : Summable (fun s => φ (e s)) := e.summable_iff.mpr hφ
-  have he2 : Summable (fun s : ℕ ⊕ ℕ => φ (e (Sum.inr s))) := he.comp_injective Sum.inr_injective
-  rw [← e.tsum_eq, Summable.tsum_sum (he.comp_injective Sum.inl_injective) he2, Summable.tsum_sum (he2.comp_injective Sum.inl_injective) (he2.comp_injective Sum.inr_injective)]
+  have he : Summable (fun s => φ (intSplitEquiv s)) := intSplitEquiv.summable_iff.mpr hφ
+  have he2 : Summable (fun s : ℕ ⊕ ℕ => φ (intSplitEquiv (Sum.inr s))) := he.comp_injective Sum.inr_injective
+  rw [← intSplitEquiv.tsum_eq,
+    Summable.tsum_sum (he.comp_injective Sum.inl_injective) he2,
+    Summable.tsum_sum (he2.comp_injective Sum.inl_injective) (he2.comp_injective Sum.inr_injective)]
   rw [tsum_eq_single () (fun u hu => absurd (Subsingleton.elim u ()) hu)]
-  dsimp only [e, Function.comp_def]
-  simp only [add_comm, sub_eq_add_neg]; ring
+  simp only [intSplitEquiv, Equiv.coe_fn_mk, Function.comp_def]
+  ring
 
 lemma lorentz_tsum_bound (Δ α : ℝ) (hΔ : Δ ≥ 1) :
     Summable (fun n : ℤ => Δ / ((n + α) ^ 2 + Δ ^ 2)) ∧
@@ -743,7 +746,7 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
     rw [h1, mul_one]
     exact hf'_all k
   have hs_e : Summable (fun s : ℕ ⊕ ℕ => g_k (e s)) := e.summable_iff.mpr hs_gk
-  rw [← e.tsum_eq, hs_e.tsum_sum]
+  rw [← e.tsum_eq, Summable.tsum_sum (hs_e.comp_injective Sum.inl_injective) (hs_e.comp_injective Sum.inr_injective)]
   simp only [e, Sum.elim_inl, Sum.elim_inr, hg_k_nonneg, tsum_zero, zero_add]
   have heq_w : (∑' m : ℕ, g_k (-((m : ℤ) + 1))) = (-4 * Real.pi ^ 2 * w) * ∑' m : ℕ, ((m : ℂ) + 1) * w ^ m := by
     rw [← tsum_mul_left]
