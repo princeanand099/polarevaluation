@@ -234,10 +234,11 @@ private lemma diffA_combine_small (C_diff C_tail c_sin Δ a_diff log_y A1 A2 A3 
       _ = (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) * 1 := (mul_one _).symm
       _ ≤ _ := by gcongr
   have h_c1 : 2 * C_diff ≤ C_err1 := by
-    dsimp only [C_err1]
-    have h_pi : 0 ≤ C_diff / (2 * Real.pi) := div_nonneg hC_diff (mul_pos two_pos Real.pi_pos).le
-    have h_t : 0 ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) := by positivity
-    nlinarith
+    have h1 : 2 * C_diff ≤ C_diff * (2 + 1 / (2 * Real.pi)) := by
+      rw [mul_add, mul_comm C_diff 2]
+      exact le_add_of_nonneg_right (mul_nonneg hC_diff (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le))
+    have h_t : 0 ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1 := by positivity
+    dsimp only [C_err1]; linarith
   have h_c2 : C_tail * (1 / (2 * Real.pi)) + 1 / c_sin ^ 2 ≤ C_err1 := by
     dsimp only [C_err1]
     have : 0 ≤ C_diff * (2 + 1 / (2 * Real.pi)) := by positivity
@@ -253,9 +254,12 @@ private lemma diffA_combine_small (C_diff C_tail c_sin Δ a_diff log_y A1 A2 A3 
           (C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) +
             (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)))) * (1 + log_y) := by ring
     _ ≤ (C_err1 * a_diff + C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ))) * (1 + log_y) := by
-          gcongr
-          · rw [mul_comm (C_diff * a_diff) 2, ← mul_assoc]; gcongr; linarith
-          · rw [← add_mul]; gcongr
+          have h_s1 : C_diff * a_diff * 2 ≤ C_err1 * a_diff := by
+            rw [mul_right_comm]; exact mul_le_mul_of_nonneg_right h_c1 h_a
+          have h_s2 : C_tail * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) +
+              (1 / c_sin ^ 2) * (Δ * Real.exp (-2 * Real.pi * Δ)) ≤ C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ)) := by
+            rw [mul_assoc C_tail, ← add_mul]; exact mul_le_mul_of_nonneg_right h_c2 h_nonneg1
+          exact mul_le_mul_of_nonneg_right (add_le_add h_s1 h_s2) (by linarith)
     _ = C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ) + a_diff) * (1 + log_y) := by ring
 
 private lemma diffA_combine_large (C_diff C_tail c_sin Δ a_diff y A1 A2 A3 : ℝ)
@@ -281,12 +285,12 @@ private lemma diffA_combine_large (C_diff C_tail c_sin Δ a_diff y A1 A2 A3 : �
     have h_le2 : C_diff * (1 / (4 * Real.pi ^ 2)) ≤ C_diff * (2 + 1 / (2 * Real.pi)) :=
       mul_le_mul_of_nonneg_left h_le1 hC_diff
     have h_tail_nn : 0 ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1 := by positivity
-    exact h_le2.trans (le_add_of_nonneg_right h_tail_nn)
+    dsimp only [C_err1]; linarith
   have h_c2 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) + 1 / c_sin ^ 2 ≤ C_err1 := by
     have h_d_nn : 0 ≤ C_diff * (2 + 1 / (2 * Real.pi)) := by positivity
     have h_t_le : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) :=
       mul_le_mul_of_nonneg_left (le_add_of_nonneg_right zero_le_one) hC_tail
-    exact (add_le_add h_t_le le_rfl).trans (le_trans (le_add_of_nonneg_left h_d_nn) (le_add_of_nonneg_right zero_le_one))
+    dsimp only [C_err1]; linarith
   have h_le2 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * Δ * Real.exp (-2 * Real.pi * Δ) / y ^ 2 ≤
       C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ)) / y ^ 2 := by
     rw [mul_assoc (C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2))) Δ (Real.exp (-2 * Real.pi * Δ))]
