@@ -384,8 +384,10 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have hne : (n : ℝ) + t ≠ 0 := by
           intro h
           rcases le_or_gt n (-1) with hn | hn
-          · have : (n : ℝ) ≤ -1 := by exact_mod_cast hn; linarith [ht_mem.2]
-          · have : (0 : ℝ) ≤ n := by exact_mod_cast (by omega : 0 ≤ n); linarith [ht_mem.1]
+          · have hn' : (n : ℝ) ≤ -1 := by exact_mod_cast hn
+            linarith [ht_mem.2]
+          · have hn' : (0 : ℝ) ≤ n := by exact_mod_cast (by omega : 0 ≤ n)
+            linarith [ht_mem.1]
         exact pow_ne_zero 2 hne
       · refine ContinuousOn.div ?_ (ContinuousOn.pow ?_ 2) (fun t _ => by positivity)
         · exact (ContinuousOn.pow (continuousOn_const.add continuousOn_id) 2).sub continuousOn_const
@@ -398,12 +400,14 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have hne : (n : ℝ) + t ≠ 0 := by
           intro h
           rcases le_or_gt n (-1) with hn | hn
-          · have : (n : ℝ) ≤ -1 := by exact_mod_cast hn; linarith [ht_mem.2]
-          · have : (0 : ℝ) ≤ n := by exact_mod_cast (by omega : 0 ≤ n); linarith [ht_mem.1]
+          · have hn' : (n : ℝ) ≤ -1 := by exact_mod_cast hn
+            linarith [ht_mem.2]
+          · have hn' : (0 : ℝ) ≤ n := by exact_mod_cast (by omega : 0 ≤ n)
+            linarith [ht_mem.1]
         have h1 : HasDerivAt (fun s : ℝ => 1 / ((n : ℝ) + s)) (-1 / ((n : ℝ) + t) ^ 2) t := by
           have := ((hasDerivAt_id t).const_add (n : ℝ)).inv hne
           convert this using 1; · ext s; simp [one_div]
-          · ring
+          · simp only [id_eq]; ring
         have h2 : HasDerivAt (fun s : ℝ => ((n : ℝ) + s) / (((n : ℝ) + s) ^ 2 + Δ ^ 2))
             ((((n : ℝ) + t) ^ 2 + Δ ^ 2 - 2 * ((n : ℝ) + t) ^ 2) / (((n : ℝ) + t) ^ 2 + Δ ^ 2) ^ 2) t := by
           have ha' : HasDerivAt (fun s : ℝ => (n : ℝ) + s) 1 t := by
@@ -503,12 +507,13 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [hsq]
         simp only [Complex.sub_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, mul_zero,
           Complex.ofReal_im, Complex.I_im, mul_one, sub_zero, Complex.sub_im, Complex.mul_im, zero_sub]
-        have hden : ((n + t : ℝ) ^ 2 - Δ ^ 2) ^ 2 + (-(2 * (n + t : ℝ) * Δ)) ^ 2 =
+        have hden : ((n + t : ℝ) ^ 2 - Δ ^ 2) * ((n + t : ℝ) ^ 2 - Δ ^ 2) +
+            -(2 * (n + t : ℝ) * Δ + 0) * -(2 * (n + t : ℝ) * Δ + 0) =
             ((n + t : ℝ) ^ 2 + Δ ^ 2) ^ 2 := by ring
         rw [hden]
       rw [hs1'.tsum_add hs2']
       have h_t1 : (∑' n : ℤ, -1 / ((n : ℝ) + t) ^ 2) = -(Real.pi ^ 2 * (1 / Real.sin (Real.pi * t) ^ 2)) := by
-        have heq : (fun n : ℤ => -1 / ((n : ℝ) + t) ^ 2) = fun n => -(1 / (-t - n) ^ 2) := by
+        have heq : (fun n : ℤ => -1 / ((n : ℝ) + t) ^ 2) = fun n : ℤ => -(1 / (-t - (n : ℝ)) ^ 2) := by
           ext n; ring
         rw [heq, tsum_neg, hs1.2]
         rw [mul_neg, Real.sin_neg, neg_sq]; ring
@@ -525,7 +530,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [hsq]
         simp only [Complex.sub_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, mul_zero,
           Complex.ofReal_im, Complex.I_im, mul_one, sub_zero, Complex.sub_im, Complex.mul_im, zero_sub]
-        have hden : ((n + t : ℝ) ^ 2 - Δ ^ 2) ^ 2 + (-(2 * (n + t : ℝ) * Δ)) ^ 2 =
+        have hden : ((n + t : ℝ) ^ 2 - Δ ^ 2) * ((n + t : ℝ) ^ 2 - Δ ^ 2) +
+            -(2 * (n + t : ℝ) * Δ + 0) * -(2 * (n + t : ℝ) * Δ + 0) =
             ((n + t : ℝ) ^ 2 + Δ ^ 2) ^ 2 := by ring
         rw [hden]
       rw [h_t1, h_t2]
@@ -545,15 +551,17 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       refine continuousOn_const.div (ContinuousOn.pow (Complex.continuous_sin.continuousOn.comp ?_ (fun _ _ => Set.mem_univ _)) 2) ?_
       · exact continuousOn_const.mul (Complex.continuous_ofReal.continuousOn.neg.add continuousOn_const)
       · intro t _
+        have h1m : 0 < 1 - Real.exp (-2 * Real.pi) := by
+          linarith [Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos] : -2 * Real.pi < 0)]
         have hs1 : 0 < ((1 - Real.exp (-2 * Real.pi)) / 2) * Real.exp (Real.pi * Δ) := by positivity
-        have heq : (Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ) = ((-Real.pi * t : ℝ) : ℂ) + Complex.I * (Real.pi * Δ) := by
+        have heq : (Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ) = ((-Real.pi * t : ℝ) : ℂ) + Complex.I * ((Real.pi * Δ : ℝ) : ℂ) := by
           push_cast; ring
         have hs2 := sin_norm_ge_sinh (-Real.pi * t) (Real.pi * Δ)
         rw [abs_of_pos (by positivity)] at hs2
         have hs3 := (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs2
-        push_cast at hs3
-        rw [← heq] at hs3
-        exact pow_ne_zero 2 (norm_ne_zero_iff.mp (by linarith))
+        have hnorm_pos : 0 < ‖Complex.sin ((Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ))‖ := by
+          rw [heq]; linarith
+        exact pow_ne_zero 2 (norm_ne_zero_iff.mp hnorm_pos.ne')
     rw [h_int_congr, intervalIntegral.integral_add h_int1 h_int2, intervalIntegral.integral_neg,
       intervalIntegral.integral_const_mul]
   have hg1_approx : ∀ α ∈ Set.Ioo (0 : ℝ) 1,
