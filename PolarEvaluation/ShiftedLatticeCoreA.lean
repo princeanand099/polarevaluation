@@ -764,7 +764,7 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
     have h2 : (Real.pi : ℂ) * z * Complex.I = Complex.I * Real.pi * z := by ring
     rw [h1, h2]
     field_simp [Complex.I_ne_zero]
-    ring_nf; simp [Complex.I_sq]; ring
+    ring_nf; simp [Complex.I_sq]
   have hsin_sq : Complex.sin (Real.pi * z) ^ 2 =
       -Complex.exp (-2 * Complex.I * Real.pi * z) * (1 - w) ^ 2 / 4 := by
     rw [hsin_eq, div_pow, mul_pow, show (2 : ℂ) ^ 2 = 4 by norm_num, Complex.I_sq]
@@ -782,7 +782,7 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
     dsimp only [w]; rw [← Complex.exp_add]; convert Complex.exp_zero using 2; ring
   field_simp [h1w, hexp_ne]
   try rw [show -(Real.pi * 2 * Complex.I * z) = -2 * Complex.I * Real.pi * z by ring]
-  linear_combination (4 * (Real.pi : ℂ) ^ 2 - 1) * hw_prod
+  rw [hw_prod]; ring
 
 lemma tsum_inv_sub_real_sq (y : ℝ) (hy : Real.sin (Real.pi * y) ≠ 0) :
     Summable (fun n : ℤ => 1 / (y - n) ^ 2) ∧
