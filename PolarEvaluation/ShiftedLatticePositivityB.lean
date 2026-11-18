@@ -309,7 +309,8 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
     have h_emb := (Homeomorph.neg ℝ).measurableEmbedding
     have h_pre : (Homeomorph.neg ℝ) ⁻¹' Set.Iio 0 = Set.Ioi 0 := by
       ext ω; simp [Set.mem_Iio, Set.mem_Ioi]
-    have h1 := (Measure.measurePreserving_neg volume).integrableOn_comp_preimage h_emb (s := Set.Iio 0)
+    have h1 := (Measure.measurePreserving_neg volume).integrableOn_comp_preimage h_emb (f := G) (s := Set.Iio 0)
+    change IntegrableOn (fun ω => G (-ω)) ((Homeomorph.neg ℝ) ⁻¹' Set.Iio 0) volume ↔ IntegrableOn G (Set.Iio 0) volume at h1
     rw [h_pre] at h1
     exact h1.mp h_int_neg_Ioi
   have h_int_Iic : IntegrableOn G (Set.Iic 0) := h_int_Iio.congr_set_ae Iio_ae_eq_Iic.symm
