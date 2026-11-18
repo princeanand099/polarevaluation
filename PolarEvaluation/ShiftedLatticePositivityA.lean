@@ -340,10 +340,10 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
       ((hasDerivAt_const t z).add ((hasDerivAt_id t).ofReal_comp.const_mul Complex.I)).congr_deriv (by simp)
     have hd1 : HasDerivAt (fun s => 1 / (w s - (n + 1 : ℕ)))
         (-Complex.I / (w t - (n + 1 : ℕ)) ^ 2) t := by
-      simpa only [one_div] using ((hw_d.sub (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))).inv h1).congr_deriv (by field_simp [h1]; ring)
+      simpa only [one_div] using ((hw_d.sub (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))).inv h1).congr_deriv (by dsimp only; field_simp [h1]; ring)
     have hd2 : HasDerivAt (fun s => 1 / (w s + (n + 1 : ℕ)))
         (-Complex.I / (w t + (n + 1 : ℕ)) ^ 2) t := by
-      simpa only [one_div] using ((hw_d.add (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))).inv h2).congr_deriv (by field_simp [h2]; ring)
+      simpa only [one_div] using ((hw_d.add (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))).inv h2).congr_deriv (by dsimp only; field_simp [h2]; ring)
     refine (hd1.add hd2).congr_deriv ?_
     dsimp only [f']; ring
   have hf'_bd : ∀ n : ℕ, ∀ t ∈ Set.Ioi (-z.im / 2), ‖f' n t‖ ≤ u n := by
@@ -360,14 +360,15 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
   have hψ_nonneg : ∀ s : ℝ, 0 ≤ ψ s := fun s => by
     dsimp only [ψ]
     have : (1 : ℝ) ≤ Real.sqrt (s ^ 2 + 1) := by
-      rw [← Real.sqrt_one]; exact Real.sqrt_le_sqrt (by linarith [sq_nonneg s])
+      conv_lhs => rw [← Real.sqrt_one]
+      exact Real.sqrt_le_sqrt (by linarith [sq_nonneg s])
     linarith
   have hψ_mem : ∀ s : ℝ, ψ s ∈ Set.Ioi (-z.im / 2) := fun s => by
     change -z.im / 2 < ψ s; linarith [hψ_nonneg s, hz]
   have hψ_deriv : ∀ s : ℝ, HasDerivAt ψ (ψ' s) s := fun s => by
     have hpos : s ^ 2 + 1 ≠ 0 := by positivity
-    have hinner : HasDerivAt (fun r : ℝ => r ^ 2 + 1) (2 * s) s := by
-      simpa using ((hasDerivAt_pow 2 s).add (hasDerivAt_const s 1))
+    have hinner : HasDerivAt (fun r : ℝ => r ^ 2 + 1) (2 * s) s :=
+      ((hasDerivAt_pow 2 s).add (hasDerivAt_const s 1)).congr_deriv (by ring)
     refine ((hinner.sqrt hpos).sub (hasDerivAt_const s 1)).congr_deriv ?_
     dsimp only [ψ']; field_simp [Real.sqrt_ne_zero'.mpr (by positivity : 0 < s ^ 2 + 1)]; ring
   have hψ'_bd : ∀ s : ℝ, |ψ' s| ≤ 1 := fun s => by
@@ -385,9 +386,10 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
         (hψ_deriv s).ofReal_comp
       exact ((hasDerivAt_const s z).add (h1.const_mul Complex.I)).congr_deriv (by simp)
     have hd_0 : HasDerivAt (fun r => 1 / w (ψ r)) (-Complex.I * (ψ' s : ℂ) / (w (ψ s)) ^ 2) s := by
-      simpa only [one_div] using (hw_d.inv h0).congr_deriv (by field_simp [h0]; ring)
+      simp only [one_div]
+      exact (hw_d.inv h0).congr_deriv (by dsimp only; field_simp [h0])
     have hd_sum : HasDerivAt (fun r => ∑' n : ℕ, f n (ψ r)) (∑' n : ℕ, f' n (ψ s) * (ψ' s : ℂ)) s := by
-      refine hasDerivAt_tsum hu_summ ?_ ?_ (fun r => hf_summ (ψ r) (hψ_mem r)) s
+      refine hasDerivAt_tsum hu_summ ?_ ?_ (hf_summ (ψ s) (hψ_mem s)) s
       · intro n r
         exact (hf_deriv n (ψ r) (hψ_mem r)).comp r (hψ_deriv r)
       · intro n r
@@ -400,7 +402,7 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
         (-Complex.I * (ψ' s : ℂ) * ((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * w (ψ s)) ^ 2)) s := by
       have hpw : HasDerivAt (fun r => (Real.pi : ℂ) * w (ψ r)) ((Real.pi : ℂ) * (Complex.I * (ψ' s : ℂ))) s :=
         hw_d.const_mul (Real.pi : ℂ)
-      have hq := ((hpw.cos).const_mul (Real.pi : ℂ)).div hpw.sin hsin
+      have hq := (((Complex.hasDerivAt_cos (Real.pi * w (ψ s))).comp s hpw).const_mul (Real.pi : ℂ)).div ((Complex.hasDerivAt_sin (Real.pi * w (ψ s))).comp s hpw) hsin
       refine hq.congr_deriv ?_
       have hcs := Complex.cos_sq_add_sin_sq (Real.pi * w (ψ s))
       field_simp [hsin]
@@ -418,7 +420,7 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
         refine hu_summ.of_norm_bounded fun n => ?_
         rw [norm_div, norm_one, norm_pow]
         exact le_trans (le_add_of_nonneg_left (by positivity)) (h_norm_lb n (ψ s) ht)
-      have hsp := tsum_int_split (fun m : ℤ => (1 : ℂ) / (w (ψ s) - m) ^ 2)
+      have hsp := tsum_int_split (E := ℂ) (fun m : ℤ => (1 : ℂ) / (w (ψ s) - m) ^ 2)
         (by simpa using hs_p)
         (by refine hs_n.congr fun n => ?_; push_cast; ring)
       have h_tsum_Z := tsum_inv_sub_I_sq (w (ψ s)) (lt_trans (by positivity) (hw_im (ψ s) ht))
@@ -532,7 +534,7 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
         have ht1 : 2 * ‖z‖ + 2 ≤ t := le_trans (le_max_left _ _) ht
         have ht2 : 2 ≤ t := le_trans (le_max_right _ _) ht
         have ht_pos : 0 < t := by linarith
-        have hs1 := hf_summ t (by linarith [hz, ht2])
+        have hs1 := hf_summ t (Set.mem_Ioi.mpr (by linarith [hz, ht2]))
         have hs_r : Summable (fun n : ℕ => 2 * t / (t ^ 2 + (n + 1 : ℝ) ^ 2)) := by
           refine (summable_one_div_sq_nat.mul_left (2 * t)).of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
           have : (n + 1 : ℝ) ^ 2 ≤ t ^ 2 + (n + 1 : ℝ) ^ 2 := by linarith [sq_nonneg t]
@@ -565,7 +567,7 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
             have h2'' : z + Complex.I * t + ((n : ℂ) + 1) ≠ 0 := by convert h2' using 1; ring
             have hden'' : (t : ℂ) ^ 2 + ((n : ℂ) + 1) ^ 2 ≠ 0 := by convert hden_r using 1; push_cast; ring
             field_simp [h1'', h2'', hden'']
-            ring
+            ring_nf; simp [Complex.I_sq]; ring
           rw [h_alg, norm_div]; simp_rw [norm_mul]; rw [Complex.norm_ofNat]
           have h_num_bd : ‖z * ((n + 1 : ℕ) : ℂ) ^ 2 - z * (t : ℂ) ^ 2 + Complex.I * t * z ^ 2‖ ≤
               (‖z‖ + ‖z‖ ^ 2 + 1) * (t ^ 2 + (n + 1 : ℝ) ^ 2) := by
@@ -576,7 +578,8 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
             have h3' : ‖Complex.I * t * z ^ 2‖ ≤ ‖z‖ ^ 2 * t ^ 2 := by
               rw [norm_mul, norm_mul, Complex.norm_I, one_mul, Complex.norm_real, Real.norm_eq_abs,
                 abs_of_pos ht_pos, norm_pow]
-              nlinarith [sq_nonneg ‖z‖, ht2]
+              have : t ≤ t ^ 2 := by nlinarith
+              nlinarith [sq_nonneg ‖z‖]
             calc ‖z * ((n + 1 : ℕ) : ℂ) ^ 2 - z * (t : ℂ) ^ 2 + Complex.I * t * z ^ 2‖
                 ≤ ‖z * ((n + 1 : ℕ) : ℂ) ^ 2‖ + ‖z * (t : ℂ) ^ 2‖ + ‖Complex.I * t * z ^ 2‖ :=
                   (norm_add_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
@@ -644,8 +647,8 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
                 have : (t / 2) ^ 2 ≤ ‖w t + (n + 1 : ℕ)‖ ^ 2 := sq_le_sq' (by linarith [norm_nonneg (w t + (n + 1 : ℕ)), ht_pos]) him_lb.2
                 have : ((n + 1 : ℝ) / 2) ^ 2 ≤ ‖w t + (n + 1 : ℕ)‖ ^ 2 := sq_le_sq' (by linarith [norm_nonneg (w t + (n + 1 : ℕ))]) hre_lb2
                 linarith
-              have hsq1' : (t ^ 2 + (n + 1 : ℝ) ^ 2) / 20 ≤ ‖w t - (n + 1 : ℕ)‖ ^ 2 := by linarith
-              have hsq2' : (t ^ 2 + (n + 1 : ℝ) ^ 2) / 20 ≤ ‖w t + (n + 1 : ℕ)‖ ^ 2 := by linarith
+              have hsq1' : (t ^ 2 + (n + 1 : ℝ) ^ 2) / 20 ≤ ‖w t - (n + 1 : ℕ)‖ ^ 2 := by linarith [sq_nonneg t, sq_nonneg (n + 1 : ℝ)]
+              have hsq2' : (t ^ 2 + (n + 1 : ℝ) ^ 2) / 20 ≤ ‖w t + (n + 1 : ℕ)‖ ^ 2 := by linarith [sq_nonneg t, sq_nonneg (n + 1 : ℝ)]
               have hprod : ((t ^ 2 + (n + 1 : ℝ) ^ 2) / 20) ^ 2 ≤
                   (‖w t - (n + 1 : ℕ)‖ * ‖w t + (n + 1 : ℕ)‖) ^ 2 := by
                 rw [sq, mul_pow]; exact mul_le_mul hsq1' hsq2' (by positivity) (by positivity)
