@@ -224,6 +224,121 @@ lemma majorantEntire_props (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.I
         field_simp [hne, Real.pi_ne_zero]; ring
       simp_rw [h_eq, tsum_mul_left]
 
+private lemma diffB_tail_bound (θ Δ α δ y : ℝ) (hΔ : 1 ≤ Δ) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
+    (hy : |y| ≤ 1) (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
+    (h_na_lb : ∀ n : ℤ, δ ≤ |(n : ℝ) + α|)
+    (hF_unif : ∀ n : ℤ, |rescaledF θ Δ (n + α)| ≤ 4 + Real.log (1 / δ) + Real.log Δ)
+    (hFd_bd : ∀ n : ℤ, |rescaledFDeriv θ Δ (n + α)| ≤ 1 / |(n : ℝ) + α| + 2 / Δ)
+    (F5 F_mid : Finset ℤ) (hF5 : F5 = Finset.Icc (-2) 2)
+    (hF_mid : ∀ n : ℤ, n ∉ F5 → |(n : ℝ)| ≤ Δ → n ∈ F_mid)
+    (f_mid f_inv_sq : ℤ → ℝ)
+    (hf_mid_eq : ∀ n : ℤ, n ∈ F_mid → f_mid n = 2 / Δ)
+    (hf_mid_nn : ∀ n : ℤ, 0 ≤ f_mid n)
+    (hf_inv_eq : ∀ n : ℤ, n ∉ F5 → f_inv_sq n = 1 / (n : ℝ) ^ 2)
+    (hf_inv_nn : ∀ n : ℤ, 0 ≤ f_inv_sq n) :
+    ∀ n : ℤ, |if n ∈ F5 then 0 else Real.sin (Real.pi * (y - α)) ^ 2 / Real.pi ^ 2 *
+        (rescaledF θ Δ (n + α) / (y - n - α) ^ 2 + rescaledFDeriv θ Δ (n + α) / (y - n - α))| ≤
+      (1 / Real.pi ^ 2) * (((4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24) * f_inv_sq n + f_mid n) := by
+  intro n
+  have hΔ_pos : 0 < Δ := zero_lt_one.trans_le hΔ
+  by_cases hn : n ∈ F5
+  · simp only [hn, ↓reduceIte, abs_zero]
+    have hK_nn : 0 ≤ (4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24 := by
+      have h1 := Real.log_nonneg ((one_le_div hδ0).mpr hδ1)
+      have h2 := Real.log_nonneg hΔ
+      linarith
+    exact mul_nonneg (div_nonneg zero_le_one (sq_nonneg _)) (add_nonneg (mul_nonneg hK_nn (hf_inv_nn n)) (hf_mid_nn n))
+  · simp only [hn, ↓reduceIte, hf_inv_eq n hn]
+    have hn3 : 3 ≤ |n| := by
+      rw [hF5] at hn
+      simp only [Finset.mem_Icc, not_and, not_le] at hn
+      by_contra h; push Not at h
+      rcases abs_lt.mp h with ⟨h1, h2⟩
+      rcases lt_or_ge n 0 with h0 | h0
+      · exact absurd (hn (by omega)) (by omega)
+      · exact absurd (hn (by omega)) (by omega)
+    have hn_real : (3 : ℝ) ≤ |(n : ℝ)| := by exact_mod_cast hn3
+    have hyna_lb : |(n : ℝ)| / 3 ≤ |y - n - α| := by
+      have h1 : |y - α| ≤ 2 := by
+        calc |y - α| ≤ |y| + |α| := abs_sub _ _
+          _ ≤ 1 + 1 := add_le_add hy (by rw [abs_of_pos hα.1]; exact hα.2.le)
+          _ = 2 := by norm_num
+      have h2 := abs_sub_abs_le_abs_sub (n : ℝ) (y - α)
+      have h3 : |(n : ℝ) - (y - α)| = |y - n - α| := by rw [abs_sub_comm]; ring_nf
+      rw [h3] at h2; linarith
+    have h_inv_sq : 1 / (y - n - α) ^ 2 ≤ 9 / (n : ℝ) ^ 2 := by
+      have hsq : (n : ℝ) ^ 2 / 9 ≤ (y - n - α) ^ 2 := by
+        rw [← sq_abs (y - n - α), ← sq_abs (n : ℝ)]; nlinarith
+      rw [div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
+    have h_t1 : |rescaledF θ Δ (n + α) / (y - n - α) ^ 2| ≤
+        (4 + Real.log (1 / δ) + Real.log Δ) * (9 / (n : ℝ) ^ 2) := by
+      rw [abs_div, abs_of_nonneg (sq_nonneg _), div_eq_mul_one_div]
+      exact mul_le_mul (hF_unif n) h_inv_sq (by positivity) (by
+        have := Real.log_nonneg ((one_le_div hδ0).mpr hδ1)
+        have := Real.log_nonneg hΔ
+        linarith)
+    have h_t2 : |rescaledFDeriv θ Δ (n + α) / (y - n - α)| ≤ 24 / (n : ℝ) ^ 2 + f_mid n := by
+      rw [abs_div]
+      by_cases h_leΔ : |(n : ℝ)| ≤ Δ
+      · have hf_eq : f_mid n = 2 / Δ := hf_mid_eq n (hF_mid n hn h_leΔ)
+        rw [hf_eq]
+        have h1 := hFd_bd n
+        have h2 : 1 / |(n : ℝ) + α| ≤ 2 / |(n : ℝ)| := by
+          have hna_lb2 : |(n : ℝ)| / 2 ≤ |(n : ℝ) + α| := by
+            have h1' : |α| ≤ 1 := by rw [abs_of_pos hα.1]; exact hα.2.le
+            have h2' := abs_sub_abs_le_abs_sub (n : ℝ) (-α)
+            simp only [abs_neg, sub_neg_eq_add] at h2'; linarith
+          rw [div_le_div_iff₀ (lt_of_lt_of_le hδ0 (h_na_lb n)) (by linarith)]; linarith
+        calc |rescaledFDeriv θ Δ (n + α)| / |y - n - α|
+            ≤ (2 / |(n : ℝ)| + 2 / Δ) / (|(n : ℝ)| / 3) :=
+              div_le_div₀ (by positivity) (by linarith) (by positivity) hyna_lb
+          _ = 6 / (n : ℝ) ^ 2 + 6 / (Δ * |(n : ℝ)|) := by
+              rw [← sq_abs (n : ℝ)]; field_simp [(by linarith : |(n : ℝ)| ≠ 0), hΔ_pos.ne']; ring
+          _ ≤ 24 / (n : ℝ) ^ 2 + 2 / Δ := by
+              have h6 : 6 / (Δ * |(n : ℝ)|) ≤ 2 / Δ := by
+                rw [div_le_div_iff₀ (by positivity) hΔ_pos]; nlinarith
+              linarith [show (0 : ℝ) ≤ 18 / (n : ℝ) ^ 2 by positivity]
+      · have h_gtΔ : Δ < |(n : ℝ)| := not_le.mp h_leΔ
+        have hne : (n : ℝ) + α ≠ 0 := abs_pos.mp (lt_of_lt_of_le hδ0 (h_na_lb n))
+        have hbm := rescaledFDeriv_mul_bound θ Δ (n + α) hΔ_pos hne
+        rw [abs_mul] at hbm
+        have hna_ge_23 : (2 / 3 : ℝ) * |(n : ℝ)| ≤ |(n : ℝ) + α| := by
+          have h1 : |α| ≤ 1 := by rw [abs_of_pos hα.1]; exact hα.2.le
+          have h2 := abs_sub_abs_le_abs_sub (n : ℝ) (-α)
+          simp only [abs_neg, sub_neg_eq_add] at h2; linarith
+        have hb_le : |rescaledFDeriv θ Δ (n + α)| ≤ 2 * Δ ^ 2 / |(n : ℝ) + α| ^ 3 := by
+          rw [← le_div_iff₀' (lt_of_lt_of_le hδ0 (h_na_lb n))] at hbm
+          calc |rescaledFDeriv θ Δ (n + α)| ≤ (2 * Δ ^ 2 / ((n : ℝ) + α) ^ 2) / |(n : ℝ) + α| := hbm
+            _ = 2 * Δ ^ 2 / |(n : ℝ) + α| ^ 3 := by rw [← sq_abs ((n : ℝ) + α)]; ring
+        have h_sq_le : Δ ^ 2 ≤ (9 / 4 : ℝ) * |(n : ℝ) + α| ^ 2 := by nlinarith
+        have hb_le2 : |rescaledFDeriv θ Δ (n + α)| ≤ (27 / 4 : ℝ) / |(n : ℝ)| := by
+          calc |rescaledFDeriv θ Δ (n + α)| ≤ 2 * Δ ^ 2 / |(n : ℝ) + α| ^ 3 := hb_le
+            _ ≤ 2 * ((9 / 4 : ℝ) * |(n : ℝ) + α| ^ 2) / |(n : ℝ) + α| ^ 3 := by gcongr
+            _ = (9 / 2 : ℝ) / |(n : ℝ) + α| := by field_simp [(by linarith : |(n : ℝ) + α| ≠ 0)]; ring
+            _ ≤ (9 / 2 : ℝ) / ((2 / 3 : ℝ) * |(n : ℝ)|) :=
+                div_le_div_of_nonneg_left (by positivity) (by positivity) hna_ge_23
+            _ = (27 / 4 : ℝ) / |(n : ℝ)| := by ring
+        have hf_nn : 0 ≤ f_mid n := hf_mid_nn n
+        calc |rescaledFDeriv θ Δ (n + α)| / |y - n - α|
+            ≤ ((27 / 4 : ℝ) / |(n : ℝ)|) / (|(n : ℝ)| / 3) :=
+              div_le_div₀ (by positivity) hb_le2 (by positivity) hyna_lb
+          _ = (81 / 4 : ℝ) / (n : ℝ) ^ 2 := by
+              rw [← sq_abs (n : ℝ)]; field_simp [(by linarith : |(n : ℝ)| ≠ 0)]; ring
+          _ ≤ 24 / (n : ℝ) ^ 2 + f_mid n := by
+              have : (81 / 4 : ℝ) / (n : ℝ) ^ 2 ≤ 24 / (n : ℝ) ^ 2 := by gcongr; norm_num
+              linarith
+    rw [abs_mul, abs_div, abs_of_pos (sq_pos_of_pos Real.pi_pos)]
+    have hsin1 : Real.sin (Real.pi * (y - α)) ^ 2 ≤ 1 := by
+      have := Real.abs_sin_le_one (Real.pi * (y - α))
+      nlinarith [sq_abs (Real.sin (Real.pi * (y - α)))]
+    rw [abs_of_nonneg (sq_nonneg _)]
+    calc Real.sin (Real.pi * (y - α)) ^ 2 / Real.pi ^ 2 *
+          |rescaledF θ Δ (n + α) / (y - n - α) ^ 2 + rescaledFDeriv θ Δ (n + α) / (y - n - α)|
+        ≤ (1 / Real.pi ^ 2) * (|rescaledF θ Δ (n + α) / (y - n - α) ^ 2| + |rescaledFDeriv θ Δ (n + α) / (y - n - α)|) := by
+          gcongr; exact abs_add_le _ _
+      _ ≤ (1 / Real.pi ^ 2) * (((4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24) * (1 / (n : ℝ) ^ 2) + f_mid n) := by
+          gcongr; linarith
+
 lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ (Δ₃ C_sup C_L1 : ℝ), Δ₃ ≥ 2 ∧ C_sup > 0 ∧ C_L1 > 0 ∧
       ∀ (Δ α : ℝ), Δ ≥ Δ₃ → α ∈ Set.Ioo (0 : ℝ) 1 →
@@ -478,16 +593,19 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
           have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
           have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
+          simp only [Int.cast_natCast]
           rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
-      have hf_inv_neg : Summable (fun k : ℕ => f_inv_sq (Int.negSucc k)) := by
+      have hf_inv_neg : Summable (fun k : ℕ => f_inv_sq (-↑k)) := by
         refine (summable_one_div_sq_nat.mul_left 4).of_nonneg_of_le (fun k => by dsimp only [f_inv_sq]; split_ifs <;> positivity) (fun k => ?_)
         dsimp only [f_inv_sq]; split_ifs with h
         · positivity
-        · simp only [Int.negSucc_eq, Int.cast_neg, Int.cast_add, Int.cast_natCast, Int.cast_one, neg_sq]
-          nlinarith [show (0 : ℝ) ≤ 1 / ((k : ℝ) + 1) ^ 2 by positivity]
+        · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
+          have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
+          have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
+          simp only [Int.cast_neg, Int.cast_natCast, neg_sq]
+          rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
       have hf_inv_s : Summable f_inv_sq := Summable.of_nat_of_neg hf_inv_pos hf_inv_neg
       have hf_inv_sum : ∑' n : ℤ, f_inv_sq n ≤ 8 * C_z := by
-        rw [tsum_of_nat_of_neg hf_inv_pos hf_inv_neg]
         have h1 : ∑' k : ℕ, f_inv_sq k ≤ 4 * C_z := by
           rw [← tsum_mul_left]
           refine Summable.tsum_le_tsum (fun k => ?_) hf_inv_pos (summable_one_div_sq_nat.mul_left 4)
@@ -496,25 +614,56 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
             have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
             have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
+            simp only [Int.cast_natCast]
             rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
-        have h2 : ∑' k : ℕ, f_inv_sq (Int.negSucc k) ≤ 4 * C_z := by
+        have h2 : ∑' k : ℕ, f_inv_sq (-↑k) ≤ 4 * C_z := by
           rw [← tsum_mul_left]
           refine Summable.tsum_le_tsum (fun k => ?_) hf_inv_neg (summable_one_div_sq_nat.mul_left 4)
           dsimp only [f_inv_sq]; split_ifs with h
           · positivity
-          · simp only [Int.negSucc_eq, Int.cast_neg, Int.cast_add, Int.cast_natCast, Int.cast_one, neg_sq]
-            nlinarith [show (0 : ℝ) ≤ 1 / ((k : ℝ) + 1) ^ 2 by positivity]
-        linarith
+          · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
+            have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
+            have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
+            simp only [Int.cast_neg, Int.cast_natCast, neg_sq]
+            rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
+        have hf_nn : ∀ n : ℤ, 0 ≤ f_inv_sq n := fun n => by dsimp only [f_inv_sq]; split_ifs <;> positivity
+        have h_fin : ∀ s : Finset ℤ, ∑ n ∈ s, f_inv_sq n ≤ (∑' k : ℕ, f_inv_sq k) + ∑' k : ℕ, f_inv_sq (-↑k) := by
+          intro s
+          let sN : Finset ℕ := s.image Int.natAbs
+          have h_sub : s ⊆ sN.image (fun k : ℕ => (k : ℤ)) ∪ sN.image (fun k : ℕ => -(k : ℤ)) := by
+            intro n hn
+            rcases Int.natAbs_eq n with h_eq | h_eq
+            · exact Finset.mem_union_left _ (Finset.mem_image.mpr ⟨n.natAbs, Finset.mem_image_of_mem _ hn, h_eq.symm⟩)
+            · exact Finset.mem_union_right _ (Finset.mem_image.mpr ⟨n.natAbs, Finset.mem_image_of_mem _ hn, h_eq.symm⟩)
+          calc ∑ n ∈ s, f_inv_sq n
+              ≤ ∑ n ∈ sN.image (fun k : ℕ => (k : ℤ)) ∪ sN.image (fun k : ℕ => -(k : ℤ)), f_inv_sq n :=
+                Finset.sum_le_sum_of_subset_of_nonneg h_sub (fun n _ _ => hf_nn n)
+            _ ≤ (∑ n ∈ sN.image (fun k : ℕ => (k : ℤ)), f_inv_sq n) +
+                ∑ n ∈ sN.image (fun k : ℕ => -(k : ℤ)), f_inv_sq n := by
+                have h_ui := Finset.sum_union_inter (s₁ := sN.image (fun k : ℕ => (k : ℤ)))
+                  (s₂ := sN.image (fun k : ℕ => -(k : ℤ))) (f := f_inv_sq)
+                have h_in : 0 ≤ ∑ n ∈ sN.image (fun k : ℕ => (k : ℤ)) ∩ sN.image (fun k : ℕ => -(k : ℤ)), f_inv_sq n :=
+                  Finset.sum_nonneg (fun n _ => hf_nn n)
+                linarith
+            _ = (∑ k ∈ sN, f_inv_sq k) + ∑ k ∈ sN, f_inv_sq (-↑k) := by
+                rw [Finset.sum_image (fun a _ b _ h => Int.ofNat.inj h),
+                    Finset.sum_image (fun a _ b _ h => Int.ofNat.inj (neg_inj.mp h))]
+            _ ≤ (∑' k : ℕ, f_inv_sq k) + ∑' k : ℕ, f_inv_sq (-↑k) :=
+                add_le_add (hf_inv_pos.sum_le_tsum sN (fun k _ => hf_nn k))
+                  (hf_inv_neg.sum_le_tsum sN (fun k _ => hf_nn (-↑k)))
+        exact (le_of_tendsto_of_tendsto' hf_inv_s.hasSum tendsto_const_nhds h_fin).trans (by linarith)
       let f_mid : ℤ → ℝ := fun n => if n ∈ F_mid then 2 / Δ else 0
       have hf_mid_s : Summable f_mid := summable_of_ne_finset_zero (s := F_mid) (fun n hn => by simp [f_mid, hn])
       have hf_mid_sum : ∑' n : ℤ, f_mid n ≤ 4 := by
         rw [tsum_eq_sum (s := F_mid) (fun n hn => by simp [f_mid, hn])]
-        rw [Finset.sum_congr rfl (fun n hn => by simp [f_mid, hn]), Finset.sum_const, nsmul_eq_mul]
+        have h_sum_eq : ∑ n ∈ F_mid, f_mid n = ∑ _n ∈ F_mid, (2 / Δ) :=
+          Finset.sum_congr rfl (fun n hn => if_pos hn)
+        rw [h_sum_eq, Finset.sum_const, nsmul_eq_mul]
         have h_card : (F_mid.card : ℝ) ≤ 2 * Δ := by
           have h1 : F_mid ⊆ (Finset.Icc (-Int.floor Δ) (Int.floor Δ)).erase 0 := by
             intro n hn
             simp only [F_mid, Finset.mem_filter, Finset.mem_Icc] at hn
-            refine Finset.mem_erase.mpr ⟨fun h0 => hn.2 (by subst h0; decide), hn.1⟩
+            refine Finset.mem_erase.mpr ⟨fun h0 => hn.2 (by subst h0; decide), Finset.mem_Icc.mpr hn.1⟩
           have h2 : F_mid.card ≤ (Finset.Icc (-Int.floor Δ) (Int.floor Δ)).card - 1 := by
             have h0_mem : (0 : ℤ) ∈ Finset.Icc (-Int.floor Δ) (Int.floor Δ) := by
               rw [Finset.mem_Icc]
@@ -522,7 +671,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               omega
             rw [← Finset.card_erase_of_mem h0_mem]
             exact Finset.card_le_card h1
-          have h3 : (Finset.Icc (-Int.floor Δ) (Int.floor Δ)).card = (2 * Int.floor Δ + 1).toNat := Int.card_Icc _ _
+          have h3 : (Finset.Icc (-Int.floor Δ) (Int.floor Δ)).card = (Int.floor Δ + 1 - -Int.floor Δ).toNat := Int.card_Icc _ _
           have h4 : (F_mid.card : ℝ) ≤ 2 * (Int.floor Δ : ℝ) := by
             have : (0 : ℤ) ≤ Int.floor Δ := Int.floor_nonneg.mpr hΔ_pos.le
             exact_mod_cast (by omega : (F_mid.card : ℤ) ≤ 2 * Int.floor Δ)
@@ -532,105 +681,19 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       let K_tail : ℝ := (4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24
       have h_tail_bd : ∀ n : ℤ, |if n ∈ F5 then 0 else term n| ≤
           (1 / Real.pi ^ 2) * (K_tail * f_inv_sq n + f_mid n) := by
-        intro n
-        by_cases hn : n ∈ F5
-        · simp [hn, f_inv_sq, f_mid]
-        · simp only [hn, ↓reduceIte, f_inv_sq]
-          have hn3 : 3 ≤ |n| := by
-            simp only [F5, Finset.mem_Icc, not_and, not_le] at hn
-            by_contra h; push_neg at h
-            rcases lt_or_ge n 0 with h0 | h0
-            · exact absurd (hn (by omega)) (by omega)
-            · exact absurd (hn (by omega)) (by omega)
-          have hn_real : (3 : ℝ) ≤ |(n : ℝ)| := by exact_mod_cast hn3
-          have hyna_lb : |(n : ℝ)| / 3 ≤ |y - n - α| := by
-            have h1 : |y - α| ≤ 2 := by
-              calc |y - α| ≤ |y| + |α| := abs_sub _ _
-                _ ≤ 1 + 1 := add_le_add hy (by rw [abs_of_pos hα.1]; exact hα.2.le)
-                _ = 2 := by norm_num
-            have h2 := abs_sub_abs_le_abs_sub (n : ℝ) (y - α)
-            have h3 : |(n : ℝ) - (y - α)| = |y - n - α| := by rw [abs_sub_comm]; ring_nf
-            rw [h3] at h2; linarith
-          have h_inv_sq : 1 / (y - n - α) ^ 2 ≤ 9 / (n : ℝ) ^ 2 := by
-            have hsq : (n : ℝ) ^ 2 / 9 ≤ (y - n - α) ^ 2 := by
-              rw [← sq_abs (y - n - α), ← sq_abs (n : ℝ)]; nlinarith
-            rw [div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
-          have h_t1 : |rescaledF θ Δ (n + α) / (y - n - α) ^ 2| ≤
-              (4 + Real.log (1 / δ) + Real.log Δ) * (9 / (n : ℝ) ^ 2) := by
-            rw [abs_div, abs_of_nonneg (sq_nonneg _), div_eq_mul_one_div]
-            exact mul_le_mul (hF_unif n) h_inv_sq (by positivity) (by
-              have := Real.log_nonneg ((one_le_div hδ0).mpr (by linarith [min_le_right (δ_star / 2) (1 / 2)]))
-              linarith)
-          have h_t2 : |rescaledFDeriv θ Δ (n + α) / (y - n - α)| ≤ 24 / (n : ℝ) ^ 2 + f_mid n := by
-            rw [abs_div]
-            by_cases h_leΔ : |(n : ℝ)| ≤ Δ
-            · have hn_mem : n ∈ F_mid := by
-                simp only [F_mid, Finset.mem_filter, Finset.mem_Icc]
-                refine ⟨⟨?_, ?_⟩, hn⟩
-                · have : -Δ ≤ (n : ℝ) := by linarith [(abs_le.mp h_leΔ).1]
-                  have := Int.floor_le Δ
-                  exact_mod_cast (by linarith : (-Int.floor Δ : ℝ) - 1 < n) |> fun h' => Int.le_of_lt_add_one (by omega)
-                · exact Int.le_floor.mpr (abs_le.mp h_leΔ).2
-              have hf_eq : f_mid n = 2 / Δ := by simp [f_mid, hn_mem]
-              rw [hf_eq]
-              have h1 := hFd_bd n
-              have h2 : 1 / |(n : ℝ) + α| ≤ 2 / |(n : ℝ)| := by
-                have hna_lb2 : |(n : ℝ)| / 2 ≤ |(n : ℝ) + α| := by
-                  have h1' : |α| ≤ 1 := by rw [abs_of_pos hα.1]; exact hα.2.le
-                  have h2' := abs_sub_abs_le_abs_sub (n : ℝ) (-α)
-                  simp only [abs_neg, sub_neg_eq_add] at h2'; linarith
-                rw [div_le_div_iff₀ (lt_of_lt_of_le hδ0 (h_na_lb n)) (by linarith)]; linarith
-              calc |rescaledFDeriv θ Δ (n + α)| / |y - n - α|
-                  ≤ (2 / |(n : ℝ)| + 2 / Δ) / (|(n : ℝ)| / 3) :=
-                    div_le_div₀ (by positivity) (by linarith) (by positivity) hyna_lb
-                _ = 6 / (n : ℝ) ^ 2 + 6 / (Δ * |(n : ℝ)|) := by
-                    rw [← sq_abs (n : ℝ)]; field_simp [(by linarith : |(n : ℝ)| ≠ 0), hΔ_pos.ne']; ring
-                _ ≤ 24 / (n : ℝ) ^ 2 + 2 / Δ := by
-                    have h6 : 6 / (Δ * |(n : ℝ)|) ≤ 2 / Δ := by
-                      rw [div_le_div_iff₀ (by positivity) hΔ_pos]; nlinarith
-                    linarith [show (0 : ℝ) ≤ 18 / (n : ℝ) ^ 2 by positivity]
-            · have h_gtΔ : Δ < |(n : ℝ)| := not_le.mp h_leΔ
-              have hne : (n : ℝ) + α ≠ 0 := abs_pos.mp (lt_of_lt_of_le hδ0 (h_na_lb n))
-              have hbm := rescaledFDeriv_mul_bound θ Δ (n + α) hΔ_pos hne
-              rw [abs_mul] at hbm
-              have hna_ge_23 : (2 / 3 : ℝ) * |(n : ℝ)| ≤ |(n : ℝ) + α| := by
-                have h1 : |α| ≤ 1 := by rw [abs_of_pos hα.1]; exact hα.2.le
-                have h2 := abs_sub_abs_le_abs_sub (n : ℝ) (-α)
-                simp only [abs_neg, sub_neg_eq_add] at h2; linarith
-              have hb_le : |rescaledFDeriv θ Δ (n + α)| ≤ 2 * Δ ^ 2 / |(n : ℝ) + α| ^ 3 := by
-                rw [← le_div_iff₀' (lt_of_lt_of_le hδ0 (h_na_lb n))] at hbm
-                calc |rescaledFDeriv θ Δ (n + α)| ≤ (2 * Δ ^ 2 / ((n : ℝ) + α) ^ 2) / |(n : ℝ) + α| := hbm
-                  _ = 2 * Δ ^ 2 / |(n : ℝ) + α| ^ 3 := by rw [← sq_abs ((n : ℝ) + α)]; ring
-              have h_sq_le : Δ ^ 2 ≤ (9 / 4 : ℝ) * |(n : ℝ) + α| ^ 2 := by nlinarith
-              have hb_le2 : |rescaledFDeriv θ Δ (n + α)| ≤ (27 / 4 : ℝ) / |(n : ℝ)| := by
-                calc |rescaledFDeriv θ Δ (n + α)| ≤ 2 * Δ ^ 2 / |(n : ℝ) + α| ^ 3 := hb_le
-                  _ ≤ 2 * ((9 / 4 : ℝ) * |(n : ℝ) + α| ^ 2) / |(n : ℝ) + α| ^ 3 := by gcongr
-                  _ = (9 / 2 : ℝ) / |(n : ℝ) + α| := by field_simp [(by linarith : |(n : ℝ) + α| ≠ 0)]; ring
-                  _ ≤ (9 / 2 : ℝ) / ((2 / 3 : ℝ) * |(n : ℝ)|) :=
-                      div_le_div_of_nonneg_left (by positivity) (by positivity) hna_ge_23
-                  _ = (27 / 4 : ℝ) / |(n : ℝ)| := by ring
-              have hf_nn : 0 ≤ f_mid n := by dsimp only [f_mid]; split_ifs <;> positivity
-              calc |rescaledFDeriv θ Δ (n + α)| / |y - n - α|
-                  ≤ ((27 / 4 : ℝ) / |(n : ℝ)|) / (|(n : ℝ)| / 3) :=
-                    div_le_div₀ (by positivity) hb_le2 (by positivity) hyna_lb
-                _ = (81 / 4 : ℝ) / (n : ℝ) ^ 2 := by
-                    rw [← sq_abs (n : ℝ)]; field_simp [(by linarith : |(n : ℝ)| ≠ 0)]; ring
-                _ ≤ 24 / (n : ℝ) ^ 2 + f_mid n := by
-                    have : (81 / 4 : ℝ) / (n : ℝ) ^ 2 ≤ 24 / (n : ℝ) ^ 2 := by gcongr; norm_num
-                    linarith
-          dsimp only [term]
-          rw [abs_mul, abs_div, abs_of_pos (sq_pos_of_pos Real.pi_pos)]
-          have hsin1 : Real.sin (Real.pi * (y - α)) ^ 2 ≤ 1 := by
-            have := Real.abs_sin_le_one (Real.pi * (y - α))
-            nlinarith [sq_abs (Real.sin (Real.pi * (y - α)))]
-          rw [abs_of_nonneg (sq_nonneg _)]
-          calc Real.sin (Real.pi * (y - α)) ^ 2 / Real.pi ^ 2 *
-                |rescaledF θ Δ (n + α) / (y - n - α) ^ 2 + rescaledFDeriv θ Δ (n + α) / (y - n - α)|
-              ≤ (1 / Real.pi ^ 2) * (|rescaledF θ Δ (n + α) / (y - n - α) ^ 2| + |rescaledFDeriv θ Δ (n + α) / (y - n - α)|) := by
-                gcongr; exact abs_add_le _ _
-            _ ≤ (1 / Real.pi ^ 2) * (K_tail * (1 / (n : ℝ) ^ 2) + f_mid n) := by
-                gcongr
-                dsimp only [K_tail]; linarith
+        have hF_mid : ∀ n : ℤ, n ∉ F5 → |(n : ℝ)| ≤ Δ → n ∈ F_mid := by
+          intro n hn h_leΔ
+          simp only [F_mid, Finset.mem_filter, Finset.mem_Icc]
+          refine ⟨⟨?_, ?_⟩, hn⟩
+          · have : -Δ ≤ (n : ℝ) := by linarith [(abs_le.mp h_leΔ).1]
+            have := Int.floor_le Δ
+            exact_mod_cast (by linarith : (-Int.floor Δ : ℝ) - 1 < n) |> fun h' => Int.le_of_lt_add_one (by omega)
+          · exact Int.le_floor.mpr (abs_le.mp h_leΔ).2
+        exact diffB_tail_bound θ Δ α δ y hΔ_ge_1 hα hy hδ0 (min_le_right _ _) h_na_lb hF_unif hFd_bd
+          F5 F_mid rfl hF_mid f_mid f_inv_sq (fun n hn => if_pos hn)
+          (fun n => by dsimp only [f_mid]; split_ifs <;> positivity)
+          (fun n hn => if_neg hn)
+          (fun n => by dsimp only [f_inv_sq]; split_ifs <;> positivity)
       have h_cofin_s : Summable (fun n : ℤ => if n ∈ F5 then 0 else term n) := by
         have : (fun n : ℤ => if n ∈ F5 then 0 else term n) = fun n => term n - (if n ∈ F5 then term n else 0) := by
           ext n; split_ifs <;> ring
@@ -843,7 +906,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       simpa [mul_neg, neg_sq] using h_c_pos
     have h_s2_c : ∫ x in S2, C_mid / (Δ * x) ^ 2 ≤ 2 * C_mid := by
       dsimp only [S2]
-      rw [setIntegral_union (Set.disjoint_iff.mpr fun x ⟨hx1, hx2⟩ => by rw [neg_div] at hx1; linarith only [hx1.2, hx2.1, hΔ_pos])
+      rw [setIntegral_union ((Set.disjoint_iff.mpr fun x ⟨hx1, hx2⟩ => by rw [neg_div] at hx1; linarith only [hx1.2, hx2.1, hΔ_pos]))
         measurableSet_Ioo (hg2_1.mono_set Set.subset_union_left) (hg2_1.mono_set Set.subset_union_right)]
       linarith
     have h_s2_k : ∫ x in S2, |kernelK θ x| ≤ ∫ x in Set.Ioo (-1 : ℝ) 1, |kernelK θ x| := by
@@ -892,15 +955,30 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           · exact Or.inl (Or.inr (Or.inl ⟨(abs_lt.mp hx1).1, by rw [neg_div, abs_of_neg h] at hx2'; linarith⟩))
           · exact Or.inl (Or.inr (Or.inr ⟨by rw [abs_of_pos h] at hx2'; exact hx2', (abs_lt.mp hx1).2⟩))
       · exact Or.inr (fun h => hx1 (abs_lt.mpr h))
-    have h12 := integral_union_le (μ := volume) (f := fun x => |majorantM θ Δ α x|)
-      (hs := measurableSet_Icc) (ht := measurableSet_Ioo.union measurableSet_Ioo)
+    have h_disj12 : Disjoint S1 S2 := by
+      rw [Set.disjoint_iff]
+      intro x ⟨hx1, hx2⟩
+      simp only [S1, S2, Set.mem_Icc, Set.mem_union, Set.mem_Ioo] at hx1 hx2
+      rcases hx2 with hx2 | hx2
+      · rw [neg_div] at hx1; linarith only [hx1.1, hx2.2]
+      · linarith only [hx1.2, hx2.1]
+    have h_disj123 : Disjoint (S1 ∪ S2) S3 := by
+      rw [Set.disjoint_iff]
+      intro x ⟨hx12, hx3⟩
+      apply hx3
+      simp only [S1, S2, Set.mem_union, Set.mem_Icc, Set.mem_Ioo] at hx12
+      have h_1_div_lt : 1 / Δ < 1 := by rw [div_lt_one hΔ_pos]; linarith
+      rcases hx12 with hx1 | (hx2 | hx2)
+      · rw [neg_div] at hx1; exact ⟨by linarith only [hx1.1, h_1_div_lt], by linarith only [hx1.2, h_1_div_lt]⟩
+      · exact ⟨hx2.1, by linarith only [hx2.2, h_1_div_lt]⟩
+      · exact ⟨by linarith only [hx2.1, h_1_div_lt], hx2.2⟩
     have h123 := setIntegral_mono_set h_abs_int (Eventually.of_forall fun _ => abs_nonneg _) (Eventually.of_forall fun x _ => h_u (Set.mem_univ x))
     calc ∫ x : ℝ, |majorantM θ Δ α x| = ∫ x in Set.univ, |majorantM θ Δ α x| := setIntegral_univ.symm
       _ ≤ ∫ x in S1 ∪ S2 ∪ S3, |majorantM θ Δ α x| := h123
-      _ ≤ (∫ x in S1 ∪ S2, |majorantM θ Δ α x|) + ∫ x in S3, |majorantM θ Δ α x| := by
-          refine setIntegral_union_le (fun _ => abs_nonneg _) (h_s12.union h_s2) h_s3
-      _ ≤ (∫ x in S1, |majorantM θ Δ α x|) + (∫ x in S2, |majorantM θ Δ α x|) + ∫ x in S3, |majorantM θ Δ α x| := by
-          linarith [setIntegral_union_le (fun _ => abs_nonneg _) h_s12 h_s2]
+      _ = (∫ x in S1 ∪ S2, |majorantM θ Δ α x|) + ∫ x in S3, |majorantM θ Δ α x| :=
+          setIntegral_union h_disj123 measurableSet_Ioo.compl (h_s12.union h_s2) h_s3
+      _ = (∫ x in S1, |majorantM θ Δ α x|) + (∫ x in S2, |majorantM θ Δ α x|) + ∫ x in S3, |majorantM θ Δ α x| := by
+          rw [setIntegral_union h_disj12 (measurableSet_Ioo.union measurableSet_Ioo) h_s12 h_s2]
   linarith
 
 
