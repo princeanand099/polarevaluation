@@ -127,8 +127,8 @@ lemma tsum_int_split (φ : ℤ → ℝ) (hφ : Summable φ) :
   have he2 : Summable (fun s : ℕ ⊕ ℕ => φ (e (Sum.inr s))) := he.comp_injective Sum.inr_injective
   rw [← e.tsum_eq, Summable.tsum_sum (he.comp_injective Sum.inl_injective) he2, Summable.tsum_sum (he2.comp_injective Sum.inl_injective) (he2.comp_injective Sum.inr_injective)]
   rw [tsum_eq_single () (fun u hu => absurd (Subsingleton.elim u ()) hu)]
-  simp only [e, Function.comp_def]
-  ring
+  dsimp only [e, Function.comp_def]
+  simp only [add_comm, sub_eq_add_neg]; ring
 
 lemma lorentz_tsum_bound (Δ α : ℝ) (hΔ : Δ ≥ 1) :
     Summable (fun n : ℤ => Δ / ((n + α) ^ 2 + Δ ^ 2)) ∧
@@ -568,6 +568,7 @@ lemma tsum_succ_mul_pow (w : ℂ) (hw : ‖w‖ < 1) :
     linear_combination h_mul
   rw [h_res, inv_eq_one_div, div_div, sq]
 
+set_option maxHeartbeats 800000 in
 lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
     Summable (fun n : ℤ => 1 / (z - n) ^ 2) ∧
     ∑' n : ℤ, 1 / (z - n) ^ 2 = (Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * z) ^ 2 := by
