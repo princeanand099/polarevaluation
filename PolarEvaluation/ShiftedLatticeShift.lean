@@ -219,7 +219,7 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
   exact tendsto_nhds_unique h_dom h_lim_sum
 
 /-- **Lemma 3.1** (Optimal lattice shift `α_Δ ∈ (0, 1)`). -/
-set_option maxHeartbeats 800000 in
+set_option maxHeartbeats 2000000 in
 theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ (Δ₁ C_α : ℝ), Δ₁ ≥ 1 ∧ C_α > 0 ∧
       ∀ Δ ≥ Δ₁, ∃! α : ℝ, α ∈ Set.Ioo (0 : ℝ) 1 ∧
@@ -742,7 +742,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hM₂_bd : ∀ (n : ℤ) (t : ℝ), t ∈ Set.Icc a b → ‖d₂ n t‖ ≤ M₂ n := by
         intro n t ht
         have ht_le : |t| ≤ |a| + |b| := by
-          rw [abs_le]; constructor <;> linarith [ht.1, ht.2, neg_abs_le a, le_abs_self b]
+          rw [abs_le]; constructor <;> linarith [ht.1, ht.2, neg_abs_le a, le_abs_self b, abs_nonneg a, abs_nonneg b]
         have h1 : 1 + |(n : ℝ)| ≤ (1 + (|a| + |b|)) * (1 + |(n : ℝ) + t|) := by
           have : |(n : ℝ)| ≤ |(n : ℝ) + t| + |t| := by simpa using abs_sub ((n : ℝ) + t) t
           nlinarith [abs_nonneg ((n : ℝ) + t), abs_nonneg a, abs_nonneg b]
@@ -758,18 +758,23 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have hpos : 0 < 1 + |(n : ℝ)| := by positivity
           rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hpos.le, Real.rpow_natCast, one_div]
         rw [hpow_eq]
+        have h_num' : 2 * Δ * |(n : ℝ) + t| ≤ Δ * (1 + ((n : ℝ) + t) ^ 2) := by nlinarith [h_num, hΔ_pos]
+        have h_den' : (1 + ((n : ℝ) + t) ^ 2) ^ 2 ≤ ((n + t) ^ 2 + Δ ^ 2) ^ 2 :=
+          pow_le_pow_left₀ (by positivity) h_den 2
         calc 2 * Δ * |(n : ℝ) + t| / ((n + t) ^ 2 + Δ ^ 2) ^ 2
-            ≤ Δ * (1 + ((n : ℝ) + t) ^ 2) / (1 + ((n : ℝ) + t) ^ 2) ^ 2 := by
-              gcongr; nlinarith
+            ≤ Δ * (1 + ((n : ℝ) + t) ^ 2) / (1 + ((n : ℝ) + t) ^ 2) ^ 2 :=
+              div_le_div₀ (by positivity) h_num' (by positivity) h_den'
           _ = Δ / (1 + ((n : ℝ) + t) ^ 2) := by
               have hp : 1 + ((n : ℝ) + t) ^ 2 ≠ 0 := by positivity
               field_simp [hp]
           _ ≤ Δ / ((1 + |(n : ℝ)|) ^ 2 / (2 * (1 + (|a| + |b|)) ^ 2)) := by
-              gcongr
+              refine div_le_div_of_nonneg_left hΔ_pos.le (by positivity) ?_
               rw [div_le_iff₀ (by positivity)]
-              have : (1 + |(n : ℝ)|) ^ 2 ≤ (1 + (|a| + |b|)) ^ 2 * (1 + |(n : ℝ) + t|) ^ 2 := by gcongr
-              linarith
-          _ = 2 * (1 + (|a| + |b|)) ^ 2 * Δ * (1 / (1 + |(n : ℝ)|) ^ 2) := by ring
+              have h1sq : (1 + |(n : ℝ)|) ^ 2 ≤ ((1 + (|a| + |b|)) * (1 + |(n : ℝ) + t|)) ^ 2 :=
+                pow_le_pow_left₀ (by positivity) h1 2
+              nlinarith [h1sq, h2, sq_nonneg (1 + (|a| + |b|))]
+          _ = 2 * (1 + (|a| + |b|)) ^ 2 * Δ * (1 / (1 + |(n : ℝ)|) ^ 2) := by
+              rw [div_div_eq_mul_div]; ring
           _ ≤ 4 * (1 + (|a| + |b|)) ^ 2 * Δ * (1 / (1 + |(n : ℝ)|) ^ 2) := by
               gcongr; norm_num
       have h_tsum_eq := intervalIntegral_tsum_of_dominated hab d₂ M₂ hM₂_summ hd₂_cont hM₂_bd
@@ -826,6 +831,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         intro α
         have hs2 := tsum_inv_sub_I_sq ((-α : ℂ) + Complex.I * Δ) (by simp; positivity)
         rw [← hs2.2, Complex.re_tsum hs2.1, ← tsum_mul_left]
+        dsimp only [h_rem]
         congr 1; ext n
         have heq : ((-α : ℂ) + Complex.I * Δ) - n = -((n + α : ℝ) : ℂ) + Complex.I * Δ := by push_cast; ring
         rw [heq, one_div, Complex.inv_re, Complex.normSq_apply]
@@ -969,16 +975,24 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
                 intro t ht; exact pow_ne_zero 2 (h_sin_ne t ⟨lt_of_lt_of_le hu_ioo.1 ht.1, lt_of_le_of_lt ht.2 hv_ioo.2⟩)
               · have ht_icc : t ∈ Set.Icc δ₁ (1 - δ₁) := ⟨le_trans hu.1 ht.1.le, le_trans ht.2 hv.2⟩
                 have hsin_t : Real.sin (Real.pi * δ₁) ≤ Real.sin (Real.pi * t) := by
+                  have hpi_δ_nn : 0 ≤ Real.pi * δ₁ := mul_nonneg Real.pi_pos.le hδ₁_pos.le
+                  have hpi_t_nn : 0 ≤ Real.pi * t := mul_nonneg Real.pi_pos.le (le_trans hδ₁_pos.le ht_icc.1)
                   rcases le_total t (1 / 2) with ht12 | ht12
-                  · exact Real.strictMonoOn_sin.monotoneOn
-                      ⟨by nlinarith [Real.pi_pos, hδ₁_pos], by nlinarith [Real.pi_pos, ht_icc.1, ht12]⟩
-                      ⟨by nlinarith [Real.pi_pos, hδ₁_pos, ht_icc.1], by nlinarith [Real.pi_pos, ht12]⟩
-                      (by nlinarith [Real.pi_pos, ht_icc.1])
+                  · have hpi_t_le : Real.pi * t ≤ Real.pi / 2 := by
+                      have := mul_le_mul_of_nonneg_left ht12 Real.pi_pos.le; linarith
+                    have hpi_δ_le : Real.pi * δ₁ ≤ Real.pi * t := mul_le_mul_of_nonneg_left ht_icc.1 Real.pi_pos.le
+                    exact Real.strictMonoOn_sin.monotoneOn ⟨by linarith, by linarith⟩ ⟨by linarith, hpi_t_le⟩ hpi_δ_le
                   · rw [← Real.sin_pi_sub (Real.pi * t)]
-                    exact Real.strictMonoOn_sin.monotoneOn
-                      ⟨by nlinarith [Real.pi_pos, hδ₁_pos], by nlinarith [Real.pi_pos, ht_icc.2, ht12]⟩
-                      ⟨by nlinarith [Real.pi_pos, ht_icc.2, hδ₁_pos], by nlinarith [Real.pi_pos, ht12]⟩
-                      (by nlinarith [Real.pi_pos, ht_icc.2])
+                    have h1mt_le : 1 - t ≤ 1 / 2 := by linarith
+                    have hpi_1mt_le : Real.pi - Real.pi * t ≤ Real.pi / 2 := by
+                      have := mul_le_mul_of_nonneg_left h1mt_le Real.pi_pos.le; linarith
+                    have hpi_1mt_nn : 0 ≤ Real.pi - Real.pi * t := by
+                      have : 0 ≤ 1 - t := by linarith [ht_icc.2, hδ₁_pos]
+                      have := mul_nonneg Real.pi_pos.le this; linarith
+                    have hpi_δ_le : Real.pi * δ₁ ≤ Real.pi - Real.pi * t := by
+                      have : δ₁ ≤ 1 - t := by linarith [ht_icc.2]
+                      have := mul_le_mul_of_nonneg_left this Real.pi_pos.le; linarith
+                    exact Real.strictMonoOn_sin.monotoneOn ⟨by linarith, by linarith⟩ ⟨by linarith, hpi_1mt_le⟩ hpi_δ_le
                 exact one_div_le_one_div_of_le (sq_pos_of_pos hsin_δ₁) (sq_le_sq' (by linarith) hsin_t)
           _ = (v - u) / Real.sin (Real.pi * δ₁) ^ 2 := by
               rw [setIntegral_const, Real.volume_real_Ioc_of_le huv, smul_eq_mul]; ring
