@@ -117,8 +117,12 @@ lemma uTheta_deriv {θ v : ℝ} (hθ : |θ| < Real.pi / 2) :
         -Complex.I * θ + ((Real.pi * v : ℝ) : ℂ) by push_cast; ring_nf; simp [Complex.I_sq],
       Complex.exp_add]
     have hexp_r : (Real.exp (-Real.pi * v) : ℂ) = Complex.exp ((-Real.pi * v : ℝ) : ℂ) := Complex.ofReal_exp _
-    rw [hexp_r, ← Complex.exp_add]
-    congr 1; push_cast; ring
+    rw [hexp_r, mul_assoc]
+    have hexp_prod : Complex.exp ((-Real.pi * v : ℝ) : ℂ) *
+        (Complex.exp (-Complex.I * θ) * Complex.exp ((Real.pi * v : ℝ) : ℂ)) =
+        Complex.exp (-Complex.I * θ) := by
+      rw [← Complex.exp_add, ← Complex.exp_add]; congr 1; push_cast; ring
+    exact hexp_prod.symm
   dsimp only [cTheta]
   rw [hcexp]
   field_simp [Real.pi_ne_zero, hcos_ne]
@@ -244,7 +248,8 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have hcos_c : ContDiff ℝ 1 (fun t : ℝ => Complex.cos ((θ : ℂ) + Complex.I * Real.pi * t) ^ 2) :=
             ((Complex.contDiff_cos.restrict_scalars ℝ).comp hw_c).pow 2
           dsimp only [cTheta]
-          exact (contDiff_const (𝕜 := ℝ)).div hcos_c (fun t => pow_ne_zero 2 (cos_ne_zero_of_abs_lt (v := t) hθ))
+          refine (contDiff_const (𝕜 := ℝ)).div hcos_c (fun t => ?_)
+          exact pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)
         exact (hc_c1.continuous_deriv (by norm_num) |> fun h => (Complex.continuous_re.comp h).norm).congr fun t => by
           dsimp only [Function.comp_def]; rw [hderiv_eq t]
       obtain ⟨v₀, _, hv₀⟩ := isCompact_Icc.exists_isMaxOn (⟨0, by norm_num, by norm_num⟩ : (Set.Icc (0 : ℝ) 1).Nonempty) hf_cont.continuousOn
@@ -295,6 +300,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         (Complex.cos (θ + Complex.I * Real.pi * v) ^ 2 * (y - Complex.I * v))).im =
       (v * (cTheta θ v).re + y * (cTheta θ v).im) / (y ^ 2 + v ^ 2) := by
     intro v hv
+    rw [div_mul_eq_div_div]
     rw [div_mul_eq_div_div]
     change (cTheta θ v / ((y : ℂ) - Complex.I * v)).im = _
     have hinv : (1 / ((y : ℂ) - Complex.I * v)) = ((y : ℂ) + Complex.I * v) / ((y ^ 2 + v ^ 2 : ℝ) : ℂ) := by
@@ -843,6 +849,7 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         (Complex.I * ((v : ℂ) * cTheta θ v) / (y : ℂ) ^ 2).im) (Set.Ioi 0) := h_int_1.add h_int_2
     rw [hadd, ← integral_sub h_int_12 h_int_3]
     refine setIntegral_congr_fun measurableSet_Ioi fun v _ => ?_
+    rw [div_mul_eq_div_div]
     change (cTheta θ v / ((y : ℂ) - Complex.I * v)).im = _
     rw [h_id v, Complex.sub_im, Complex.add_im]
   have hterm1 : (∫ v in Set.Ioi (0 : ℝ), (cTheta θ v / (y : ℂ)).im) = 0 := by
