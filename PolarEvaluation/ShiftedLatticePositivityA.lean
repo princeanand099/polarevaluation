@@ -17,41 +17,24 @@ lemma tsum_int_split_gen {E : Type*} [NormedAddCommGroup E] [CompleteSpace E]
     (F : ℤ → E) (hp : Summable (fun n : ℕ => F (n + 1 : ℕ)))
     (hn : Summable (fun n : ℕ => F (-((n + 1 : ℕ) : ℤ)))) :
     Summable F ∧ ∑' m : ℤ, F m = F 0 + ∑' n : ℕ, (F (n + 1 : ℕ) + F (-((n + 1 : ℕ) : ℤ))) := by
-  let e : ℕ ⊕ ℕ ⊕ Unit ≃ ℤ :=
-    { toFun := fun s => match s with
-        | Sum.inl n => (n + 1 : ℤ)
-        | Sum.inr (Sum.inl n) => -((n + 1 : ℤ))
-        | Sum.inr (Sum.inr ()) => 0
-      invFun := fun m =>
-        if 0 < m then Sum.inl (m.natAbs - 1)
-        else if m < 0 then Sum.inr (Sum.inl (m.natAbs - 1))
-        else Sum.inr (Sum.inr ())
-      left_inv := fun s => by
-        rcases s with n | (n | ⟨⟩)
-        · simp; omega
-        · simp only [Left.neg_pos_iff, Int.natCast_add, Int.natCast_one, Int.neg_lt_zero,
-            Int.natAbs_neg]; split_ifs with h1 <;> omega
-        · simp
-      right_inv := fun m => by
-        split_ifs with h1 h2
-        · simp; omega
-        · simp; omega
-        · omega }
-  have hs_sum : Summable (F ∘ e) := by
-    rw [summable_sum_iff]
-    refine ⟨hp, ?_⟩
-    rw [summable_sum_iff]
-    exact ⟨hn, summable_fintype _⟩
-  have hs : Summable F := (Equiv.summable_iff e).mp hs_sum
+  have hp0 : Summable (fun n : ℕ => F (n : ℤ)) :=
+    (summable_nat_add_iff 1).mp (by simpa [Nat.cast_add, Nat.cast_one] using hp)
+  have hn0 : Summable (fun n : ℕ => F (-(n : ℤ))) :=
+    (summable_nat_add_iff 1).mp (by simpa [Nat.cast_add, Nat.cast_one] using hn)
+  have hs : Summable F := summable_int_iff_summable_nat_and_neg.mpr ⟨hp0, hn0⟩
   refine ⟨hs, ?_⟩
-  rw [← e.tsum_eq]
-  have hs1 : Summable (fun s : ℕ ⊕ Unit => F (e (Sum.inr s))) := by
-    rw [summable_sum_iff]
-    exact ⟨hn, summable_fintype _⟩
-  rw [tsum_sum hp hs1, tsum_sum hn (summable_fintype _), tsum_unique]
-  dsimp only [e]
-  rw [← tsum_add hp hn]
-  abel
+  have he : Summable (fun s => F (intSplitEquiv s)) := intSplitEquiv.summable_iff.mpr hs
+  have he2 : Summable (fun s : ℕ ⊕ ℕ => F (intSplitEquiv (Sum.inr s))) := he.comp_injective Sum.inr_injective
+  rw [← intSplitEquiv.tsum_eq,
+    Summable.tsum_sum (he.comp_injective Sum.inl_injective) he2,
+    Summable.tsum_sum (he2.comp_injective Sum.inl_injective) (he2.comp_injective Sum.inr_injective)]
+  rw [tsum_eq_single () (fun u hu => absurd (Subsingleton.elim u ()) hu)]
+  simp only [intSplitEquiv, Equiv.coe_fn_mk, Function.comp_def]
+  have hp_eq : (∑' n : ℕ, F ((n : ℤ) + 1)) = ∑' n : ℕ, F (n + 1 : ℕ) := by
+    congr 1; ext n; push_cast; rfl
+  have hn_eq : (∑' n : ℕ, F (-((n : ℤ) + 1))) = ∑' n : ℕ, F (-((n + 1 : ℕ) : ℤ)) := by
+    congr 1; ext n; push_cast; rfl
+  rw [hp_eq, hn_eq, add_assoc, ← hp.tsum_add hn]
 
 lemma tsum_two_t_div_sq_bd (t : ℝ) (ht : 1 ≤ t) :
     Real.pi - 2 / t ≤ ∑' n : ℕ, 2 * t / (t ^ 2 + (n + 1 : ℝ) ^ 2) ∧
@@ -342,11 +325,15 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
     have hw_d : HasDerivAt w Complex.I t :=
       ((hasDerivAt_const t z).add ((hasDerivAt_id t).ofReal_comp.const_mul Complex.I)).congr_deriv (by simp)
     have hd1 : HasDerivAt (fun s => 1 / (w s - (n + 1 : ℕ)))
-        (-Complex.I / (w t - (n + 1 : ℕ)) ^ 2) t :=
-      ((hasDerivAt_const t (1 : ℂ)).div (hw_d.sub (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))) h1).congr_deriv (by field_simp [h1]; ring)
+        (-Complex.I / (w t - (n + 1 : ℕ)) ^ 2) t := by
+      have h_sub : HasDerivAt (fun s => w s - ((n + 1 : ℕ) : ℂ)) Complex.I t := by
+        simpa using hw_d.sub (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))
+      exact ((hasDerivAt_const t (1 : ℂ)).div h_sub h1).congr_deriv (by simp [div_eq_mul_inv]; ring)
     have hd2 : HasDerivAt (fun s => 1 / (w s + (n + 1 : ℕ)))
-        (-Complex.I / (w t + (n + 1 : ℕ)) ^ 2) t :=
-      ((hasDerivAt_const t (1 : ℂ)).div (hw_d.add (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))) h2).congr_deriv (by field_simp [h2]; ring)
+        (-Complex.I / (w t + (n + 1 : ℕ)) ^ 2) t := by
+      have h_add : HasDerivAt (fun s => w s + ((n + 1 : ℕ) : ℂ)) Complex.I t := by
+        simpa using hw_d.add (hasDerivAt_const t ((n + 1 : ℕ) : ℂ))
+      exact ((hasDerivAt_const t (1 : ℂ)).div h_add h2).congr_deriv (by simp [div_eq_mul_inv]; ring)
     refine (hd1.add hd2).congr_deriv ?_
     dsimp only [f']; ring
   have hf'_bd : ∀ n : ℕ, ∀ t ∈ Set.Ioi (-z.im / 2), ‖f' n t‖ ≤ u n := by
@@ -394,7 +381,7 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
     have hd_sum : HasDerivAt (fun r => ∑' n : ℕ, f n (ψ r)) (∑' n : ℕ, f' n (ψ s) * (ψ' s : ℂ)) s := by
       refine hasDerivAt_tsum (g := fun n r => f n (ψ r)) (g' := fun n r => f' n (ψ r) * (ψ' r : ℂ)) hu_summ ?_ ?_ (hf_summ (ψ s) (hψ_mem s)) s
       · intro n r
-        exact (hf_deriv n (ψ r) (hψ_mem r)).comp r (hψ_deriv r)
+        exact by simpa only [Function.comp_def] using (hf_deriv n (ψ r) (hψ_mem r)).comp r (hψ_deriv r)
       · intro n r
         rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
         calc ‖f' n (ψ r)‖ * |ψ' r| ≤ u n * 1 :=
@@ -414,11 +401,9 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
       have hq := (hcos_d.const_mul (Real.pi : ℂ)).div hsin_d hsin
       refine hq.congr_deriv ?_
       have hcs := Complex.cos_sq_add_sin_sq (Real.pi * w (ψ s))
-      field_simp [hsin]
-      calc (Real.pi : ℂ) * (-Complex.sin (Real.pi * w (ψ s)) * ((Real.pi : ℂ) * (Complex.I * ↑(ψ' s)))) * Complex.sin (Real.pi * w (ψ s)) -
-            (Real.pi : ℂ) * Complex.cos (Real.pi * w (ψ s)) * (Complex.cos (Real.pi * w (ψ s)) * ((Real.pi : ℂ) * (Complex.I * ↑(ψ' s))))
-          = -Complex.I * ↑(ψ' s) * (Real.pi : ℂ) ^ 2 * (Complex.cos (Real.pi * w (ψ s)) ^ 2 + Complex.sin (Real.pi * w (ψ s)) ^ 2) := by ring
-        _ = -Complex.I * ↑(ψ' s) * (Real.pi : ℂ) ^ 2 := by rw [hcs, mul_one]
+      have hsin2 : Complex.sin (Real.pi * w (ψ s)) ^ 2 ≠ 0 := pow_ne_zero 2 hsin
+      field_simp [hsin, hsin2]
+      linear_combination -Complex.I * (ψ' s : ℂ) * (Real.pi : ℂ) ^ 2 * hcs
     have h_tsum_f' : (-Complex.I * (ψ' s : ℂ) / (w (ψ s)) ^ 2) + (∑' n : ℕ, f' n (ψ s) * (ψ' s : ℂ)) =
         -Complex.I * (ψ' s : ℂ) * ((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * w (ψ s)) ^ 2) := by
       have hs_p : Summable (fun n : ℕ => (1 : ℂ) / (w (ψ s) - (n + 1 : ℕ)) ^ 2) := by
@@ -443,7 +428,7 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
       rw [heq_f']
       have h_match : ∑' n : ℕ, ((1 : ℂ) / (w (ψ s) - (n + 1 : ℕ)) ^ 2 + 1 / (w (ψ s) + (n + 1 : ℕ)) ^ 2) =
           ∑' n : ℕ, (1 / (w (ψ s) - ((n + 1 : ℕ) : ℤ)) ^ 2 + 1 / (w (ψ s) - (-((n + 1 : ℕ) : ℤ))) ^ 2) := by
-        congr 1; ext n; push_cast; ring
+        congr 1; ext n; simp only [Int.cast_natCast, Int.cast_neg, sub_neg_eq_add]
       rw [h_match]
       rw [show (1 : ℂ) / (w (ψ s) - (0 : ℤ)) ^ 2 = 1 / (w (ψ s)) ^ 2 by simp] at h_tsum_Z
       rw [← h_tsum_Z.2]; ring

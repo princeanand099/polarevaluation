@@ -129,112 +129,32 @@ lemma majorantEntire_props (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.I
     exact ((ha_summ.add hb_summ).mul_right (Real.exp (2 * Real.pi * Δ * ‖z‖ + 4))).of_norm_bounded (fun n => h_term_bd n z)
   have h_diff : Differentiable ℂ (majorantEntire θ Δ α) := by
     intro z₀
-    let R : ℝ := Δ * (‖z₀‖ + 1)
-    obtain ⟨C_d, hC_d, h_sinc_d⟩ := sincPi_deriv_bound R (by positivity)
-    have h_u_deriv : ∀ n : ℤ, ∀ z : ℂ, HasDerivAt (fun w : ℂ => Δ * w - n - α) (Δ : ℂ) z := by
-      intro n z
-      have h1 : HasDerivAt (fun w : ℂ => (Δ : ℂ) * w) (Δ : ℂ) z := by simpa using (hasDerivAt_id z).const_mul (Δ : ℂ)
-      exact (h1.sub_const _).sub_const _
-    have h_s_deriv : ∀ n : ℤ, ∀ z : ℂ,
-        HasDerivAt (fun w : ℂ => sincPi (Δ * w - n - α)) (deriv sincPi (Δ * z - n - α) * Δ) z := by
-      intro n z
-      exact ((differentiable_sincPi (Δ * z - n - α)).hasDerivAt.comp z (h_u_deriv n z))
-    let term' : ℤ → ℂ → ℂ := fun n z =>
-      (rescaledF θ Δ (n + α) : ℂ) * (2 * sincPi (Δ * z - n - α) * (deriv sincPi (Δ * z - n - α) * Δ)) +
-      (rescaledFDeriv θ Δ (n + α) : ℂ) * ((Δ : ℂ) * sincPi (Δ * z - n - α) ^ 2 +
-        (Δ * z - n - α) * (2 * sincPi (Δ * z - n - α) * (deriv sincPi (Δ * z - n - α) * Δ)))
-    have h_hasD : ∀ n : ℤ, ∀ z ∈ Metric.ball z₀ 1, HasDerivAt (term n) (term' n z) z := by
-      intro n z _
-      have hd1 : HasDerivAt (fun w => (rescaledF θ Δ (n + α) : ℂ) * sincPi (Δ * w - n - α) ^ 2)
-          ((rescaledF θ Δ (n + α) : ℂ) * (2 * sincPi (Δ * z - n - α) * (deriv sincPi (Δ * z - n - α) * Δ))) z := by
-        have hp := (h_s_deriv n z).pow 2
-        simpa [pow_one, mul_assoc] using hp.const_mul (rescaledF θ Δ (n + α) : ℂ)
-      have hd2 : HasDerivAt (fun w => (rescaledFDeriv θ Δ (n + α) : ℂ) * (Δ * w - n - α) * sincPi (Δ * w - n - α) ^ 2)
-          ((rescaledFDeriv θ Δ (n + α) : ℂ) * ((Δ : ℂ) * sincPi (Δ * z - n - α) ^ 2 +
-            (Δ * z - n - α) * (2 * sincPi (Δ * z - n - α) * (deriv sincPi (Δ * z - n - α) * Δ)))) z := by
-        have hm := (h_u_deriv n z).mul ((h_s_deriv n z).pow 2)
-        have h_eq : (fun w => (rescaledFDeriv θ Δ (n + α) : ℂ) * (Δ * w - n - α) * sincPi (Δ * w - n - α) ^ 2) =
-            fun w => (rescaledFDeriv θ Δ (n + α) : ℂ) * ((Δ * w - n - α) * sincPi (Δ * w - n - α) ^ 2) := by
-          ext w; ring
-        rw [h_eq]
-        simpa [pow_one, mul_assoc] using hm.const_mul (rescaledFDeriv θ Δ (n + α) : ℂ)
-      exact hd1.add hd2
-    have h_u_sinc : ∀ u : ℂ, |u.im| ≤ R → ‖u * sincPi u‖ ≤ Real.exp (Real.pi * R) := by
-      intro u hu
-      by_cases h0 : u = 0
-      · subst h0; simp [sincPi]; exact Real.one_le_exp (by positivity)
-      · dsimp only [sincPi]; simp only [if_neg h0]
-        have h_eq : u * (Complex.sin (Real.pi * u) / (Real.pi * u)) = Complex.sin (Real.pi * u) / Real.pi := by
-          have hpi : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast Real.pi_ne_zero
-          field_simp [hpi, h0]
-        rw [h_eq, norm_div, Complex.norm_real, Real.norm_eq_abs, abs_of_pos Real.pi_pos]
-        have h_sin_bd : ‖Complex.sin (Real.pi * u)‖ ≤ Real.exp |(Real.pi * u).im| := by
-          have hsin_def : Complex.sin (Real.pi * u) = (Complex.exp (-(Real.pi * u) * Complex.I) - Complex.exp ((Real.pi * u) * Complex.I)) * Complex.I / 2 := by unfold Complex.sin; ring_nf
-          rw [hsin_def]
-          have h1 : ‖Complex.exp (-(Real.pi * u) * Complex.I)‖ ≤ Real.exp |(Real.pi * u).im| := by
-            rw [Complex.norm_exp]; exact Real.exp_le_exp.mpr (by simp [Complex.mul_re]; exact le_abs_self _)
-          have h2 : ‖Complex.exp ((Real.pi * u) * Complex.I)‖ ≤ Real.exp |(Real.pi * u).im| := by
-            rw [Complex.norm_exp]; exact Real.exp_le_exp.mpr (by simp [Complex.mul_re]; exact neg_le_abs _)
-          calc ‖(Complex.exp (-(Real.pi * u) * Complex.I) - Complex.exp ((Real.pi * u) * Complex.I)) * Complex.I / 2‖
-              = ‖Complex.exp (-(Real.pi * u) * Complex.I) - Complex.exp ((Real.pi * u) * Complex.I)‖ / 2 := by
-                rw [norm_div, norm_mul, Complex.norm_I, mul_one, Complex.norm_ofNat]
-            _ ≤ (‖Complex.exp (-(Real.pi * u) * Complex.I)‖ + ‖Complex.exp ((Real.pi * u) * Complex.I)‖) / 2 := by
-                gcongr; exact norm_sub_le _ _
-            _ ≤ (Real.exp |(Real.pi * u).im| + Real.exp |(Real.pi * u).im|) / 2 := by gcongr
-            _ = Real.exp |(Real.pi * u).im| := by ring
-        have him : |(Real.pi * u).im| ≤ Real.pi * R := by
-          simp [Complex.mul_im, abs_mul, abs_of_pos Real.pi_pos]
-          exact mul_le_mul_of_nonneg_left hu Real.pi_pos.le
-        calc ‖Complex.sin (Real.pi * u)‖ / Real.pi ≤ Real.exp (Real.pi * R) / 1 :=
-              div_le_div₀ (by positivity) (h_sin_bd.trans (Real.exp_le_exp.mpr him)) zero_lt_one (by linarith [Real.two_le_pi])
-          _ = Real.exp (Real.pi * R) := div_one _
-    let K_unif : ℝ := 2 * Real.exp (Real.pi * R + 2) * C_d * Δ + Δ * Real.exp (2 * Real.pi * R + 4) + 2 * Real.exp (Real.pi * R) * C_d * Δ
-    have h_t'_bd : ∀ n : ℤ, ∀ z ∈ Metric.ball z₀ 1,
-        ‖term' n z‖ ≤ K_unif * (|rescaledF θ Δ (n + α)| + |rescaledFDeriv θ Δ (n + α)|) := by
+    have h_unif : TendstoUniformlyOn (fun s : Finset ℤ => fun z : ℂ => ∑ n ∈ s, term n z)
+        (majorantEntire θ Δ α) Filter.atTop (Metric.ball z₀ 1) := by
+      refine tendstoUniformlyOn_tsum
+        ((ha_summ.add hb_summ).mul_right (Real.exp (2 * Real.pi * Δ * (‖z₀‖ + 1) + 4))) ?_
       intro n z hz
       have hz_norm : ‖z‖ ≤ ‖z₀‖ + 1 := by
         have := Metric.mem_ball.mp hz
         linarith [norm_sub_norm_le z z₀, dist_eq_norm z z₀]
-      have him : |(Δ * z - n - α).im| ≤ R := by
-        have h1 : (Δ * z - n - α).im = Δ * z.im := by simp [Complex.sub_im, Complex.mul_im]
-        rw [h1, abs_mul, abs_of_pos (by linarith : 0 < Δ)]
-        exact mul_le_mul_of_nonneg_left ((Complex.abs_im_le_norm z).trans hz_norm) (by linarith)
-      have hsb := sincPi_bound (Δ * z - n - α)
-      have hs1 : ‖sincPi (Δ * z - n - α)‖ ≤ Real.exp (Real.pi * R + 2) :=
-        hsb.1.trans (Real.exp_le_exp.mpr (by gcongr))
-      have hs2 : ‖sincPi (Δ * z - n - α) ^ 2‖ ≤ Real.exp (2 * Real.pi * R + 4) := by
-        rw [norm_pow]
-        calc ‖sincPi (Δ * z - n - α)‖ ^ 2 ≤ (Real.exp (Real.pi * R + 2)) ^ 2 := by gcongr
-          _ = Real.exp (2 * Real.pi * R + 4) := by rw [← Real.exp_nat_mul]; ring_nf
-      have hd_bd := h_sinc_d (Δ * z - n - α) him
-      have hus := h_u_sinc (Δ * z - n - α) him
-      dsimp only [term']
-      refine (norm_add_le _ _).trans ?_
-      rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, norm_mul, Complex.norm_real, Real.norm_eq_abs]
-      have h_p1 : ‖2 * sincPi (Δ * z - n - α) * (deriv sincPi (Δ * z - n - α) * Δ)‖ ≤ 2 * Real.exp (Real.pi * R + 2) * C_d * Δ := by
-        rw [norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith : 0 < Δ)]
-        gcongr
-      have h_p2 : ‖(Δ : ℂ) * sincPi (Δ * z - n - α) ^ 2 +
-          (Δ * z - n - α) * (2 * sincPi (Δ * z - n - α) * (deriv sincPi (Δ * z - n - α) * Δ))‖ ≤
-          Δ * Real.exp (2 * Real.pi * R + 4) + 2 * Real.exp (Real.pi * R) * C_d * Δ := by
-        refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
-        · rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith : 0 < Δ)]
-          gcongr
-        · have heq : (Δ * z - n - α) * (2 * sincPi (Δ * z - n - α) * (deriv sincPi (Δ * z - n - α) * Δ)) =
-              2 * ((Δ * z - n - α) * sincPi (Δ * z - n - α)) * (deriv sincPi (Δ * z - n - α) * Δ) := by ring
-          rw [heq, norm_mul, norm_mul, norm_mul, Complex.norm_ofNat, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith : 0 < Δ)]
-          gcongr
-      calc |rescaledF θ Δ (n + α)| * ‖2 * sincPi (Δ * z - n - α) * (deriv sincPi (Δ * z - n - α) * Δ)‖ +
-            |rescaledFDeriv θ Δ (n + α)| * ‖(Δ : ℂ) * sincPi (Δ * z - n - α) ^ 2 +
-              (Δ * z - n - α) * (2 * sincPi (Δ * z - n - α) * (deriv sincPi (Δ * z - n - α) * Δ))‖
-          ≤ |rescaledF θ Δ (n + α)| * K_unif + |rescaledFDeriv θ Δ (n + α)| * K_unif := by
-            gcongr
-            · dsimp only [K_unif]; linarith [show 0 ≤ Δ * Real.exp (2 * Real.pi * R + 4) + 2 * Real.exp (Real.pi * R) * C_d * Δ by positivity]
-            · dsimp only [K_unif]; linarith [show 0 ≤ 2 * Real.exp (Real.pi * R + 2) * C_d * Δ by positivity]
-        _ = K_unif * (|rescaledF θ Δ (n + α)| + |rescaledFDeriv θ Δ (n + α)|) := by ring
-    have hd_sum := hasDerivAt_tsum Metric.isOpen_ball (Metric.mem_ball_self zero_lt_one)
-      (fun z _ => h_summ_z z) h_hasD ((ha_summ.add hb_summ).mul_left K_unif) h_t'_bd
-    exact hd_sum.differentiableAt
+      refine (h_term_bd n z).trans ?_
+      gcongr
+      linarith
+    have h_term_diff : ∀ n : ℤ, Differentiable ℂ (term n) := by
+      intro n
+      have hs : Differentiable ℂ (fun w : ℂ => sincPi (Δ * w - n - α)) :=
+        differentiable_sincPi.comp (((differentiable_id.const_mul (Δ : ℂ)).sub_const _).sub_const _)
+      have h1 : Differentiable ℂ (fun w : ℂ => (rescaledF θ Δ (n + α) : ℂ) * sincPi (Δ * w - n - α) ^ 2) :=
+        (hs.pow 2).const_mul _
+      have h2 : Differentiable ℂ (fun w : ℂ => (rescaledFDeriv θ Δ (n + α) : ℂ) * (Δ * w - n - α) * sincPi (Δ * w - n - α) ^ 2) :=
+        ((((differentiable_id.const_mul (Δ : ℂ)).sub_const _).sub_const _).const_mul _).mul (hs.pow 2)
+      exact h1.add h2
+    have h_diff_on : DifferentiableOn ℂ (majorantEntire θ Δ α) (Metric.ball z₀ 1) :=
+      h_unif.tendstoLocallyUniformlyOn.differentiableOn
+        (Filter.Eventually.of_forall fun s =>
+          (Differentiable.fun_sum fun n _ => h_term_diff n).differentiableOn)
+        Metric.isOpen_ball
+    exact h_diff_on.differentiableAt (Metric.isOpen_ball.mem_nhds (Metric.mem_ball_self zero_lt_one))
   refine ⟨⟨h_diff, fun ε hε => ?_⟩, fun x => ?_⟩
   · refine ⟨(S_ab + 1) * Real.exp 4, by positivity, fun z => ?_⟩
     calc ‖majorantEntire θ Δ α z‖
