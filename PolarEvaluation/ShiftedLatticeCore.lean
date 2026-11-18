@@ -127,7 +127,7 @@ lemma cTheta_integrableOn {θ : ℝ} (hθ : |θ| < Real.pi / 2) :
       Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
   have hmeas : AEStronglyMeasurable (fun v : ℝ => cTheta θ v) (volume.restrict (Set.Ioi 0)) := by
     refine Continuous.aestronglyMeasurable ?_
-    refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => ?_)
+    refine continuous_const.div (Continuous.pow ((Complex.continuous_cos.comp (by fun_prop))) 2) (fun v => ?_)
     exact pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)
   refine (h_exp.const_mul (4 / Real.cos θ ^ 2)).mono' hmeas ?_
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
@@ -229,28 +229,28 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         intro t
         have hw : HasDerivAt (fun s : ℝ => (θ : ℂ) + Complex.I * Real.pi * s) (Complex.I * Real.pi) t := by
           simpa using ((hasDerivAt_id t).ofReal_comp.const_mul (Complex.I * Real.pi)).const_add (θ : ℂ)
-        exact (differentiableAt_const _).div (hw.differentiableAt.cos.pow 2) (pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
+        exact (differentiableAt_const _).div ((Complex.differentiableAt_cos.comp t hw.differentiableAt).pow 2) (pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
       have hc_re_diff : Differentiable ℝ (fun t : ℝ => (cTheta θ t).re) :=
         fun t => Complex.reCLM.differentiableAt.comp t (hc_diff t)
       have hf_cont : Continuous f := by
         dsimp only [f]
-        have hderiv_eq : deriv (fun s : ℝ => (cTheta θ s).re) = fun t => (deriv (fun s : ℝ => cTheta θ s) t).re := by
-          ext t; exact (Complex.reCLM.hasFDerivAt.comp t (hc_diff t).hasDerivAt.hasFDerivAt).deriv
+        have hderiv_eq : ∀ t : ℝ, deriv (fun s : ℝ => (cTheta θ s).re) t = (deriv (fun s : ℝ => cTheta θ s) t).re := fun t =>
+          (Complex.reCLM.hasFDerivAt.comp_hasDerivAt t (hc_diff t).hasDerivAt).deriv
         have hc_c1 : ContDiff ℝ 1 (fun t : ℝ => cTheta θ t) := by
-          refine ContDiff.div contDiff_const (ContDiff.pow (ContDiff.cos ?_) 2) (fun t => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
+          refine ContDiff.div contDiff_const (ContDiff.pow ((Complex.contDiff_cos.restrict_scalars ℝ).comp ?_) 2) (fun t => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
           exact contDiff_const.add (contDiff_const.mul Complex.ofRealCLM.contDiff)
         exact (hc_c1.continuous_deriv (by norm_num) |> fun h => (Complex.continuous_re.comp h).norm).congr fun t => by
-          rw [show (deriv (fun s : ℝ => (cTheta θ s).re) t) = (deriv (fun s : ℝ => cTheta θ s) t).re from
-            (Complex.reCLM.hasFDerivAt.comp t (hc_diff t).hasDerivAt.hasFDerivAt).deriv]
+          rw [hderiv_eq t]
       obtain ⟨v₀, _, hv₀⟩ := isCompact_Icc.exists_isMaxOn (⟨0, by norm_num, by norm_num⟩ : (Set.Icc (0 : ℝ) 1).Nonempty) hf_cont.continuousOn
       refine ⟨max 1 (f v₀), by positivity, fun v hv => (hv₀ hv).trans (le_max_right _ _)⟩
     obtain ⟨C_A, hC_A, hbd⟩ := hderiv_bd
     refine ⟨C_A, hC_A, fun v hv0 hv1 => ?_⟩
     have h0 : (cTheta θ 0).re = 1 / Real.cos θ := by
-      simp only [cTheta, mul_zero, add_zero, Complex.exp_neg, Complex.cos_ofReal_re]
+      simp only [cTheta, Complex.ofReal_zero, mul_zero, add_zero]
       rw [show Complex.cos (θ : ℂ) = (Real.cos θ : ℂ) from (Complex.ofReal_cos θ).symm,
-        show Complex.exp (-(Complex.I * (θ : ℂ))) = Complex.cos θ - Complex.I * Complex.sin θ by
-          rw [Complex.exp_neg, ← Complex.cos_sub_I_sin]; simp [Complex.cos_ofReal_re, Complex.sin_ofReal_re]]
+        show Complex.exp (-Complex.I * (θ : ℂ)) = (Real.cos θ : ℂ) - Complex.I * (Real.sin θ : ℂ) by
+          rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring, Complex.exp_mul_I]
+          simp [Complex.cos_neg, Complex.sin_neg]; ring]
       have hsq : (Real.cos θ : ℂ) ^ 2 ≠ 0 := by exact_mod_cast (sq_pos_of_pos hcos_pos).ne'
       rw [sub_div, Complex.sub_re]
       have hre1 : ((Real.cos θ : ℂ) / (Real.cos θ : ℂ) ^ 2).re = 1 / Real.cos θ := by
@@ -261,12 +261,20 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         simp
       rw [hre1, him1, sub_zero]
     rw [← h0]
+    have hdiff_on : ∀ t ∈ Set.Icc (0 : ℝ) v,
+        HasDerivWithinAt (fun s : ℝ => (cTheta θ s).re) (deriv (fun s : ℝ => (cTheta θ s).re) t) (Set.Icc 0 v) t := by
+      intro t _
+      have hc_diff : DifferentiableAt ℝ (fun s : ℝ => cTheta θ s) t := by
+        have hw : HasDerivAt (fun s : ℝ => (θ : ℂ) + Complex.I * Real.pi * s) (Complex.I * Real.pi) t := by
+          simpa using ((hasDerivAt_id t).ofReal_comp.const_mul (Complex.I * Real.pi)).const_add (θ : ℂ)
+        exact (differentiableAt_const _).div ((Complex.differentiableAt_cos.comp t hw.differentiableAt).pow 2) (pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
+      exact (Complex.reCLM.differentiableAt.comp t hc_diff).hasDerivAt.hasDerivWithinAt
     have hdiff_at : ∀ t ∈ Set.Icc (0 : ℝ) v, DifferentiableAt ℝ (fun s : ℝ => (cTheta θ s).re) t := by
       intro t _
       have hw : HasDerivAt (fun s : ℝ => (θ : ℂ) + Complex.I * Real.pi * s) (Complex.I * Real.pi) t := by
         simpa using ((hasDerivAt_id t).ofReal_comp.const_mul (Complex.I * Real.pi)).const_add (θ : ℂ)
       have hc_diff : DifferentiableAt ℝ (fun s : ℝ => cTheta θ s) t :=
-        (differentiableAt_const _).div (hw.differentiableAt.cos.pow 2) (pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
+        (differentiableAt_const _).div ((Complex.differentiableAt_cos.comp t hw.differentiableAt).pow 2) (pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
       exact Complex.reCLM.differentiableAt.comp t hc_diff
     have hmvt := (convex_Icc 0 v).norm_image_sub_le_of_norm_deriv_le
       hdiff_at (fun t ht => hbd t ⟨ht.1, ht.2.trans hv1⟩)
@@ -303,7 +311,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         hc_int.norm.mul_const _
       refine h_v.mono' (Continuous.aestronglyMeasurable (by
         refine (continuous_id.mul (Complex.continuous_re.comp ?_)).div (by fun_prop) (fun v => by positivity)
-        refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)))) ?_
+        refine continuous_const.div (Continuous.pow ((Complex.continuous_cos.comp (by fun_prop))) 2) (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)))) ?_
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
       rw [Real.norm_eq_abs, abs_div, abs_of_pos (by positivity : 0 < y ^ 2 + v ^ 2), abs_mul, abs_of_pos hv]
       have h2 : v / (y ^ 2 + v ^ 2) ≤ 1 / |y| := by
@@ -317,7 +325,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         hc_int.norm.mul_const _
       refine h_y.mono' (Continuous.aestronglyMeasurable (by
         refine (continuous_const.mul (Complex.continuous_im.comp ?_)).div (by fun_prop) (fun v => by positivity)
-        refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)))) ?_
+        refine continuous_const.div (Continuous.pow ((Complex.continuous_cos.comp (by fun_prop))) 2) (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)))) ?_
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
       rw [Real.norm_eq_abs, abs_div, abs_of_pos (by positivity : 0 < y ^ 2 + v ^ 2), abs_mul]
       have h3 : |y| / (y ^ 2 + v ^ 2) ≤ 1 / |y| := by
@@ -336,7 +344,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_int_abs : IntegrableOn (fun v : ℝ => C_B * (|y| / (y ^ 2 + v ^ 2))) (Set.Ioi 0) := by
         have hr : (1 / |y| : ℝ) ≠ 0 := by positivity
         have h1 := ((integrable_inv_one_add_mul_sq hr).integrableOn : IntegrableOn _ (Set.Ioi (0 : ℝ)) volume).const_mul C_B
-        refine h1.congr_fun (fun v _ => ?_) measurableSet_Ioi
+        refine IntegrableOn.congr_fun h1 (fun v _ => ?_) measurableSet_Ioi
         field_simp [hy0.ne']; rw [sq_abs]
       calc |∫ v in Set.Ioi (0 : ℝ), y * (cTheta θ v).im / (y ^ 2 + v ^ 2)|
           ≤ ∫ v in Set.Ioi (0 : ℝ), ‖y * (cTheta θ v).im / (y ^ 2 + v ^ 2)‖ := by rw [← Real.norm_eq_abs]; exact norm_integral_le_integral_norm _
@@ -348,7 +356,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
                 exact continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
               exact (h_int_abs).mono' hmeas_im (by
                 filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
-                rw [Real.norm_eq_abs, abs_div, abs_of_pos (by positivity : 0 < y ^ 2 + v ^ 2), abs_mul]
+                simp only [Real.norm_eq_abs, abs_abs, abs_div, abs_of_pos (by positivity : 0 < y ^ 2 + v ^ 2), abs_mul]
                 calc |y| * |(cTheta θ v).im| / (y ^ 2 + v ^ 2)
                     ≤ |y| * C_B / (y ^ 2 + v ^ 2) := by gcongr; exact hB_bd v hv.le
                   _ = C_B * (|y| / (y ^ 2 + v ^ 2)) := by ring)) h_int_abs measurableSet_Ioi fun v hv => ?_
@@ -359,7 +367,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_arctan_int : (∫ v in Set.Ioi (0 : ℝ), |y| / (y ^ 2 + v ^ 2)) = Real.pi / 2 := by
       have h_int_l : IntegrableOn (fun v : ℝ => |y| / (y ^ 2 + v ^ 2)) (Set.Ioi 0) := by
         have hr : (1 / |y| : ℝ) ≠ 0 := by positivity
-        refine ((integrable_inv_one_add_mul_sq hr).integrableOn : IntegrableOn _ (Set.Ioi (0 : ℝ)) volume).congr_fun (fun v _ => ?_) measurableSet_Ioi
+        refine IntegrableOn.congr_fun (((integrable_inv_one_add_mul_sq hr).const_mul (1 / |y|)).integrableOn : IntegrableOn _ (Set.Ioi (0 : ℝ)) volume) (fun v _ => ?_) measurableSet_Ioi
         field_simp [hy0.ne']; rw [sq_abs]
       have hderiv : ∀ v ∈ Set.Ici (0 : ℝ), HasDerivAt (fun t : ℝ => Real.arctan (t / |y|)) (|y| / (y ^ 2 + v ^ 2)) v := by
         intro v _
@@ -382,7 +390,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_v : IntegrableOn (fun v : ℝ => ‖cTheta θ v‖ * (1 / |y|)) (Set.Ioi 0) := hc_int.norm.mul_const _
       refine h_v.mono' (Continuous.aestronglyMeasurable (by
         refine (continuous_id.mul (Complex.continuous_re.comp ?_)).div (by fun_prop) (fun v => by positivity)
-        refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)))) ?_
+        refine continuous_const.div (Continuous.pow ((Complex.continuous_cos.comp (by fun_prop))) 2) (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)))) ?_
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
       rw [Real.norm_eq_abs, abs_div, abs_of_pos (by positivity : 0 < y ^ 2 + v ^ 2), abs_mul, abs_of_pos hv]
       have h2 : v / (y ^ 2 + v ^ 2) ≤ 1 / |y| := by
@@ -402,8 +410,8 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               exact continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))))) (by
               filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
               have hv1 : 1 < v := hv
-              rw [Real.norm_eq_abs, abs_div, abs_of_pos (by positivity : 0 < y ^ 2 + v ^ 2),
-                abs_mul, abs_of_pos (by linarith)]
+              simp only [Real.norm_eq_abs, abs_abs, abs_div, abs_of_pos (by positivity : 0 < y ^ 2 + v ^ 2),
+                abs_mul, abs_of_pos (by linarith : 0 < v)]
               have hle : v / (y ^ 2 + v ^ 2) ≤ 1 := by
                 rw [div_le_one (by positivity)]; nlinarith [sq_nonneg y]
               calc v * |(cTheta θ v).re| / (y ^ 2 + v ^ 2) = |(cTheta θ v).re| * (v / (y ^ 2 + v ^ 2)) := by ring
@@ -440,7 +448,7 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h1 : IntegrableOn (fun v : ℝ => v * (cTheta θ v).re / (y ^ 2 + v ^ 2)) (Set.Ioc 0 1) :=
       (Continuous.continuousOn (by
         refine (continuous_id.mul (Complex.continuous_re.comp ?_)).div (by fun_prop) (fun v => by positivity)
-        refine continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)))).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+        refine continuous_const.div (Continuous.pow ((Complex.continuous_cos.comp (by fun_prop))) 2) (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)))).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
     have h2 : IntegrableOn (fun v : ℝ => v * (1 / Real.cos θ) / (y ^ 2 + v ^ 2)) (Set.Ioc 0 1) :=
       (Continuous.continuousOn ((continuous_id.mul continuous_const).div (by fun_prop) (fun v => by positivity))).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
     rw [← integral_sub h1 h2]
@@ -516,10 +524,10 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_n : IntegrableOn (fun v : ℝ => ‖Complex.exp ((-2 * Real.pi : ℂ) * v)‖) (Set.Ioi 0) := h_c.norm
       refine h_n.congr_fun (fun v _ => ?_) measurableSet_Ioi
       have : (-2 * (Real.pi : ℂ) * ↑v : ℂ) = ((-2 * Real.pi * v : ℝ) : ℂ) := by push_cast; ring
-      rw [this, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+      rw [this, ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     have hmeas : AEStronglyMeasurable (fun v : ℝ => uTheta θ v) (volume.restrict (Set.Ioi 0)) := by
       refine Continuous.aestronglyMeasurable ?_
-      exact Continuous.div (by fun_prop) (continuous_const.mul (Complex.continuous_cos.comp (by fun_prop)))
+      exact Continuous.div (by fun_prop) (continuous_const.mul ((Complex.continuous_cos.comp (by fun_prop))))
         (fun v => mul_ne_zero (by exact_mod_cast Real.pi_ne_zero) (cos_ne_zero_of_abs_lt hθ))
     refine (h_exp.const_mul (2 / (Real.pi * Real.cos θ))).mono' hmeas ?_
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
@@ -551,10 +559,10 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_n : IntegrableOn (fun v : ℝ => ‖Complex.exp ((-Real.pi : ℂ) * v)‖) (Set.Ioi 0) := h_c.norm
       refine h_n.congr_fun (fun v _ => ?_) measurableSet_Ioi
       have : (-Real.pi * ↑v : ℂ) = ((-Real.pi * v : ℝ) : ℂ) := by push_cast; ring
-      rw [this, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+      rw [this, ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     have hmeas : AEStronglyMeasurable (fun v : ℝ => (v : ℂ) * cTheta θ v) (volume.restrict (Set.Ioi 0)) := by
       refine Continuous.aestronglyMeasurable ?_
-      exact Complex.continuous_ofReal.mul (continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2)
+      exact Complex.continuous_ofReal.mul (continuous_const.div (Continuous.pow ((Complex.continuous_cos.comp (by fun_prop))) 2)
         (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)))
     refine (h_exp.const_mul (4 / (Real.pi * Real.cos θ ^ 2))).mono' hmeas ?_
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
@@ -579,10 +587,10 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_n : IntegrableOn (fun v : ℝ => ‖Complex.exp ((-Real.pi : ℂ) * v)‖) (Set.Ioi 0) := h_c.norm
       refine h_n.congr_fun (fun v _ => ?_) measurableSet_Ioi
       have : (-Real.pi * ↑v : ℂ) = ((-Real.pi * v : ℝ) : ℂ) := by push_cast; ring
-      rw [this, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+      rw [this, ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     have hmeas : AEStronglyMeasurable (fun v : ℝ => v ^ 2 * ‖cTheta θ v‖) (volume.restrict (Set.Ioi 0)) := by
       refine Continuous.aestronglyMeasurable ?_
-      exact (continuous_pow 2).mul (Continuous.norm (continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2)
+      exact (continuous_pow 2).mul (Continuous.norm (continuous_const.div (Continuous.pow ((Complex.continuous_cos.comp (by fun_prop))) 2)
         (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))))
     refine (h_exp.const_mul (32 / (Real.pi ^ 2 * Real.cos θ ^ 2))).mono' hmeas ?_
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
@@ -593,7 +601,7 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       simp only [Finset.sum_range_succ, Finset.range_zero, Finset.sum_empty, zero_add,
         pow_zero, Nat.factorial_zero, Nat.cast_one, div_one, pow_one, Nat.factorial_one,
         Nat.factorial_two, Nat.cast_ofNat] at h_s
-      linarith [hv0.le, Real.pi_pos]
+      linarith [hv0.le, Real.pi_pos, (by positivity : 0 ≤ Real.pi * v / 2)]
     have h2 : v ^ 2 * Real.exp (-2 * Real.pi * v) ≤ (8 / Real.pi ^ 2) * Real.exp (-Real.pi * v) := by
       have hsq : v ^ 2 ≤ (8 / Real.pi ^ 2) * Real.exp (Real.pi * v / 2) := by
         rw [div_mul_eq_mul_div, le_div_iff₀ (sq_pos_of_pos Real.pi_pos)]
@@ -617,8 +625,8 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hd1 := (hasDerivAt_id v).ofReal_comp
       have hd2 := uTheta_deriv (v := v) hθ
       convert hd1.mul hd2 using 1
-      · ext t; simp; ring
-      · simp; ring
+      · ext t; simp
+      · simp; try ring
     have htend : Tendsto (fun t : ℝ => -(t : ℂ) * uTheta θ t) atTop (nhds 0) := by
       rw [tendsto_zero_iff_norm_tendsto_zero]
       have h_bnd : ∀ᶠ v : ℝ in atTop, ‖-(v : ℂ) * uTheta θ v‖ ≤ (2 / (Real.pi * Real.cos θ)) * v * Real.exp (-2 * Real.pi * v) := by
@@ -677,6 +685,7 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [Complex.add_re, Complex.one_re, show 2 * Complex.I * (θ : ℂ) - 2 * Real.pi * v =
           ((-2 * Real.pi * v : ℝ) : ℂ) + ((2 * θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
           Complex.exp_add, Complex.exp_mul_I, ← Complex.ofReal_exp, ← Complex.ofReal_cos, ← Complex.ofReal_sin]
+        rw [← Complex.ofReal_exp]
         simp [Complex.mul_re]
       rw [hre]
       have hcos2 : -1 < Real.cos (2 * θ) := by
@@ -703,7 +712,7 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         Complex.slitPlane_ne_zero (h_slit v hv)
       have hcos_eq : Complex.cos (θ + Complex.I * Real.pi * v) =
           (Complex.exp (-Complex.I * θ + Real.pi * v) * (1 + Complex.exp (2 * Complex.I * θ - 2 * Real.pi * v))) / 2 := by
-        rw [Complex.cos_apply]
+        unfold Complex.cos
         have he1 : Complex.exp (Complex.I * (θ + Complex.I * Real.pi * v)) =
             Complex.exp (-Complex.I * θ + Real.pi * v) * Complex.exp (2 * Complex.I * θ - 2 * Real.pi * v) := by
           rw [← Complex.exp_add]; congr 1; push_cast; ring_nf; simp [Complex.I_sq]; ring
@@ -715,15 +724,8 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       rw [hcos_eq]
       have he_ne : Complex.exp (-Complex.I * θ + Real.pi * v) ≠ 0 := Complex.exp_ne_zero _
       field_simp [Real.pi_ne_zero, hden_ne, he_ne]
-      rw [show Complex.exp (2 * Complex.I * θ - 2 * Real.pi * v) =
-        Complex.exp (-Complex.I * θ + Real.pi * v) * Complex.exp (2 * Complex.I * θ - 2 * Real.pi * v) *
-          Complex.exp (Complex.I * θ - Real.pi * v) by
-        rw [← Complex.exp_add, ← Complex.exp_add]; congr 1; ring]
-      have hexp_id : Complex.exp (-Complex.I * θ) * Complex.exp (2 * Complex.I * θ - 2 * Real.pi * v) *
-          Complex.exp (-Complex.I * θ + Real.pi * v) = (Real.exp (-Real.pi * v) : ℂ) := by
-        rw [← Complex.exp_add, ← Complex.exp_add, Complex.ofReal_exp]
-        congr 1; push_cast; ring
-      linear_combination -2 * Real.pi * hexp_id
+      rw [mul_assoc (Complex.exp (-Complex.I * θ)), ← Complex.exp_add, ← Complex.exp_add, Complex.ofReal_exp]
+      congr 2; push_cast; ring
     have htend : Tendsto W atTop (nhds 0) := by
       have h_lim_exp : Tendsto (fun v : ℝ => 1 + Complex.exp (2 * Complex.I * θ - 2 * Real.pi * v)) atTop (nhds 1) := by
         have h_zero : Tendsto (fun v : ℝ => Complex.exp (2 * Complex.I * θ - 2 * Real.pi * v)) atTop (nhds 0) := by
@@ -737,18 +739,20 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         simpa using tendsto_const_nhds.add h_zero
       have h_log : Tendsto (fun v : ℝ => Complex.log (1 + Complex.exp (2 * Complex.I * θ - 2 * Real.pi * v))) atTop (nhds 0) := by
         have hcont : ContinuousAt Complex.log 1 :=
-          Complex.continuousAt_clog (by simp : (1 : ℂ) ∈ Complex.slitPlane)
+          Complex.continuousAt_log (by simp : (1 : ℂ) ∈ Complex.slitPlane)
         have hcomp : Tendsto (Complex.log ∘ fun v : ℝ => 1 + Complex.exp (2 * Complex.I * θ - 2 * Real.pi * v)) atTop (nhds 0) := by
           simpa [Complex.log_one] using hcont.tendsto.comp h_lim_exp
         exact hcomp
-      simpa [W] using (tendsto_const_nhds (x := -(1 / (Real.pi : ℂ) ^ 2) * Complex.exp (-Complex.I * θ))).mul h_log
+      have h_mul := (tendsto_const_nhds (x := -(1 / (Real.pi : ℂ) ^ 2) * Complex.exp (-Complex.I * θ))).mul h_log
+      rw [mul_zero] at h_mul
+      exact h_mul.congr fun v => by dsimp only [W]; ring
     have hres := integral_Ioi_of_hasDerivAt_of_tendsto' hderiv h_u_int htend
     rw [hres, zero_sub]
-    simp [W]; ring_nf
+    dsimp only [W]; simp only [Complex.ofReal_zero, mul_zero, sub_zero]; ring
   have h_main_re : (∫ v in Set.Ioi (0 : ℝ), (v : ℂ) * cTheta θ v).re = 2 * envelopeC θ / Real.pi ^ 2 := by
     rw [h_ibp, h_u_eval]
     have h_sum_exp' : 1 + Complex.exp (2 * Complex.I * θ) = (2 * Real.cos θ : ℂ) * Complex.exp (Complex.I * θ) := by
-      rw [Complex.ofReal_mul, Complex.ofReal_ofNat, Complex.ofReal_cos, Complex.cos_apply]
+      push_cast; unfold Complex.cos
       have h1 : Complex.exp (Complex.I * θ) * Complex.exp (-Complex.I * θ) = 1 := by
         rw [← Complex.exp_add, add_neg_cancel, Complex.exp_zero]
       have h2 : Complex.exp (2 * Complex.I * θ) = Complex.exp (Complex.I * θ) * Complex.exp (Complex.I * θ) := by
@@ -768,15 +772,14 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       · have := abs_lt.mp hθ; simp; linarith [Real.pi_pos]
     rw [h_log_eq]
     have hexp_re_im : Complex.exp (-Complex.I * θ) = (Real.cos θ : ℂ) - Complex.I * (Real.sin θ : ℂ) := by
-      rw [show -Complex.I * (θ : ℂ) = -(Complex.I * θ) by ring, Complex.exp_neg, ← Complex.cos_sub_I_sin]
-      simp [Complex.cos_ofReal_re, Complex.sin_ofReal_re]
+      rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring, Complex.exp_mul_I]
+      simp [Complex.cos_neg, Complex.sin_neg]; ring
     rw [hexp_re_im]
     simp only [div_mul_eq_mul_div, Complex.div_ofReal_re, Complex.mul_re, Complex.sub_re,
       Complex.ofReal_re, Complex.mul_im, Complex.I_re, mul_zero, Complex.ofReal_im, Complex.I_im,
       mul_one, sub_zero, zero_add, Complex.add_re, Complex.add_im, Complex.sub_im,
       zero_sub, neg_mul, sub_neg_eq_add]
     unfold envelopeC
-    simp only [Complex.I_sq]
     ring
   set C_inf := max 1 (∫ v in Set.Ioi (0 : ℝ), v ^ 2 * ‖cTheta θ v‖)
   refine ⟨1, C_inf, le_rfl, by positivity, fun y hy => ?_⟩
@@ -790,16 +793,15 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       intro h; have := congr_arg Complex.re h; simp at this; exact hy_ne this
     have h2 : (y : ℂ) ≠ 0 := by exact_mod_cast hy_ne
     field_simp [h1, h2]
-    simp only [Complex.I_sq]
     ring
   have h_int_1 : IntegrableOn (fun v : ℝ => (cTheta θ v / (y : ℂ)).im) (Set.Ioi 0) :=
-    (hc_int.div_const (y : ℂ)).im
+    ((hc_int.const_mul ((1 : ℂ) / y)).congr_fun (fun v _ => by ring) measurableSet_Ioi).im
   have h_int_2 : IntegrableOn (fun v : ℝ => (Complex.I * ((v : ℂ) * cTheta θ v) / (y : ℂ) ^ 2).im) (Set.Ioi 0) :=
-    ((h_vc_int.const_mul Complex.I).div_const ((y : ℂ) ^ 2)).im
+    (((h_vc_int.const_mul (Complex.I / (y : ℂ) ^ 2))).congr_fun (fun v _ => by ring) measurableSet_Ioi).im
   have h_int_3 : IntegrableOn (fun v : ℝ => ((cTheta θ v * (v : ℂ) ^ 2) / ((y : ℂ) ^ 2 * ((y : ℂ) - Complex.I * v))).im) (Set.Ioi 0) := by
     refine (h_v2c_int.div_const (|y| ^ 3)).mono' (Continuous.aestronglyMeasurable (Complex.continuous_im.comp (by
       refine Continuous.div ?_ ?_ (fun v => ?_)
-      · exact (continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2)
+      · exact (continuous_const.div (Continuous.pow ((Complex.continuous_cos.comp (by fun_prop))) 2)
           (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))).mul (by fun_prop)
       · exact continuous_const.mul (continuous_const.sub (continuous_const.mul Complex.continuous_ofReal))
       · refine mul_ne_zero (pow_ne_zero 2 (by exact_mod_cast hy_ne)) ?_
@@ -807,7 +809,7 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
     rw [Real.norm_eq_abs]
     refine (Complex.abs_im_le_norm _).trans ?_
-    rw [norm_div, norm_mul, norm_mul, norm_pow, norm_pow, Complex.norm_real, Real.norm_eq_abs]
+    rw [norm_div, norm_mul, norm_mul, norm_pow, norm_pow, Complex.norm_real, Complex.norm_real, Real.norm_eq_abs]
     have hden : |y| ≤ ‖(y : ℂ) - Complex.I * v‖ := by
       have : |y| = ‖((y : ℂ) - Complex.I * v).re‖ := by simp [Real.norm_eq_abs]
       rw [this]; exact Complex.abs_re_le_norm _
@@ -820,7 +822,11 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       (∫ v in Set.Ioi (0 : ℝ), (Complex.I * ((v : ℂ) * cTheta θ v) / (y : ℂ) ^ 2).im) -
       (∫ v in Set.Ioi (0 : ℝ), ((cTheta θ v * (v : ℂ) ^ 2) / ((y : ℂ) ^ 2 * ((y : ℂ) - Complex.I * v))).im) := by
     unfold limitingJ
-    rw [← integral_add h_int_1 h_int_2, ← integral_sub (h_int_1.add h_int_2) h_int_3]
+    have hadd : (∫ v in Set.Ioi (0 : ℝ), (cTheta θ v / (y : ℂ)).im) +
+        (∫ v in Set.Ioi (0 : ℝ), (Complex.I * ((v : ℂ) * cTheta θ v) / (y : ℂ) ^ 2).im) =
+        ∫ v in Set.Ioi (0 : ℝ), ((cTheta θ v / (y : ℂ)).im +
+          (Complex.I * ((v : ℂ) * cTheta θ v) / (y : ℂ) ^ 2).im) := (integral_add h_int_1 h_int_2).symm
+    rw [hadd, ← integral_sub (h_int_1.add h_int_2) h_int_3]
     refine setIntegral_congr_fun measurableSet_Ioi fun v _ => ?_
     change (cTheta θ v / ((y : ℂ) - Complex.I * v)).im = _
     rw [h_id v, Complex.sub_im, Complex.add_im]
@@ -833,11 +839,15 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have : (fun v : ℝ => (Complex.I * ((v : ℂ) * cTheta θ v) / (y : ℂ) ^ 2).im) =
         fun v => ((v : ℂ) * cTheta θ v).re / y ^ 2 := by
       ext v
-      rw [← Complex.ofReal_pow, Complex.div_ofReal_im]
-      simp [Complex.mul_im]
+      rw [← Complex.ofReal_pow, Complex.div_ofReal_im, Complex.I_mul_im]
+      simp
     rw [this, integral_div, ← Complex.re_integral h_vc_int, h_main_re]
     ring
-  rw [hJ_split, hterm1, hterm2, zero_add, sub_eq_add_neg, add_sub_cancel_left, abs_neg]
+  have hcancel : (2 * envelopeC θ) / (Real.pi ^ 2 * y ^ 2) -
+      (∫ v in Set.Ioi (0 : ℝ), ((cTheta θ v * (v : ℂ) ^ 2) / ((y : ℂ) ^ 2 * ((y : ℂ) - Complex.I * v))).im) -
+      (2 * envelopeC θ) / (Real.pi ^ 2 * y ^ 2) =
+      -(∫ v in Set.Ioi (0 : ℝ), ((cTheta θ v * (v : ℂ) ^ 2) / ((y : ℂ) ^ 2 * ((y : ℂ) - Complex.I * v))).im) := by ring
+  rw [hJ_split, hterm1, hterm2, zero_add, hcancel, abs_neg]
   calc |∫ v in Set.Ioi (0 : ℝ), ((cTheta θ v * (v : ℂ) ^ 2) / ((y : ℂ) ^ 2 * ((y : ℂ) - Complex.I * v))).im|
       ≤ ∫ v in Set.Ioi (0 : ℝ), ‖((cTheta θ v * (v : ℂ) ^ 2) / ((y : ℂ) ^ 2 * ((y : ℂ) - Complex.I * v))).im‖ :=
         by rw [← Real.norm_eq_abs]; exact norm_integral_le_integral_norm _
@@ -845,7 +855,7 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         refine setIntegral_mono_on h_int_3.norm (h_v2c_int.div_const (|y| ^ 3)) measurableSet_Ioi fun v _ => ?_
         rw [Real.norm_eq_abs]
         refine (Complex.abs_im_le_norm _).trans ?_
-        rw [norm_div, norm_mul, norm_mul, norm_pow, norm_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs]
+        rw [norm_div, norm_mul, norm_mul, norm_pow, norm_pow, Complex.norm_real, Complex.norm_real, Real.norm_eq_abs, sq_abs]
         have hden : |y| ≤ ‖(y : ℂ) - Complex.I * v‖ := by
           have : |y| = ‖((y : ℂ) - Complex.I * v).re‖ := by simp [Real.norm_eq_abs]
           rw [this]; exact Complex.abs_re_le_norm _
@@ -854,5 +864,6 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           _ = v ^ 2 * ‖cTheta θ v‖ / |y| ^ 3 := by ring
     _ = (∫ v in Set.Ioi (0 : ℝ), v ^ 2 * ‖cTheta θ v‖) / |y| ^ 3 := integral_div _ _
     _ ≤ C_inf / |y| ^ 3 := by gcongr; exact le_max_right _ _
+
 
 end PolarEvaluation
