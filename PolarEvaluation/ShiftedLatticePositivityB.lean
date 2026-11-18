@@ -49,7 +49,7 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
       have h4lt : 1 < Real.exp (Real.pi * ω) ^ 4 := one_lt_pow₀ h1lt (by norm_num)
       linarith
     have h_ne_sum : Real.exp (Real.pi * ω) + (Real.exp (Real.pi * ω))⁻¹ ≠ 0 := by positivity
-    have h_ne4'' : Real.exp (Real.pi * ω) ^ 4 - 1 ≠ 0 := by linarith
+    have h_ne4'' : Real.exp (Real.pi * ω) ^ 4 - 1 ≠ 0 := by intro h; apply h_ne4'; linarith
     field_simp [hu.ne', h_ne4, h_ne4', h_ne4'', h_ne_sum]
     ring
   have h_int_exp_diff : ∀ (a b x' : ℝ), 0 < a → a < b →
