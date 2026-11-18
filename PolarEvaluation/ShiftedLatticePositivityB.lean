@@ -152,7 +152,7 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
             Real.exp (-(((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω))) : ℂ) =
             ((1 / (((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') -
               1 / (((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') : ℝ) : ℂ) := by
-          rw [← integral_ofReal] at h_c; push_cast at h_c ⊢; exact h_c
+          rw [show ((∫ ω : ℝ, (Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) / (1 / 4 + (p - ω) ^ 2) : ℝ) : ℂ) = ∫ ω : ℝ, (((Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) / (1 / 4 + (p - ω) ^ 2) : ℝ) : ℂ) from (integral_ofReal).symm] at h_c; push_cast at h_c ⊢; exact h_c
         rw [MeasureTheory.integral_const_mul, Complex.ofReal_injective h_c']
       have hf_int : IntegrableOn (f k) (Set.Ioi 0) := by
         refine h_int_norm.mono' (hf_meas k) ?_
@@ -253,7 +253,7 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
       _ = 2 * Real.exp (-(Real.pi - 2 * |θ|) * ω) := by
           rw [show -(Real.pi - 2 * |θ|) * ω = 2 * |θ| * ω - Real.pi * ω by ring, Real.exp_sub]; ring
   have h_int_neg_Ioi : IntegrableOn (fun ω : ℝ => G (-ω)) (Set.Ioi 0) := by
-    refine (h_exp_p.const_mul 2).mono' (Continuous.aestronglyMeasurable (Continuous.mul (Complex.continuous_ofReal.comp (Continuous.div (by fun_prop) (by fun_prop) (fun ω => (Real.cosh_pos _).ne'))) (by fun_prop))) ?_
+    refine (h_exp_p.const_mul 2).mono' (Continuous.aestronglyMeasurable (Continuous.mul (Complex.continuous_ofReal.comp (Continuous.div (Real.continuous_exp.comp (by fun_prop)) (Real.continuous_cosh.comp (by fun_prop)) (fun ω => (Real.cosh_pos _).ne'))) (by fun_prop))) ?_
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with ω (hω : 0 < ω)
     dsimp only [G]
     have hexp_n : ‖Complex.exp (-Complex.I * (-ω : ℝ) * x)‖ = 1 := by
@@ -292,11 +292,12 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
       have h_pre : (Homeomorph.neg ℝ) ⁻¹' Set.Iio 0 = Set.Ioi 0 := by
         ext ω; simp [Set.mem_Iio, Set.mem_Ioi]
       have h_eq := (Measure.measurePreserving_neg volume).setIntegral_preimage_emb h_emb G (Set.Iio 0)
+      change ∫ x in (Homeomorph.neg ℝ) ⁻¹' Set.Iio 0, G (-x) = ∫ y in Set.Iio 0, G y at h_eq
       rw [h_pre] at h_eq
       exact h_eq.symm
     rw [h_univ, h_Iic_Iio, h_Iio_Ioi, add_comm]
   have hG_neg_eq : (fun ω : ℝ => G (-ω)) = fun ω : ℝ =>
-      (Real.exp (-2 * (-θ) * ω) / Real.cosh (Real.pi * ω)) * Complex.exp (-Complex.I * ω * (-x)) := by
+      (Real.exp (-2 * (-θ) * ω) / Real.cosh (Real.pi * ω)) * Complex.exp (-Complex.I * ω * ((-x : ℝ) : ℂ)) := by
     ext ω; dsimp only [G]; rw [mul_neg (Real.pi), Real.cosh_neg]; push_cast; ring_nf
   have h_main : (∫ ω : ℝ, G ω) =
       ∑' k : ℕ,
@@ -396,7 +397,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
       have h_re : (-((y : ℂ) - Complex.I * v)).re < 0 := by simp [hy]
       rw [MeasureTheory.integral_const_mul, integral_exp_mul_complex_Ioi h_re 0]
       simp only [Complex.ofReal_zero, mul_zero, Complex.exp_zero]
-      rw [div_eq_mul_inv, show (-((y : ℂ) - Complex.I * v)) = -((y : ℂ) - Complex.I * v) by rfl, inv_neg]; ring
+      rw [neg_div_neg_eq, one_div]; ring
     have h_prod_int' : Integrable (fun p : ℝ × ℝ =>
         cTheta θ p.1 * Complex.exp (-((y : ℂ) - Complex.I * p.1) * p.2))
         ((volume.restrict (Set.Ioi 0)).prod (volume.restrict (Set.Ioi 0))) := by
@@ -404,12 +405,14 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi 0) :=
           integrableOn_exp_mul_complex_Ioi (by simp; positivity) 0
         refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+        dsimp only
         rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
           ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       have h_e2 : IntegrableOn (fun s : ℝ => Real.exp (-y * s)) (Set.Ioi 0) := by
         have hc : IntegrableOn (fun s : ℝ => Complex.exp ((-y : ℂ) * s)) (Set.Ioi 0) :=
           integrableOn_exp_mul_complex_Ioi (by simp [hy]) 0
         refine hc.norm.congr (Eventually.of_forall fun s => ?_)
+        dsimp only
         rw [show ((-y : ℂ) * s) = ((-y * s : ℝ) : ℂ) by push_cast; ring,
           ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       have h_prod_r := (h_e1.const_mul (4 / Real.cos θ ^ 2)).mul_prod h_e2
@@ -423,11 +426,11 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
       refine h_prod_r.mono' h_meas ?_
       rw [MeasureTheory.Measure.prod_restrict]
       filter_upwards [ae_restrict_mem (measurableSet_Ioi.prod measurableSet_Ioi)] with p hp
-      rw [Real.norm_eq_abs, abs_of_nonneg (by positivity), norm_mul, Complex.norm_exp]
+      rw [norm_mul, Complex.norm_exp]
       have h_re_exp : (-((y : ℂ) - Complex.I * p.1) * p.2).re = -y * p.2 := by simp; ring
       rw [h_re_exp]
       exact mul_le_mul_of_nonneg_right (cTheta_norm_le hθ hp.1.le) (Real.exp_pos _).le
-    have h_swap' := MeasureTheory.integral_integral_swap (f := fun v s => cTheta θ v * Complex.exp (-((y : ℂ) - Complex.I * v) * s)) h_prod_int'
+    have h_swap' := MeasureTheory.integral_integral_swap (h_prod_int' : Integrable (Function.uncurry (fun v s => cTheta θ v * Complex.exp (-((y : ℂ) - Complex.I * v) * s))) _)
     have h_int_v : IntegrableOn (fun v : ℝ => cTheta θ v / ((y : ℂ) - Complex.I * v)) (Set.Ioi 0) := by
       refine (cTheta_integrableOn hθ).norm.const_mul (1 / y) |>.mono'
         (Continuous.aestronglyMeasurable ?_) ?_
@@ -507,6 +510,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
           have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi 0) :=
             integrableOn_exp_mul_complex_Ioi (by simp; positivity) 0
           refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+          dsimp only
           rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
             ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
         refine (h_exp.const_mul (2 / (Real.pi * Real.cos θ))).mono' (Continuous.aestronglyMeasurable ?_) ?_
@@ -586,10 +590,8 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
       dsimp only [Ψ]
       rw [h_ibp, Complex.add_im]
       have hu0 : (uTheta θ 0).im = 0 := by
-        dsimp only [uTheta]
-        rw [Complex.ofReal_zero, mul_zero, add_zero, Real.exp_zero, Complex.ofReal_one,
-          ← Complex.ofReal_cos, show (Real.pi : ℂ) * (Real.cos θ : ℂ) = ((Real.pi * Real.cos θ : ℝ) : ℂ) by push_cast; ring,
-          ← Complex.ofReal_div, Complex.ofReal_im]
+        simp only [uTheta, Complex.ofReal_zero, mul_zero, neg_zero, add_zero, Real.exp_zero, Complex.ofReal_one,
+          ← Complex.ofReal_cos, ← Complex.ofReal_mul, ← Complex.ofReal_div, Complex.ofReal_im]
       rw [hu0, zero_add]
       simp [Complex.mul_im]
     let p : ℝ := s / (2 * Real.pi)
@@ -605,14 +607,14 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
             fun x : ℝ => Complex.exp (-(1 / 2 - Complex.I * a) * x) := by
           ext x; rw [Complex.ofReal_exp, ← Complex.exp_add]; congr 1; push_cast; ring
         rw [h_eq]
-        refine (integral_exp_mul_complex_Ioi (by simp; norm_num) 0).trans ?_
+        refine (integral_exp_mul_complex_Ioi (by simp) 0).trans ?_
         simp only [Complex.ofReal_zero, mul_zero, Complex.exp_zero]
         rw [div_eq_mul_inv, show (-(1 / 2 - Complex.I * a)) = -(1 / 2 - Complex.I * a) by rfl, inv_neg]; ring
       let F : ℝ → ℂ := fun x => (Real.exp (-|x| / 2) : ℂ) * Complex.exp (Complex.I * (p - ω) * x)
       have hF_Ioi : IntegrableOn F (Set.Ioi 0) := by
         have h_eq : Set.EqOn F (fun x : ℝ => Complex.exp (-(1 / 2 - Complex.I * (p - ω)) * x)) (Set.Ioi 0) := by
           intro x hx; dsimp only [F]; rw [abs_of_pos hx, Complex.ofReal_exp, ← Complex.exp_add]; congr 1; push_cast; ring
-        exact (integrableOn_exp_mul_complex_Ioi (by simp; norm_num) 0).congr_fun (fun x hx => (h_eq hx).symm) measurableSet_Ioi
+        exact (integrableOn_exp_mul_complex_Ioi (by simp) 0).congr_fun (fun x hx => (h_eq hx).symm) measurableSet_Ioi
       have hF_Iio : IntegrableOn F (Set.Iio 0) := by
         have h_emb := (Homeomorph.neg ℝ).measurableEmbedding
         have h_pre : (Homeomorph.neg ℝ) ⁻¹' Set.Iio 0 = Set.Ioi 0 := by ext x; simp
@@ -621,7 +623,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
         apply h1.mp
         have h_eq : Set.EqOn (fun x => F (-x)) (fun x : ℝ => Complex.exp (-(1 / 2 + Complex.I * (p - ω)) * x)) (Set.Ioi 0) := by
           intro x hx; dsimp only [F]; rw [abs_neg, abs_of_pos hx, Complex.ofReal_exp, ← Complex.exp_add]; congr 1; push_cast; ring
-        exact (integrableOn_exp_mul_complex_Ioi (by simp; norm_num) 0).congr_fun (fun x hx => (h_eq hx).symm) measurableSet_Ioi
+        exact (integrableOn_exp_mul_complex_Ioi (by simp) 0).congr_fun (fun x hx => (h_eq hx).symm) measurableSet_Ioi
       have hF_Iic : IntegrableOn F (Set.Iic 0) := hF_Iio.congr_set_ae Iio_ae_eq_Iic.symm
       have h_split : (∫ x : ℝ, F x) = (∫ x in Set.Ioi (0 : ℝ), F x) + (∫ x in Set.Ioi (0 : ℝ), F (-x)) := by
         have h_univ : (∫ x : ℝ, F x) = (∫ x in Set.Iic (0 : ℝ), F x) + (∫ x in Set.Ioi (0 : ℝ), F x) := by
@@ -643,15 +645,20 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
         have h_eq : Set.EqOn (fun x => F (-x)) (fun x : ℝ => (Real.exp (-x / 2) : ℂ) * Complex.exp (Complex.I * (-(p - ω)) * x)) (Set.Ioi 0) := by
           intro x hx; dsimp only [F]; rw [abs_neg, abs_of_pos hx]; push_cast; ring_nf
         rw [MeasureTheory.setIntegral_congr_fun measurableSet_Ioi h_eq]
-        simpa [Complex.ofReal_neg, Complex.ofReal_sub] using h_half (-(p - ω))
+        rw [h_half (-(p - ω))]; push_cast; ring
       rw [h_split, h1, h2]
       have hne1 : (1 / 2 : ℂ) - Complex.I * (p - ω) ≠ 0 := by
         intro h0; have hre := congr_arg Complex.re h0; simp at hre
       have hne2 : (1 / 2 : ℂ) + Complex.I * (p - ω) ≠ 0 := by
         intro h0; have hre := congr_arg Complex.re h0; simp at hre
-      have hne0 : (1 / 4 + (p - ω) ^ 2 : ℂ) ≠ 0 := by exact_mod_cast (by positivity : (0 : ℝ) < 1 / 4 + (p - ω) ^ 2).ne'
-      field_simp [hne0, hne1, hne2]
-      push_cast; ring_nf; rw [Complex.I_sq]; ring
+      rw [one_div, one_div, one_div]
+      have h_alg : (1 / 4 + ((p : ℂ) - ω) ^ 2)⁻¹ = (1 / 2 - Complex.I * (p - ω))⁻¹ + (1 / 2 + Complex.I * (p - ω))⁻¹ := by
+        rw [inv_add_inv hne1 hne2]
+        have h1 : (1 / 2 - Complex.I * (p - ω)) + (1 / 2 + Complex.I * (p - ω)) = 1 := by ring
+        have h2 : (1 / 2 - Complex.I * (p - ω)) * (1 / 2 + Complex.I * (p - ω)) = 1 / 4 + ((p : ℂ) - ω) ^ 2 := by
+          linear_combination -((p : ℂ) - ω) ^ 2 * Complex.I_sq
+        rw [h1, h2, one_div]
+      push_cast; exact h_alg
     have h_fub_2d : Integrable (fun q : ℝ × ℝ =>
         ((Real.exp (-2 * θ * q.1) / Real.cosh (Real.pi * q.1) : ℝ) : ℂ) *
         ((Real.exp (-|q.2| / 2) : ℝ) : ℂ) * Complex.exp (Complex.I * (p - q.1) * q.2)) := by
@@ -670,7 +677,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
           have hch : Real.exp (Real.pi * ω) / 2 ≤ Real.cosh (Real.pi * ω) := by
             rw [Real.cosh_eq]; linarith [Real.exp_pos (-(Real.pi * ω))]
           have h1 : Real.exp (-2 * θ * ω) ≤ Real.exp (2 * |θ| * ω) := by
-            gcongr; exact mul_le_mul_of_nonneg_right (by linarith [neg_le_abs θ]) hω.le
+            exact Real.exp_le_exp.mpr (by rw [show -2 * θ * ω = 2 * (-θ) * ω by ring]; exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (neg_le_abs θ) zero_le_two) hω.le)
           calc Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)
               ≤ Real.exp (2 * |θ| * ω) / (Real.exp (Real.pi * ω) / 2) := by gcongr; exact div_pos (Real.exp_pos _) two_pos
             _ = 2 * Real.exp (-(Real.pi - 2 * |θ|) * ω) := by
@@ -695,7 +702,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
           have hch : Real.exp (Real.pi * ω) / 2 ≤ Real.cosh (Real.pi * ω) := by
             rw [Real.cosh_eq]; linarith [Real.exp_pos (-(Real.pi * ω))]
           have h2 : Real.exp (-2 * θ * (-ω)) ≤ Real.exp (2 * |θ| * ω) := by
-            gcongr; exact mul_le_mul_of_nonneg_right (by linarith [le_abs_self θ]) hω.le
+            exact Real.exp_le_exp.mpr (by rw [show -2 * θ * (-ω) = 2 * θ * ω by ring]; exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left (le_abs_self θ) zero_le_two) hω.le)
           calc Real.exp (-2 * θ * (-ω)) / Real.cosh (Real.pi * ω)
               ≤ Real.exp (2 * |θ| * ω) / (Real.exp (Real.pi * ω) / 2) := by gcongr; exact div_pos (Real.exp_pos _) two_pos
             _ = 2 * Real.exp (-(Real.pi - 2 * |θ|) * ω) := by
@@ -749,11 +756,15 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
     have hH_int : Integrable H := h_fub_2d.integral_prod_right.congr hH_ae
     have h_lhs_eq : ((∫ ω : ℝ, (Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) / (1 / 4 + (p - ω) ^ 2) : ℝ) : ℂ) =
         ∫ x : ℝ, H x := by
-      rw [show ((∫ ω : ℝ, (Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) / (1 / 4 + (p - ω) ^ 2) : ℝ) : ℂ) = ∫ ω : ℝ, (((Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) / (1 / 4 + (p - ω) ^ 2) : ℝ) : ℂ) from (integral_ofReal).symm]
+      rw [← integral_ofReal]
       have h1 : (∫ ω : ℝ, ((Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) / (1 / 4 + (p - ω) ^ 2) : ℝ) : ℂ) =
           ∫ ω : ℝ, ∫ x : ℝ, ((Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω) : ℝ) : ℂ) *
             ((Real.exp (-|x| / 2) : ℝ) : ℂ) * Complex.exp (Complex.I * (p - ω) * x) := by
-        congr 1; ext ω; rw [← h_cauchy_eq ω, ← MeasureTheory.integral_const_mul]; push_cast; ring
+        congr 1; ext ω
+        rw [show ((Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) / (1 / 4 + (p - ω) ^ 2) : ℝ) =
+            (Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) * (1 / (1 / 4 + (p - ω) ^ 2)) by ring]
+        push_cast; rw [h_cauchy_eq ω, ← MeasureTheory.integral_const_mul]
+        congr 1; ext x; ring
       rw [h1, h_swap]
       exact MeasureTheory.integral_congr_ae hH_ae
     have hH_split : (∫ x : ℝ, H x) = (∫ x in Set.Ioi (0 : ℝ), H x) + (∫ x in Set.Ioi (0 : ℝ), H (-x)) := by
@@ -772,8 +783,8 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
       intro x; dsimp only [H]
       rw [map_div₀, map_mul, Complex.conj_ofReal, abs_neg, ← Complex.exp_conj, ← Complex.cos_conj]
       congr 2
-      · simp [map_mul, Complex.conj_I, map_ofNat]; ring
-      · simp [map_add, map_div₀, map_mul, Complex.conj_I, map_ofNat]; ring
+      · simp [map_mul, Complex.conj_I, map_ofNat]
+      · simp [map_add, map_div₀, map_mul, Complex.conj_I, map_ofNat]
     have h_scale : (∫ x in Set.Ioi (0 : ℝ), H x) =
         2 * Real.pi ^ 2 * (∫ v in Set.Ioi (0 : ℝ), uTheta θ v * Complex.exp (Complex.I * s * v)) := by
       have h_sub : (∫ x in Set.Ioi (0 : ℝ), H x) =
@@ -794,7 +805,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
       have h3 : Complex.I * ((2 * Real.pi * v : ℝ) : ℂ) / 2 = Complex.I * Real.pi * v := by
         push_cast; ring
       rw [h1, h2, h3]
-      push_cast; field_simp [Real.pi_ne_zero]; ring
+      push_cast; field_simp [Real.pi_ne_zero]
     have h_re_id : (∫ ω : ℝ, (Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) / (1 / 4 + (p - ω) ^ 2)) =
         4 * Real.pi ^ 2 * (∫ v in Set.Ioi (0 : ℝ), uTheta θ v * Complex.exp (Complex.I * s * v)).re := by
       have h_c : ((∫ ω : ℝ, (Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) / (1 / 4 + (p - ω) ^ 2) : ℝ) : ℂ) =
@@ -802,7 +813,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
         rw [h_lhs_eq, hH_split]
         congr 1
         simp_rw [hH_conj]
-        exact (Complex.conjCLE.integral_comp_comm hH_int.integrableOn).symm
+        exact (Complex.conjCLE.toContinuousLinearMap.integral_comp_comm hH_int.integrableOn).symm
       have h_re := congr_arg Complex.re h_c
       simp only [Complex.ofReal_re, Complex.add_re, Complex.conj_re] at h_re
       rw [h_re, h_scale]
@@ -818,7 +829,12 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
           have h_bd := h_fub_2d.integral_prod_left
           refine h_bd.congr (Eventually.of_forall fun ω => ?_)
           dsimp only
-          rw [← h_cauchy_eq ω, ← MeasureTheory.integral_const_mul]; push_cast; ring
+          have h_eq : (fun y : ℝ => ((Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω) : ℝ) : ℂ) *
+              ((Real.exp (-|y| / 2) : ℝ) : ℂ) * Complex.exp (Complex.I * (p - ω) * y)) =
+              fun y : ℝ => ((Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω) : ℝ) : ℂ) *
+                (((Real.exp (-|y| / 2) : ℝ) : ℂ) * Complex.exp (Complex.I * (p - ω) * y)) := by ext y; ring
+          rw [h_eq, MeasureTheory.integral_const_mul, ← h_cauchy_eq ω]
+          push_cast; ring
         have h_r := Complex.reCLM.integrable_comp h_c_int
         refine h_r.congr (Eventually.of_forall fun ω => ?_)
         dsimp only [Complex.reCLM_apply, q_fn]
@@ -872,7 +888,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
             ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
         exact h_exp.const_mul _
       · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
-        exact (Continuous.mul (continuous_const : Continuous (fun _ : ℝ => cTheta θ v)) (Complex.continuous_exp.comp (by fun_prop))).continuousAt
+        exact (Continuous.mul (continuous_const : Continuous (fun _ : ℝ => cTheta θ v)) (Complex.continuous_exp.comp ((continuous_const.mul Complex.continuous_ofReal).mul continuous_const))).continuousAt
     exact Complex.continuous_im.comp h_unif
   have h_lap_int : IntegrableOn (fun s : ℝ => Real.exp (-s * y) * Ψ s) (Set.Ioi 0) := by
     have h_bd : ∀ s : ℝ, |Ψ s| ≤ ∫ v in Set.Ioi (0 : ℝ), ‖cTheta θ v‖ := by
