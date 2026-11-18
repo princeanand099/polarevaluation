@@ -1205,9 +1205,10 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_e : IntegrableOn (fun v : ℝ => (2 * Real.pi / Real.cos θ) * Real.exp (-2 * Real.pi * v)) (Set.Ioi 0) := by
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi 0) :=
           integrableOn_exp_mul_complex_Ioi (by simp; positivity) 0
-        refine (hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi).const_mul _
+        refine (hc.norm.congr (Eventually.of_forall fun v => ?_)).const_mul _
+        dsimp only
         rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-          Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+          ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       refine h_e.mono' ?_ ?_
       · refine (Complex.continuous_im.comp (continuous_const.mul (continuous_const.mul (Continuous.div (by fun_prop)
           (Complex.continuous_cos.comp (by fun_prop)) fun v => cos_ne_zero_of_abs_lt hθ)))).neg.aestronglyMeasurable
@@ -1313,9 +1314,10 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi 0) :=
         integrableOn_exp_mul_complex_Ioi (by simp; positivity) 0
       have hr : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi 0) := by
-        refine hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi
+        refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+        dsimp only
         rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-          Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+          ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       exact hr.const_mul _
     have h_mono1 : ∫ v in Set.Ioc 0 Δ, ‖(Complex.exp (-Complex.I * θ) * cot_fn v).im -
           (Complex.exp (-Complex.I * θ) * cot_star v).im‖ ≤
@@ -1339,9 +1341,10 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_int : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi 0) := by
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi 0) :=
           integrableOn_exp_mul_complex_Ioi (by simp; positivity) 0
-        refine hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi
+        refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+        dsimp only
         rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-          Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+          ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       have h_d : ∀ v ∈ Set.Ioi (0 : ℝ), HasDerivAt (fun t : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * t))
           (Real.exp (-2 * Real.pi * v)) v := by
         intro v _
@@ -1356,9 +1359,10 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_e : IntegrableOn (fun v : ℝ => (2 * Real.pi / Real.cos θ) * Real.exp (-2 * Real.pi * v)) (Set.Ioi 0) := by
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi 0) :=
           integrableOn_exp_mul_complex_Ioi (by simp; positivity) 0
-        refine (hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi).const_mul _
+        refine (hc.norm.congr (Eventually.of_forall fun v => ?_)).const_mul _
+        dsimp only
         rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-          Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+          ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       refine h_e.mono' ?_ ?_
       · refine (Complex.continuous_im.comp (continuous_const.mul (continuous_const.mul (Continuous.div (by fun_prop)
           (Complex.continuous_cos.comp (by fun_prop)) fun v => cos_ne_zero_of_abs_lt hθ)))).neg.aestronglyMeasurable
@@ -1381,9 +1385,10 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_e_int : IntegrableOn (fun v : ℝ => (2 * Real.pi / Real.cos θ) * Real.exp (-2 * Real.pi * v)) (Set.Ioi Δ) := by
       have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi Δ) :=
         integrableOn_exp_mul_complex_Ioi (by simp; positivity) Δ
-      refine (hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi).const_mul _
+      refine (hc.norm.congr (Eventually.of_forall fun v => ?_)).const_mul _
+      dsimp only
       rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-        Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+        ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     have h_mono : ∫ v in Set.Ioi Δ, ‖-(Complex.exp (-Complex.I * θ) * rem_fn v).im‖ ≤
         ∫ v in Set.Ioi Δ, (2 * Real.pi / Real.cos θ) * Real.exp (-2 * Real.pi * v) := by
       refine setIntegral_mono_on (h_int_r.mono_set (Set.Ioi_subset_Ioi (by linarith))).norm h_e_int measurableSet_Ioi fun v hv => ?_
@@ -1399,9 +1404,10 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_int : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi Δ) := by
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi Δ) :=
           integrableOn_exp_mul_complex_Ioi (by simp; positivity) Δ
-        refine hc.norm.congr_fun (fun v _ => ?_) measurableSet_Ioi
+        refine hc.norm.congr (Eventually.of_forall fun v => ?_)
+        dsimp only
         rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
-          Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _), Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
+          ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
       have h_d : ∀ v ∈ Set.Ioi Δ, HasDerivAt (fun t : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * t))
           (Real.exp (-2 * Real.pi * v)) v := by
         intro v _
