@@ -49,10 +49,9 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
       have h4lt : 1 < Real.exp (Real.pi * ω) ^ 4 := one_lt_pow₀ h1lt (by norm_num)
       linarith
     have h_ne_sum : Real.exp (Real.pi * ω) + (Real.exp (Real.pi * ω))⁻¹ ≠ 0 := by positivity
-    field_simp [hu.ne', h_ne4, h_ne4', h_ne_sum]
-    rw [show Real.exp (Real.pi * ω) ^ 4 * (-1 + Real.exp (Real.pi * ω) ^ 4)⁻¹ - (-1 + Real.exp (Real.pi * ω) ^ 4)⁻¹ =
-        (-1 + Real.exp (Real.pi * ω) ^ 4) * (-1 + Real.exp (Real.pi * ω) ^ 4)⁻¹ by ring,
-      mul_inv_cancel₀ h_ne4']
+    have h_ne4'' : Real.exp (Real.pi * ω) ^ 4 - 1 ≠ 0 := by linarith
+    field_simp [hu.ne', h_ne4, h_ne4', h_ne4'', h_ne_sum]
+    ring
   have h_int_exp_diff : ∀ (a b x' : ℝ), 0 < a → a < b →
       (∫ ω in Set.Ioi (0 : ℝ),
         ((Real.exp (-a * ω) - Real.exp (-b * ω) : ℝ) : ℂ) * Complex.exp (-Complex.I * ω * x')) =
@@ -162,7 +161,10 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
             1 / (((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') -
               1 / (((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') := by
           apply Complex.ofReal_injective
-          rw [← integral_ofReal, h_c'']
+          trans (∫ ω in Set.Ioi (0 : ℝ), ((Real.exp (-(((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω) -
+              Real.exp (-(((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω) : ℝ) : ℂ))
+          · exact integral_ofReal.symm
+          · exact h_c''
         rw [MeasureTheory.integral_const_mul, h_c''']
       have hf_int : IntegrableOn (f k) (Set.Ioi 0) := by
         refine h_int_norm.mono' (hf_meas k) ?_
