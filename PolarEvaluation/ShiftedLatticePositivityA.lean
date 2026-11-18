@@ -27,9 +27,7 @@ lemma tsum_int_split_gen {E : Type*} [NormedAddCommGroup E] [CompleteSpace E]
     { toFun := Sum.elim (fun n : ℕ => (n : ℤ)) (fun n : ℕ => -((n + 1 : ℕ) : ℤ))
       invFun := fun m : ℤ => if 0 ≤ m then Sum.inl m.natAbs else Sum.inr (m.natAbs - 1)
       left_inv := fun s => by
-        rcases s with n | n
-        · simp only [Sum.elim_inl, if_pos (Int.natCast_nonneg n), Int.natAbs_natCast]
-        · simp only [Sum.elim_inr]; rw [if_neg (by omega), Int.natAbs_neg, Int.natAbs_natCast]; simp
+        rcases s with n | n <;> dsimp only <;> split_ifs <;> simp <;> omega
       right_inv := fun m => by
         dsimp only; split_ifs with h
         · simp only [Sum.elim_inl]; exact Int.natAbs_of_nonneg h
@@ -396,11 +394,11 @@ lemma pi_cot_tsum_eq {z : ℂ} (hz : 0 < z.im) :
         have hd1r : HasDerivAt (fun s => 1 / (w (ψ s) - (n + 1 : ℕ)))
             (-Complex.I * (ψ' r : ℂ) / (w (ψ r) - (n + 1 : ℕ)) ^ 2) r :=
           ((hasDerivAt_const r (1 : ℂ)).div (hw_r.sub_const ((n + 1 : ℕ) : ℂ)) h1r).congr_deriv
-            (by simp [div_eq_mul_inv]; ring)
+            (by simp [div_eq_mul_inv])
         have hd2r : HasDerivAt (fun s => 1 / (w (ψ s) + (n + 1 : ℕ)))
             (-Complex.I * (ψ' r : ℂ) / (w (ψ r) + (n + 1 : ℕ)) ^ 2) r :=
           ((hasDerivAt_const r (1 : ℂ)).div (hw_r.add_const ((n + 1 : ℕ) : ℂ)) h2r).congr_deriv
-            (by simp [div_eq_mul_inv]; ring)
+            (by simp [div_eq_mul_inv])
         exact (hd1r.add hd2r).congr_deriv (by dsimp only [f']; ring)
       · intro n r
         rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
