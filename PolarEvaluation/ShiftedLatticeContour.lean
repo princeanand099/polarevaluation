@@ -28,20 +28,23 @@ lemma summable_inv_add_sq_of_ne_zero (c : ℝ) (hc : ∀ n : ℤ, (n : ℝ) + c 
     · have hn' : (k : ℝ) + 1 ≤ n := by exact_mod_cast hn
       rw [abs_of_pos (by linarith)]
       exact (min_le_right _ _).trans (by linarith)
-  refine ((summable_inv_one_add_sq_shift c).mul_left (1 / δ ^ 2 + 1)).of_nonneg_of_le
+  refine ((summable_inv_one_add_sq_shift c).mul_left (2 * (1 / δ ^ 2 + 1))).of_nonneg_of_le
     (fun n => by positivity) (fun n => ?_)
   have hsq : δ ^ 2 ≤ ((n : ℝ) + c) ^ 2 := by
     rw [← sq_abs ((n : ℝ) + c)]
     exact sq_le_sq' (by linarith [h_lb n]) (h_lb n)
-  have hinv : 1 / ((n : ℝ) + c) ^ 2 ≤ 1 / δ ^ 2 :=
-    div_le_div_of_nonneg_left zero_le_one (sq_pos_of_pos hδ) hsq
-  have hpos : 0 < ((n : ℝ) + c) ^ 2 := sq_pos_of_ne_zero (hc n)
-  calc 1 / ((n : ℝ) + c) ^ 2
-      = (1 / ((n : ℝ) + c) ^ 2 + 1) * (1 / (1 + ((n : ℝ) + c) ^ 2)) := by
-        field_simp [hpos.ne', (by positivity : (0 : ℝ) < 1 + ((n : ℝ) + c) ^ 2)]
-        ring
-    _ ≤ (1 / δ ^ 2 + 1) * (1 / (1 + ((n : ℝ) + c) ^ 2)) := by
-        gcongr
+  have hpos : 0 < 1 + |c + (n : ℝ)| := by positivity
+  rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hpos.le, Real.rpow_natCast,
+    inv_eq_one_div, mul_one_div, div_le_div_iff₀ (sq_pos_of_ne_zero (hc n)) (by positivity)]
+  have h1 : (1 + |c + (n : ℝ)|) ^ 2 ≤ 2 * (1 + ((n : ℝ) + c) ^ 2) := by
+    have h_abs : |c + (n : ℝ)| ^ 2 = ((n : ℝ) + c) ^ 2 := by rw [add_comm, sq_abs]
+    nlinarith [sq_nonneg (1 - |c + (n : ℝ)|)]
+  have h2 : 1 + ((n : ℝ) + c) ^ 2 ≤ (1 / δ ^ 2 + 1) * ((n : ℝ) + c) ^ 2 := by
+    have hinv : 1 ≤ (1 / δ ^ 2) * ((n : ℝ) + c) ^ 2 := by
+      rw [one_div_mul_eq_div, le_div_iff₀ (sq_pos_of_pos hδ), one_mul]
+      exact hsq
+    linarith
+  nlinarith [show (0 : ℝ) < 1 / δ ^ 2 + 1 by positivity]
 
 lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
     rescaledF θ Δ x =
@@ -54,7 +57,7 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
     intro v
     have hden : ((x : ℂ) - Complex.I * v) * ((x : ℂ) + Complex.I * v) =
         ((x ^ 2 + v ^ 2 : ℝ) : ℂ) := by
-      push_cast; ring_nf; simp [Complex.I_sq]; ring
+      push_cast; ring_nf; simp [Complex.I_sq]
     by_cases hxv : (x ^ 2 + v ^ 2 : ℝ) = 0
     · exfalso
       have : x ^ 2 = 0 := by nlinarith [sq_nonneg x, sq_nonneg v]
@@ -75,9 +78,9 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
         simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
         ring
       rw [hexp]
-      simp only [Complex.sub_mul, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
-        Complex.I_re, Complex.I_im, mul_zero, mul_one, zero_mul, add_zero, sub_zero,
-        Complex.add_re, Complex.add_im]
+      simp only [sub_mul, Complex.sub_re, Complex.sub_im, Complex.mul_re, Complex.mul_im,
+        Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im, mul_zero, mul_one,
+        zero_mul, add_zero, sub_zero, Complex.add_re, Complex.add_im]
       ring
   let G : ℝ → ℝ := fun v => (Real.cos θ / 2) * Real.log (x ^ 2 + v ^ 2) - Real.sin θ * Real.arctan (v / x)
   have hG_deriv : ∀ v ∈ Set.uIcc 0 Δ,
@@ -85,7 +88,8 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
     intro v _
     have hxv_pos : 0 < x ^ 2 + v ^ 2 := by positivity
     have hd1 : HasDerivAt (fun t : ℝ => x ^ 2 + t ^ 2) (2 * v) v := by
-      simpa using (hasDerivAt_const v (x ^ 2)).add (hasDerivAt_pow 2 v)
+      have h := (hasDerivAt_const v (x ^ 2)).add (hasDerivAt_pow 2 v)
+      rwa [zero_add] at h
     have hd_log : HasDerivAt (fun t : ℝ => (Real.cos θ / 2) * Real.log (x ^ 2 + t ^ 2))
         ((Real.cos θ / 2) * (2 * v / (x ^ 2 + v ^ 2))) v :=
       (hd1.log hxv_pos.ne').const_mul (Real.cos θ / 2)
@@ -95,7 +99,6 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
       simpa [one_div] using ha.const_mul (Real.sin θ)
     refine (hd_log.sub hd_atan).congr_deriv ?_
     field_simp [hx, hxv_pos.ne']
-    ring
   have hcont : ContinuousOn (fun v : ℝ => (v * Real.cos θ - x * Real.sin θ) / (x ^ 2 + v ^ 2))
       (Set.uIcc 0 Δ) := by
     refine ContinuousOn.div (by fun_prop) (by fun_prop) (fun v _ => ?_)
@@ -105,7 +108,7 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
   simp_rw [h_integrand]
   rw [hftc]
   dsimp only [G]
-  simp only [sq, zero_mul, add_zero, zero_div, Real.arctan_zero, mul_zero, sub_zero]
+  simp only [zero_pow two_ne_zero, add_zero, zero_div, Real.arctan_zero, mul_zero, sub_zero]
   have hx2_pos : 0 < x ^ 2 := sq_pos_of_ne_zero hx
   have hx2_eq : x * x = x ^ 2 := (sq x).symm
   rw [hx2_eq]
@@ -114,11 +117,9 @@ lemma rescaledF_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) :
     rw [← Real.log_div (by positivity) hx2_pos.ne']
     congr 1
     field_simp [hΔ.ne', hx]
-    ring
   have hatan_eq : Δ / x = 1 / (x / Δ) := by field_simp [hΔ.ne', hx]
   have hfrac_eq : Δ * x / (x ^ 2 + Δ ^ 2) = (x / Δ) / ((x / Δ) ^ 2 + 1) := by
     field_simp [hΔ.ne', hx]
-    ring
   unfold rescaledF kernelK
   rw [hlog_sub, hatan_eq, hfrac_eq]
   ring
@@ -139,13 +140,15 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
       exact hx hre
     have hd_den : HasDerivAt (fun t : ℝ => (x : ℂ) - Complex.I * t) (-Complex.I) v := by
       have h1 := (hasDerivAt_id v).ofReal_comp.const_mul Complex.I
-      simpa using (hasDerivAt_const v (x : ℂ)).sub h1
+      have h2 := (hasDerivAt_const v (x : ℂ)).sub h1
+      rwa [zero_sub, mul_one] at h2
     have hd_inv : HasDerivAt (fun t : ℝ => Complex.exp (-Complex.I * θ) / ((x : ℂ) - Complex.I * t))
-        (-Complex.exp (-Complex.I * θ) * (-Complex.I) / ((x : ℂ) - Complex.I * v) ^ 2) v :=
-      (hasDerivAt_const v (Complex.exp (-Complex.I * θ))).div hd_den hne
+        (-Complex.exp (-Complex.I * θ) * (-Complex.I) / ((x : ℂ) - Complex.I * v) ^ 2) v := by
+      refine ((hasDerivAt_const v (Complex.exp (-Complex.I * θ))).div hd_den hne).congr_deriv ?_
+      ring
     have hd_re : HasDerivAt (fun t : ℝ => (Complex.exp (-Complex.I * θ) / ((x : ℂ) - Complex.I * t)).re)
         ((-Complex.exp (-Complex.I * θ) * (-Complex.I) / ((x : ℂ) - Complex.I * v) ^ 2).re) v :=
-      Complex.reCLM.hasDerivAt.comp v (hd_inv.restrictScalars ℝ)
+      Complex.reCLM.hasFDerivAt.comp_hasDerivAt v (hd_inv.restrictScalars ℝ)
     refine hd_re.neg.congr_deriv ?_
     have hmul : -(-Complex.exp (-Complex.I * θ) * (-Complex.I) / ((x : ℂ) - Complex.I * v) ^ 2) =
         (-Complex.I) * (Complex.exp (-Complex.I * θ) / ((x : ℂ) - Complex.I * v) ^ 2) := by ring
@@ -162,7 +165,7 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
   have hftc := intervalIntegral.integral_eq_sub_of_hasDerivAt hH_deriv hcont.intervalIntegrable
   rw [← MeasureTheory.integral_Ioc_eq_integral_Ioo, ← intervalIntegral.integral_of_le hΔ.le, hftc]
   have hden_Δ : ((x : ℂ) - Complex.I * Δ) * ((x : ℂ) + Complex.I * Δ) = ((x ^ 2 + Δ ^ 2 : ℝ) : ℂ) := by
-    push_cast; ring_nf; simp [Complex.I_sq]; ring
+    push_cast; ring_nf; simp [Complex.I_sq]
   have hne_Δ : (x : ℂ) - Complex.I * Δ ≠ 0 := by
     intro h
     have him := congr_arg Complex.im h
@@ -205,7 +208,6 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
     simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
       Complex.add_re, Complex.add_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul,
       sub_zero, add_zero, zero_add]
-    ring
   rw [hH_Δ, hH_0, hbd_re]
   unfold rescaledFDeriv
   field_simp [hx, (by positivity : (0 : ℝ) < x ^ 2 + Δ ^ 2)]
@@ -297,7 +299,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
             (y - n - α) =
           ∫ v in (0 : ℝ)..Δ, d n v := by
         rw [← intervalIntegral.integral_neg, ← intervalIntegral.integral_div, ← intervalIntegral.integral_div,
-          ← intervalIntegral.integral_add hF_int.neg.div_const hFd_int.div_const]
+          ← intervalIntegral.integral_add (hF_int.neg.div_const ((y - n - α) ^ 2)) (hFd_int.div_const (y - n - α))]
         congr 1; ext v
         have ha : (y : ℂ) - Complex.I * v ≠ 0 := by
           intro h0; have hre := congr_arg Complex.re h0; simp at hre; exact hy_ne hre
@@ -337,7 +339,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
         have h_re1 : (1 / (((n + α : ℝ) : ℂ) - Complex.I * Δ)).re = (n + α) / ((n + α) ^ 2 + Δ ^ 2) := by
           have hden : (((n + α : ℝ) : ℂ) - Complex.I * Δ) * (((n + α : ℝ) : ℂ) + Complex.I * Δ) =
               (((n + α) ^ 2 + Δ ^ 2 : ℝ) : ℂ) := by
-            push_cast; ring_nf; simp [Complex.I_sq]; ring
+            push_cast; ring_nf; simp [Complex.I_sq]
           have hinv : 1 / (((n + α : ℝ) : ℂ) - Complex.I * Δ) =
               (((n + α : ℝ) : ℂ) + Complex.I * Δ) / (((n + α) ^ 2 + Δ ^ 2 : ℝ) : ℂ) := by
             rw [div_eq_div_iff hw (Complex.ofReal_ne_zero.mpr (by positivity)), one_mul, mul_comm]
@@ -356,7 +358,7 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
               (Δ * Real.sin θ / ((Complex.I * Δ - (n + α)) ^ 2)) / ((y - n - α : ℝ) : ℂ) := by
             have hsq : (Complex.I * Δ - (n + α)) ^ 2 = (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2 := by ring
             have hsq_ne : (((n + α : ℝ) : ℂ) - Complex.I * Δ) ^ 2 ≠ 0 := pow_ne_zero 2 hw
-            rw [hsq]; field_simp [hu, hsq_ne]; ring
+            rw [hsq]; field_simp [hu, hsq_ne]; push_cast; ring
           rw [hmul, Complex.div_ofReal_re]
         rw [neg_div, h1, h2, ← Complex.neg_re, ← Complex.add_re]
         dsimp only [b]
