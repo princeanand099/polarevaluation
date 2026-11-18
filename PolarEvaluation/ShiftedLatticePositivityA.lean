@@ -86,7 +86,9 @@ lemma tsum_two_t_div_sq_bd (t : ℝ) (ht : 1 ≤ t) :
           2 * t / (t ^ 2 + (n + 1 : ℝ) ^ 2) := by
         rw [MeasureTheory.setIntegral_const, Real.volume_real_Ioc_of_le (by linarith), smul_eq_mul, h_len, one_mul]
       rw [← h_c]
-      refine MeasureTheory.setIntegral_mono_on continuousOn_const.integrableOn_Ioc
+      have h_c_int : IntegrableOn (fun _ : ℝ => 2 * t / (t ^ 2 + (n + 1 : ℝ) ^ 2)) (Set.Ioc (n : ℝ) (n + 1 : ℝ)) :=
+        (continuousOn_const : ContinuousOn (fun _ : ℝ => 2 * t / (t ^ 2 + (n + 1 : ℝ) ^ 2)) (Set.Icc (n : ℝ) (n + 1 : ℝ))).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+      refine MeasureTheory.setIntegral_mono_on h_c_int
         ((hcont.mono Set.Ioc_subset_Icc_self).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self)
         measurableSet_Ioc fun u hu => (h_le u hu).1
     · rw [intervalIntegral.integral_of_le (by linarith)]
@@ -94,9 +96,11 @@ lemma tsum_two_t_div_sq_bd (t : ℝ) (ht : 1 ≤ t) :
           2 * t / (t ^ 2 + (n : ℝ) ^ 2) := by
         rw [MeasureTheory.setIntegral_const, Real.volume_real_Ioc_of_le (by linarith), smul_eq_mul, h_len, one_mul]
       rw [← h_c]
+      have h_c_int : IntegrableOn (fun _ : ℝ => 2 * t / (t ^ 2 + (n : ℝ) ^ 2)) (Set.Ioc (n : ℝ) (n + 1 : ℝ)) :=
+        (continuousOn_const : ContinuousOn (fun _ : ℝ => 2 * t / (t ^ 2 + (n : ℝ) ^ 2)) (Set.Icc (n : ℝ) (n + 1 : ℝ))).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
       refine MeasureTheory.setIntegral_mono_on
         ((hcont.mono Set.Ioc_subset_Icc_self).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self)
-        continuousOn_const.integrableOn_Ioc measurableSet_Ioc fun u hu => (h_le u hu).2
+        h_c_int measurableSet_Ioc fun u hu => (h_le u hu).2
   have h_int_eval : ∀ N : ℕ, ∫ u in (0 : ℝ)..(N : ℝ), 2 * t / (t ^ 2 + u ^ 2) =
       2 * Real.arctan ((N : ℝ) / t) := by
     intro N

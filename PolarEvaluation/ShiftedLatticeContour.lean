@@ -1075,7 +1075,7 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
             · rw [← hv₀_eq]; exact (hh_strict hv_nonneg hv₀_mem.1 hlt).le
           have hden_le : 1 / (y ^ 2 + v₀ ^ 2) ≤ 1 / (y ^ 2 + v ^ 2) :=
             div_le_div_of_nonneg_left zero_le_one (by positivity)
-              (add_le_add_left (sq_le_sq' (by linarith) hle) _)
+              (by have := sq_le_sq' (by linarith) hle; linarith)
           have h_im_nonpos : Real.sin θ * Real.cosh (Real.pi * v) ^ 2 * h v /
               (Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2) ^ 2 ≤ 0 := by
             exact div_nonpos_of_nonpos_of_nonneg
@@ -1090,7 +1090,7 @@ lemma limitingJ_pos_of_neg {θ y : ℝ} (hθ : 0 ≤ θ) (hθ_lt : θ < Real.pi 
             · rw [← hv₀_eq]; exact (hh_strict hv₀_mem.1 hv_nonneg hlt).le
           have hden_ge : 1 / (y ^ 2 + v ^ 2) ≤ 1 / (y ^ 2 + v₀ ^ 2) :=
             div_le_div_of_nonneg_left zero_le_one (by positivity)
-              (add_le_add_left (sq_le_sq' (by linarith [hv₀_mem.1]) hge) _)
+              (by have := sq_le_sq' (by linarith [hv₀_mem.1]) hge; linarith)
           have h_im_nonneg : 0 ≤ Real.sin θ * Real.cosh (Real.pi * v) ^ 2 * h v /
               (Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2) ^ 2 := by
             positivity
