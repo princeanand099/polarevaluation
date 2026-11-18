@@ -388,16 +388,18 @@ lemma integrable_log_inv_Ioo : IntegrableOn (fun x : ℝ => Real.log (1 / |x|)) 
     rw [one_div, Real.log_inv]
   have h_neg : IntegrableOn (fun x : ℝ => Real.log (1 / |x|)) (Set.Ioo (-1 : ℝ) 0) := by
     have h_emb := (Homeomorph.neg ℝ).measurableEmbedding
-    have h_pre : (Homeomorph.neg ℝ) ⁻¹' Set.Ioo (-1 : ℝ) 0 = Set.Ioo 0 1 := by
-      ext x; simp only [Set.mem_preimage, Homeomorph.neg_apply, Set.mem_Ioo]; constructor <;> intro ⟨h1, h2⟩ <;> exact ⟨by linarith, by linarith⟩
-    rw [← (Measure.measurePreserving_neg volume).integrableOn_comp_preimage h_emb, h_pre]
+    have h_pre : Neg.neg ⁻¹' Set.Ioo (-1 : ℝ) 0 = Set.Ioo 0 1 := by
+      ext x; simp only [Set.mem_preimage, Set.mem_Ioo]; constructor <;> intro ⟨h1, h2⟩ <;> exact ⟨by linarith, by linarith⟩
+    have h_comp := (Measure.measurePreserving_neg volume).integrableOn_comp_preimage h_emb (f := fun x : ℝ => Real.log (1 / |x|)) (s := Set.Ioo (-1 : ℝ) 0)
+    change IntegrableOn (fun x => Real.log (1 / |(-x)|)) (Neg.neg ⁻¹' Set.Ioo (-1 : ℝ) 0) volume ↔ _ at h_comp
+    rw [← h_comp, h_pre]
     refine h_half.congr_fun (fun x hx => ?_) measurableSet_Ioo
-    simp [abs_of_pos hx.1]
+    simp [abs_neg, abs_of_pos hx.1]
   have h_pos : IntegrableOn (fun x : ℝ => Real.log (1 / |x|)) (Set.Ioo (0 : ℝ) 1) := by
     refine h_half.congr_fun (fun x hx => ?_) measurableSet_Ioo
     rw [abs_of_pos hx.1]
   have h_sub : Set.Ioo (-1 : ℝ) 1 =ᵐ[volume] Set.Ioo (-1 : ℝ) 0 ∪ Set.Ioo (0 : ℝ) 1 := by
-    rw [Filter.EventuallyEq, ae_iff]
+    rw [ae_iff]
     refine measure_mono_null (fun x hx => ?_) (measure_singleton (0 : ℝ))
     simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
     by_contra hx0
@@ -425,7 +427,7 @@ lemma kernelK_integrable_sl (θ : ℝ) : Integrable (kernelK θ) := by
         exact (Real.continuousAt_arctan.comp (continuousAt_const.div continuousAt_id hx0)).sub
           (continuousAt_id.div ((continuousAt_id.pow 2).add continuousAt_const) (by positivity))
     · have h_compl : ({(0 : ℝ)}ᶜ : Set ℝ) =ᵐ[volume] Set.univ := by
-        rw [Filter.EventuallyEq, ae_iff]
+        rw [ae_iff]
         refine measure_mono_null (fun x hx => ?_) (measure_singleton (0 : ℝ))
         simpa using hx
       rw [Measure.restrict_congr_set h_compl, Measure.restrict_univ]
@@ -517,7 +519,7 @@ lemma kernelK_integral_eq (θ : ℝ) :
         have h_num : HasDerivAt (fun t : ℝ => (t ^ 2 + 1) / t ^ 2) (-2 / x ^ 3) x := by
           have hd := ((hasDerivAt_pow 2 x).add (hasDerivAt_const x 1)).div (hasDerivAt_pow 2 x) (pow_ne_zero 2 hx0)
           refine hd.congr_deriv ?_
-          dsimp only; field_simp [hx0]; ring
+          simp only [Pi.add_apply]; field_simp [hx0]; ring
         have hd_log : HasDerivAt (fun t : ℝ => Real.log ((t ^ 2 + 1) / t ^ 2)) ((-2 / x ^ 3) / ((x ^ 2 + 1) / x ^ 2)) x :=
           h_num.log (by positivity)
         have hd1 : HasDerivAt (fun t : ℝ => t * Real.log ((t ^ 2 + 1) / t ^ 2))
@@ -535,7 +537,7 @@ lemma kernelK_integral_eq (θ : ℝ) :
             continuousAt_id.mul ((Real.continuousAt_log (by norm_num)).comp ((continuousAt_id.pow 2).add continuousAt_const))
           simpa using hc.continuousWithinAt.tendsto
         have h2 : Tendsto (fun x : ℝ => 2 * (x * Real.log x)) (𝓝[>] 0) (nhds 0) := by
-          simpa using (Real.continuous_mul_log.continuousAt.tendsto.mono_left nhdsWithin_le_nhds).const_mul 2
+          simpa using ((Real.continuous_mul_log.continuousAt (x := (0 : ℝ))).tendsto.mono_left nhdsWithin_le_nhds).const_mul 2
         have h3 : Tendsto (fun x : ℝ => 2 * Real.arctan x) (𝓝[>] 0) (nhds 0) := by
           have hc : ContinuousAt (fun x : ℝ => 2 * Real.arctan x) 0 :=
             continuousAt_const.mul Real.continuousAt_arctan
@@ -566,7 +568,7 @@ lemma kernelK_integral_eq (θ : ℝ) :
           exact tendsto_zero_iff_norm_tendsto_zero.mpr (tendsto_of_tendsto_of_tendsto_of_le_of_le'
             tendsto_const_nhds h_inv (Eventually.of_forall fun _ => norm_nonneg _) h_bnd)
         have h2 : Tendsto (fun x : ℝ => 2 * Real.arctan x) atTop (nhds Real.pi) := by
-          simpa [mul_div_cancel₀ _ two_ne_zero] using
+          simpa [show (2 : ℝ) * (Real.pi / 2) = Real.pi by ring] using
             (Real.tendsto_arctan_atTop.mono_right nhdsWithin_le_nhds).const_mul 2
         simpa using h1.add h2
       have h_eps : ∀ ε : ℝ, 0 < ε → ∫ x in Set.Ioi ε, L x = Real.pi - G ε := by
@@ -598,7 +600,7 @@ lemma kernelK_integral_eq (θ : ℝ) :
           filter_upwards [ae_restrict_mem measurableSet_Ioi] with x hx
           have h_ev : ∀ᶠ ε in 𝓝[>] (0 : ℝ), ε < x :=
             nhdsWithin_le_nhds (Iio_mem_nhds hx)
-          exact tendsto_const_nhds.congr' (h_ev.mono fun ε hε => by simp [Set.indicator_of_mem hε])
+          exact tendsto_const_nhds.congr' (h_ev.mono fun ε hε => (Set.indicator_of_mem (Set.mem_Ioi.mpr hε)).symm)
         exact h_dom.congr' (by filter_upwards [self_mem_nhdsWithin] with ε hε; exact (h_eq_ind ε hε).symm)
       have h_lim_rhs : Tendsto (fun ε : ℝ => Real.pi - G ε) (𝓝[>] 0) (nhds Real.pi) := by
         simpa using tendsto_const_nhds.sub h_lim_0
@@ -715,7 +717,7 @@ lemma rescaledFDeriv_mul_summable (θ Δ α : ℝ) (hΔ : 1 ≤ Δ) (hα : α �
     summable_inv_add_sq_of_ne_zero α hx_ne
   refine (h_inv_sq.mul_left (2 * Δ ^ 2)).of_nonneg_of_le (fun _ => abs_nonneg _) (fun n => ?_)
   have hbd := rescaledFDeriv_mul_bound θ Δ (n + α) (by linarith) (hx_ne n)
-  simpa only [div_eq_mul_inv] using hbd
+  simpa only [one_div, div_eq_mul_inv] using hbd
 
 lemma limitingJ_continuousOn_Icc (θ : ℝ) (hθ : |θ| < Real.pi / 2)
     {a b : ℝ} (hab : a ≤ b) (h0 : (0 : ℝ) ∉ Set.Icc a b) :
@@ -759,7 +761,7 @@ lemma limitingJ_continuousOn_Icc (θ : ℝ) (hθ : |θ| < Real.pi / 2)
     · exact (cTheta_integrableOn hθ).norm.div_const δ
     · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
       refine Continuous.continuousAt ?_
-      refine Continuous.div continuous_const ((continuous_subtype_val.ofReal_comp).sub continuous_const) ?_
+      refine Continuous.div continuous_const (((continuous_subtype_val : Continuous (fun y : Set.Icc a b => (y : ℝ))).ofReal_comp).sub continuous_const) ?_
       intro ⟨y, hy⟩ h
       have hre := congr_arg Complex.re h; simp at hre
       have := hδ_lb y hy; rw [hre, abs_zero] at this; linarith
@@ -776,7 +778,7 @@ lemma limitingJ_continuousOn_Icc (θ : ℝ) (hθ : |θ| < Real.pi / 2)
         have := hδ_lb y hy; rw [hre, abs_zero] at this; linarith
       · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
         have h_eq : Complex.exp (-Complex.I * θ) / (Complex.cos (θ + Complex.I * Real.pi * v) ^ 2 * (y - Complex.I * v)) =
-            cTheta θ v / ((y : ℂ) - Complex.I * v) := by dsimp only [cTheta]; ring
+            cTheta θ v / ((y : ℂ) - Complex.I * v) := by dsimp only [cTheta]; rw [div_div]
         rw [h_eq, norm_div]
         have hden : δ ≤ ‖(y : ℂ) - Complex.I * v‖ := by
           have h1 : δ ≤ |y| := hδ_lb y hy
@@ -790,8 +792,9 @@ lemma limitingJ_continuousOn_Icc (θ : ℝ) (hθ : |θ| < Real.pi / 2)
         exact div_le_div_of_nonneg_left (norm_nonneg _) hδ_pos hden
     have h_re := Complex.imCLM.integral_comp_comm h_int
     dsimp only [Complex.imCLM_apply] at h_re
+    dsimp only [Function.comp_def, Set.domRestrict_apply]
     rw [← h_re]
-    congr 1; ext v; dsimp only [cTheta]; ring
+    congr 1; ext v; dsimp only [cTheta]; rw [div_div]
 
 lemma limitingJ_lower_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     (∃ c_J > 0, ∀ y : ℝ, y ≠ 0 → limitingJ y θ ≥ c_J / (1 + y ^ 2)) ∧
@@ -835,7 +838,7 @@ lemma limitingJ_lower_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [le_div_iff₀ hy0]
         calc Real.exp ((2 * C_0 + 2) * Real.cos θ) * |y|
             ≤ Real.exp ((2 * C_0 + 2) * Real.cos θ) * Real.exp (-(2 * C_0 + 2) * Real.cos θ) := by gcongr
-          _ = 1 := by rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
+          _ = 1 := by rw [← Real.exp_add, show (2 * C_0 + 2) * Real.cos θ + -(2 * C_0 + 2) * Real.cos θ = 0 by ring, Real.exp_zero]
       calc (2 * C_0 + 2) * Real.cos θ = Real.log (Real.exp ((2 * C_0 + 2) * Real.cos θ)) := (Real.log_exp _).symm
         _ ≤ Real.log (1 / |y|) := Real.log_le_log (Real.exp_pos _) h2
     have h_half : C_0 + 1 ≤ (1 / (2 * Real.cos θ)) * Real.log (1 / |y|) := by
@@ -931,7 +934,8 @@ lemma sin_pi_iv_beta_lb {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
     have h_split : Complex.sin (((-Real.pi * β : ℝ) : ℂ) + Complex.I * (Real.pi * v)) =
         ((Real.sin (-Real.pi * β) * Real.cosh (Real.pi * v) : ℝ) : ℂ) +
         ((Real.cos (-Real.pi * β) * Real.sinh (Real.pi * v) : ℝ) : ℂ) * Complex.I := by
-      rw [hs]; push_cast; ring
+      rw [show Complex.I * ((Real.pi : ℂ) * (v : ℂ)) = ((Real.pi * v : ℝ) : ℂ) * Complex.I by push_cast; ring, hs]
+      push_cast; ring
     rw [h_split, ← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
     simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, mul_zero,
       Complex.ofReal_im, Complex.I_im, mul_one, sub_zero, add_zero, Complex.add_im, Complex.mul_im,
@@ -966,8 +970,9 @@ lemma sin_pi_iv_beta_lb {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
       have h3 : Real.sin (Real.pi * δ) ^ 2 ≤ Real.sin (-Real.pi * β) ^ 2 := by
         rw [← sq_abs (Real.sin (-Real.pi * β))]
         exact sq_le_sq' (by linarith [hsin_δ_pos]) hsin_lb
-      have h4 : ((Real.sin (Real.pi * δ) / Real.exp Real.pi) * Real.exp (Real.pi * v)) ^ 2 ≤ Real.sin (Real.pi * δ) ^ 2 :=
-        sq_le_sq' (by have : 0 < Real.sin (Real.pi * δ) / Real.exp Real.pi * Real.exp (Real.pi * v) := by positivity; linarith) h2
+      have h4 : ((Real.sin (Real.pi * δ) / Real.exp Real.pi) * Real.exp (Real.pi * v)) ^ 2 ≤ Real.sin (Real.pi * δ) ^ 2 := by
+        have h_pos : 0 < (Real.sin (Real.pi * δ) / Real.exp Real.pi) * Real.exp (Real.pi * v) := by positivity
+        exact sq_le_sq' (by linarith) h2
       nlinarith [sq_nonneg (Real.sinh (Real.pi * v))]
     exact (sq_le_sq₀ (by positivity) (norm_nonneg _)).mp hsq
   · have h_sinh := sin_norm_ge_sinh (-Real.pi * β) (Real.pi * v)
@@ -1047,7 +1052,7 @@ lemma sin_pi_iv_alpha_diff {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
     have hf_d : ∀ t ∈ Set.Icc (0 : ℝ) 1, HasDerivAt f ((z₂ - z₁) * Complex.cos (z₁ + t * (z₂ - z₁))) t := by
       intro t _
       have h1 : HasDerivAt (fun s : ℝ => z₁ + (s : ℂ) * (z₂ - z₁)) (z₂ - z₁) t :=
-        (((hasDerivAt_id t).ofReal_comp.mul_const (z₂ - z₁)).const_add z₁).congr_deriv (by ring)
+        (((hasDerivAt_id t).ofReal_comp.mul_const (z₂ - z₁)).const_add z₁).congr_deriv (by norm_num; ring)
       exact h1.csin.congr_deriv (by ring)
     have h_zdiff : ‖z₂ - z₁‖ = Real.pi * |α - β| := by
       have heq : z₂ - z₁ = ((Real.pi * (α - β) : ℝ) : ℂ) := by dsimp only [z₁, z₂]; push_cast; ring
@@ -1064,8 +1069,8 @@ lemma sin_pi_iv_alpha_diff {δ : ℝ} (hδ0 : 0 < δ) (hδ1 : δ ≤ 1 / 2)
           ≤ Real.pi * |α - β| * Real.exp |(z₁ + (t : ℂ) * (z₂ - z₁)).im| :=
             mul_le_mul_of_nonneg_left (h_cos_bd _) (by positivity)
         _ = Real.pi * |α - β| * Real.exp (Real.pi * v) := by rw [him]
-    have hf_diff : DifferentiableOn ℝ f (Set.Icc 0 1) :=
-      fun t ht => (hf_d t ht).differentiableAt.differentiableWithinAt
+    have hf_diff : ∀ t ∈ Set.Icc (0 : ℝ) 1, DifferentiableAt ℝ f t :=
+      fun t ht => (hf_d t ht).differentiableAt
     have hbd' : ∀ t ∈ Set.Icc (0 : ℝ) 1, ‖deriv f t‖ ≤ Real.pi * |α - β| * Real.exp (Real.pi * v) := by
       intro t ht; rw [(hf_d t ht).deriv]; exact hbd t ht
     have hmvt := (convex_Icc (0 : ℝ) 1).norm_image_sub_le_of_norm_deriv_le
@@ -1285,6 +1290,7 @@ private lemma contour_c0_rhs_bd (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
     _ ≤ (Δ ^ 2 / c_sin ^ 2) / m + (Δ ^ 2 / c_sin ^ 2) / m := add_le_add hI_bd hR_bd
     _ = (2 * Δ ^ 2 / c_sin ^ 2) / m := by ring
 
+set_option maxHeartbeats 800000 in
 private lemma contour_c0_lhs_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
     (hsumm_b : Summable (fun n : ℤ => rescaledFDeriv θ Δ (n + α)))
     (hsum0 : ∑' n : ℤ, rescaledFDeriv θ Δ (n + α) = 0) :
@@ -1612,13 +1618,15 @@ lemma contour_c0_eq_zero (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
         rescaledF θ Δ ((M : ℝ) + α + 1 / 2))| := by
       have := abs_sub c₀ (((M : ℝ) + α + 1 / 2) * (vaalerInterpolant θ Δ α ((M : ℝ) + α + 1 / 2) -
         rescaledF θ Δ ((M : ℝ) + α + 1 / 2)))
+      dsimp only at h1 h2
       rw [abs_sub_comm] at h1
       linarith [abs_sub_le (0 : ℝ) (((M : ℝ) + α + 1 / 2) * (vaalerInterpolant θ Δ α ((M : ℝ) + α + 1 / 2) -
         rescaledF θ Δ ((M : ℝ) + α + 1 / 2))) c₀]
     linarith [show (2 * Δ ^ 2 / c_sin ^ 2) / (M : ℝ) + C_lhs / (M : ℝ) = (2 * Δ ^ 2 / c_sin ^ 2 + C_lhs) / (M : ℝ) by ring]
   have hM_gt : (2 * Δ ^ 2 / c_sin ^ 2 + C_lhs) / |c₀| < (M : ℝ) := by
+    have h1' : Nat.ceil ((2 * Δ ^ 2 / c_sin ^ 2 + C_lhs) / |c₀|) + 1 ≤ M := le_max_right _ _
     have h1 : (Nat.ceil ((2 * Δ ^ 2 / c_sin ^ 2 + C_lhs) / |c₀|) + 1 : ℝ) ≤ M := by
-      exact_mod_cast le_max_right (Nat.ceil (2 * Δ) + 2) (Nat.ceil ((2 * Δ ^ 2 / c_sin ^ 2 + C_lhs) / |c₀|) + 1)
+      exact_mod_cast h1'
     linarith [Nat.le_ceil ((2 * Δ ^ 2 / c_sin ^ 2 + C_lhs) / |c₀|)]
   have hM_pos : (0 : ℝ) < M := by exact_mod_cast (by omega : 0 < M)
   rw [div_lt_iff₀ h_pos] at hM_gt
