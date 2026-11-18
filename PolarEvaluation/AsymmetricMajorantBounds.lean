@@ -696,7 +696,7 @@ lemma limitingJ_continuousOn_Icc (θ : ℝ) (hθ : |θ| < Real.pi / 2)
     · intro ⟨y, hy⟩
       refine Continuous.aestronglyMeasurable ?_
       refine Continuous.div ?_ (by fun_prop) (fun v => ?_)
-      · exact continuous_const.div (Continuous.pow (Complex.continuous_cos (by fun_prop)) 2)
+      · exact continuous_const.div (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2)
           (fun v => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
       · intro h; have hre := congr_arg Complex.re h; simp at hre
         have := hδ_lb y hy; rw [hre, abs_zero] at this; linarith
@@ -728,7 +728,7 @@ lemma limitingJ_continuousOn_Icc (θ : ℝ) (hθ : |θ| < Real.pi / 2)
         Complex.exp (-Complex.I * θ) / (Complex.cos (θ + Complex.I * Real.pi * v) ^ 2 * (y - Complex.I * v))) (Set.Ioi 0) := by
       refine ((cTheta_integrableOn hθ).norm.div_const δ).mono' ?_ ?_
       · refine Continuous.aestronglyMeasurable ?_
-        refine continuous_const.div (Continuous.mul (Continuous.pow (Complex.continuous_cos (by fun_prop)) 2) (by fun_prop)) fun v => ?_
+        refine continuous_const.div (Continuous.mul (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 2) (by fun_prop)) fun v => ?_
         refine mul_ne_zero (pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ)) ?_
         intro h; have hre := congr_arg Complex.re h; simp at hre
         have := hδ_lb y hy; rw [hre, abs_zero] at this; linarith
