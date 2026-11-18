@@ -200,7 +200,7 @@ lemma rescaledFDeriv_integral_rep (θ Δ x : ℝ) (hΔ : 0 < Δ) (hx : x ≠ 0) 
       ← Complex.ofReal_pow, Complex.div_ofReal_re]
     have hnum : ((x : ℂ) + Complex.I * Δ) ^ 2 =
         ((x ^ 2 - Δ ^ 2 : ℝ) : ℂ) + ((2 * x * Δ : ℝ) : ℂ) * Complex.I := by
-      push_cast; ring_nf; simp [Complex.I_sq]
+      push_cast; ring_nf; simp [Complex.I_sq]; ring
     rw [hnum]
     simp only [Complex.mul_re, Complex.mul_im, Complex.ofReal_re, Complex.ofReal_im,
       Complex.add_re, Complex.add_im, Complex.I_re, Complex.I_im, mul_zero, zero_mul,
@@ -311,21 +311,22 @@ theorem contour_representation (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
             (Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * v)))).im := by
           rw [show Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * v))) =
             (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v)) / (((y - n - α : ℝ) ^ 2 : ℝ) : ℂ) by
-            field_simp [hu, hw]; push_cast; ring, Complex.div_ofReal_im]
+            push_cast at hu hw ⊢; field_simp [hu, hw]; ring, Complex.div_ofReal_im]
         have h2 : (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2).im / (y - n - α) =
             (Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2))).im := by
           rw [show Complex.exp (-Complex.I * θ) * (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2)) =
             (Complex.exp (-Complex.I * θ) / (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2) / ((y - n - α : ℝ) : ℂ) by
-            field_simp [hu, hw]; push_cast; ring, Complex.div_ofReal_im]
+            push_cast at hu hw ⊢; field_simp [hu, hw]; ring, Complex.div_ofReal_im]
         rw [neg_div, h1, h2, ← Complex.neg_im, ← Complex.add_im]
         dsimp only [d]
         congr 1
-        calc Complex.exp (-Complex.I * θ) *
-              (-(1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * v))) +
-                1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2))
+        calc -(Complex.exp (-Complex.I * θ) *
+              (1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * v)))) +
+            Complex.exp (-Complex.I * θ) *
+              (1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2))
             = Complex.exp (-Complex.I * θ) *
                 (-1 / (((y - n - α : ℝ) : ℂ) ^ 2 * (((n + α : ℝ) : ℂ) - Complex.I * v)) +
-                  1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2)) := by ring_nf
+                  1 / (((y - n - α : ℝ) : ℂ) * (((n + α : ℝ) : ℂ) - Complex.I * v) ^ 2)) := by ring
           _ = _ := by rw [hpf]
       have hb_eq :
           -(Real.sin θ * Δ * (n + α) / ((n + α) ^ 2 + Δ ^ 2)) / (y - n - α) ^ 2 +
