@@ -44,8 +44,11 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
     have h_ne4 : 1 - (Real.exp (Real.pi * ω) ^ 4)⁻¹ ≠ 0 := by
       rw [← hm4]
       exact ne_of_gt (sub_pos.mpr (Real.exp_lt_one_iff.mpr (by nlinarith [Real.pi_pos])))
+    have h_ne4' : -1 + Real.exp (Real.pi * ω) ^ 4 ≠ 0 := by
+      have h1lt : 1 < Real.exp (Real.pi * ω) := Real.one_lt_exp_iff.mpr (by positivity)
+      nlinarith [sq_nonneg (Real.exp (Real.pi * ω))]
     have h_ne_sum : Real.exp (Real.pi * ω) + (Real.exp (Real.pi * ω))⁻¹ ≠ 0 := by positivity
-    field_simp [hu.ne', h_ne4, h_ne_sum]
+    field_simp [hu.ne', h_ne4, h_ne4', h_ne_sum]
     ring
   have h_int_exp_diff : ∀ (a b x' : ℝ), 0 < a → a < b →
       (∫ ω in Set.Ioi (0 : ℝ),
@@ -61,7 +64,7 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
         ext ω; rw [Complex.ofReal_exp, ← Complex.exp_add]; congr 1; push_cast; ring
       rw [h_eq]
       have h_re_neg : (-((c : ℂ) + Complex.I * x')).re < 0 := by simp [hc]
-      exact integral_exp_mul_complex_Ioi h_re_neg 0 |>.trans (by simp; rw [← inv_neg]; congr 1; ring)
+      exact (integral_exp_mul_complex_Ioi h_re_neg 0).trans (by simp; rw [neg_div_neg_eq, one_div]; congr 1; ring)
     have h_i1 : IntegrableOn (fun ω : ℝ => (Real.exp (-a * ω) : ℂ) * Complex.exp (-Complex.I * ω * x')) (Set.Ioi 0) := by
       have : (fun ω : ℝ => (Real.exp (-a * ω) : ℂ) * Complex.exp (-Complex.I * ω * x')) =
           fun ω : ℝ => Complex.exp (-((a : ℂ) + Complex.I * x') * ω) := by
@@ -144,13 +147,13 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
         have h_c := h_int_exp_diff (((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ')
           (((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') 0 ha_pos hab
         simp only [Complex.ofReal_zero, mul_zero, Complex.exp_zero, mul_one, add_zero] at h_c
-        have h_c' : ((∫ ω in Set.Ioi (0 : ℝ), (Real.exp (-(((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω) -
-            Real.exp (-(((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω))) : ℂ) =
+        have h_c'' : (∫ ω in Set.Ioi (0 : ℝ), ((Real.exp (-(((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω) -
+            Real.exp (-(((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω) : ℝ) : ℂ)) =
             ((1 / (((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') -
               1 / (((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') : ℝ) : ℂ) := by
-          rw [← integral_ofReal]
-          exact h_c.trans (by push_cast; rfl)
-        rw [MeasureTheory.integral_const_mul, Complex.ofReal_injective h_c']
+          rw [h_c]; push_cast; rfl
+        rw [integral_ofReal] at h_c''
+        rw [MeasureTheory.integral_const_mul, Complex.ofReal_injective h_c'']
       have hf_int : IntegrableOn (f k) (Set.Ioi 0) := by
         refine h_int_norm.mono' (hf_meas k) ?_
         filter_upwards [ae_restrict_mem measurableSet_Ioi] with ω hω
@@ -714,7 +717,10 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
           refine IntegrableOn.congr_set_ae ?_ Iio_ae_eq_Iic.symm
           have h_emb := (Homeomorph.neg ℝ).measurableEmbedding
           have h_pre : (Homeomorph.neg ℝ) ⁻¹' Set.Iio 0 = Set.Ioi 0 := by ext ω; simp
-          have h1 := (Measure.measurePreserving_neg volume).integrableOn_comp_preimage h_emb (s := Set.Iio 0)
+          have h1 := (Measure.measurePreserving_neg volume).integrableOn_comp_preimage h_emb
+            (f := fun ω : ℝ => Real.exp (-2 * θ * ω) / Real.cosh (Real.pi * ω)) (s := Set.Iio 0)
+          change IntegrableOn (fun ω : ℝ => Real.exp (-2 * θ * (-ω)) / Real.cosh (Real.pi * (-ω)))
+            ((Homeomorph.neg ℝ) ⁻¹' Set.Iio 0) volume ↔ _ at h1
           rw [h_pre] at h1
           apply h1.mp
           have hc : IntegrableOn (fun ω : ℝ => Real.exp (-(Real.pi - 2 * |θ|) * ω)) (Set.Ioi 0) := by
@@ -749,7 +755,10 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
           refine IntegrableOn.congr_set_ae ?_ Iio_ae_eq_Iic.symm
           have h_emb := (Homeomorph.neg ℝ).measurableEmbedding
           have h_pre : (Homeomorph.neg ℝ) ⁻¹' Set.Iio 0 = Set.Ioi 0 := by ext x; simp
-          have h1 := (Measure.measurePreserving_neg volume).integrableOn_comp_preimage h_emb (s := Set.Iio 0)
+          have h1 := (Measure.measurePreserving_neg volume).integrableOn_comp_preimage h_emb
+            (f := fun x : ℝ => Real.exp (-|x| / 2)) (s := Set.Iio 0)
+          change IntegrableOn (fun x : ℝ => Real.exp (-|-x| / 2))
+            ((Homeomorph.neg ℝ) ⁻¹' Set.Iio 0) volume ↔ _ at h1
           rw [h_pre] at h1
           apply h1.mp
           simpa [abs_neg] using h_p
