@@ -137,21 +137,23 @@ private lemma int_mul_exp_neg_two_pi_Ioi (a : ℝ) (ha : 0 ≤ a) :
   dsimp only [G] at hres
   linarith
 
+private noncomputable def diffA_C_err1 (θ : ℝ) : ℝ :=
+  let α_star : ℝ := 1 / 2 - θ / Real.pi
+  let δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+  let δ : ℝ := min (δ_star / 2) (1 / 2)
+  let c_sin : ℝ := Real.sin (Real.pi * δ) / Real.exp Real.pi
+  let C_diff : ℝ := 2 * Real.pi / c_sin ^ 4
+  let C_tail : ℝ := 4 / Real.cos θ ^ 2
+  C_diff * (2 + 1 / (2 * Real.pi)) + C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1
+
 private lemma majorant_contour_diff_small (θ : ℝ) (hθ : |θ| < Real.pi / 2)
     (Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
     (hα_near : |α - (1 / 2 - θ / Real.pi)| ≤ (min ((1 / 2 - θ / Real.pi) / 2) ((1 - (1 / 2 - θ / Real.pi)) / 2)) / 2)
     (hsumm_b : Summable (fun n : ℤ => rescaledFDeriv θ Δ (n + α)))
     (hsum0 : ∑' n : ℤ, rescaledFDeriv θ Δ (n + α) = 0) :
-    let α_star : ℝ := 1 / 2 - θ / Real.pi
-    let δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
-    let δ : ℝ := min (δ_star / 2) (1 / 2)
-    let c_sin : ℝ := Real.sin (Real.pi * δ) / Real.exp Real.pi
-    let C_diff : ℝ := 2 * Real.pi / c_sin ^ 4
-    let C_tail : ℝ := 4 / Real.cos θ ^ 2
-    let C_err1 : ℝ := C_diff * (2 + 1 / (2 * Real.pi)) + C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1
     ∀ y : ℝ, 0 < |y| → |y| < 1 →
       |(vaalerInterpolant θ Δ α y - rescaledF θ Δ y) - Real.sin (Real.pi * (y - α)) ^ 2 * limitingJ y θ| ≤
-        Real.sin (Real.pi * (y - α)) ^ 2 * (C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ) + |α - α_star|) * (1 + Real.log (1 / |y|))) := by
+        Real.sin (Real.pi * (y - α)) ^ 2 * (diffA_C_err1 θ * (Δ * Real.exp (-2 * Real.pi * Δ) + |α - (1 / 2 - θ / Real.pi)|) * (1 + Real.log (1 / |y|))) := by
   let α_star : ℝ := 1 / 2 - θ / Real.pi
   have hα_star : α_star ∈ Set.Ioo (0 : ℝ) 1 := by
     have := abs_lt.mp hθ
@@ -253,7 +255,7 @@ private lemma majorant_contour_diff_small (θ : ℝ) (hθ : |θ| < Real.pi / 2)
         ext v; dsimp only [Φ_star]; rw [div_div]
       rw [h_eq_fn, ← integral_Ioc_eq_integral_Ioo, ← setIntegral_union (Set.Ioc_disjoint_Ioi le_rfl) measurableSet_Ioi
         (h_int_sub.mono_set Set.Ioc_subset_Ioi_self) (h_int_sub.mono_set (Set.Ioi_subset_Ioi (by linarith)))]
-      rw [show Set.Ioc (0 : ℝ) Δ ∪ Set.Ioi Δ = Set.Ioi 0 by ext x; simp only [Set.mem_union, Set.mem_Ioc, Set.mem_Ioi]; exact ⟨fun h => h.elim (fun a => a.1) (fun a => by linarith only [a, hΔ]), fun h => lt_or_ge x Δ |>.imp (fun h' => ⟨h, h'.le⟩) (fun h' => h')⟩]
+      rw [show Set.Ioc (0 : ℝ) Δ ∪ Set.Ioi Δ = Set.Ioi 0 by ext x; simp only [Set.mem_union, Set.mem_Ioc, Set.mem_Ioi]; exact ⟨fun h => h.elim (fun a => a.1) (fun a => by linarith only [a, hΔ]), fun h => by rcases lt_or_ge x Δ with h' | h'; exact Or.inl ⟨h, h'.le⟩; exact Or.inr h'⟩]
     have hΦy_int : IntegrableOn (fun v : ℝ => (Φ v / ((y : ℂ) - Complex.I * v)).im) (Set.Ioo 0 Δ) := by
       refine (continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self : IntegrableOn (fun _ : ℝ => (1 / c_sin ^ 2) / |y|) (Set.Ioo 0 Δ)).mono' ?_ ?_
       · refine Complex.continuous_im.comp_continuousOn ?_ |>.aestronglyMeasurable measurableSet_Ioo
@@ -582,16 +584,9 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
     (hα_near : |α - (1 / 2 - θ / Real.pi)| ≤ (min ((1 / 2 - θ / Real.pi) / 2) ((1 - (1 / 2 - θ / Real.pi)) / 2)) / 2)
     (hsumm_b : Summable (fun n : ℤ => rescaledFDeriv θ Δ (n + α)))
     (hsum0 : ∑' n : ℤ, rescaledFDeriv θ Δ (n + α) = 0) :
-    let α_star : ℝ := 1 / 2 - θ / Real.pi
-    let δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
-    let δ : ℝ := min (δ_star / 2) (1 / 2)
-    let c_sin : ℝ := Real.sin (Real.pi * δ) / Real.exp Real.pi
-    let C_diff : ℝ := 2 * Real.pi / c_sin ^ 4
-    let C_tail : ℝ := 4 / Real.cos θ ^ 2
-    let C_err1 : ℝ := C_diff * (2 + 1 / (2 * Real.pi)) + C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1
     ∀ y : ℝ, 1 ≤ |y| →
       |(vaalerInterpolant θ Δ α y - rescaledF θ Δ y) - Real.sin (Real.pi * (y - α)) ^ 2 * limitingJ y θ| ≤
-        Real.sin (Real.pi * (y - α)) ^ 2 * (C_err1 * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) + |α - α_star|) / y ^ 2) := by
+        Real.sin (Real.pi * (y - α)) ^ 2 * (diffA_C_err1 θ * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) + |α - (1 / 2 - θ / Real.pi)|) / y ^ 2) := by
   let α_star : ℝ := 1 / 2 - θ / Real.pi
   have hα_star : α_star ∈ Set.Ioo (0 : ℝ) 1 := by
     have := abs_lt.mp hθ
@@ -693,7 +688,7 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
         ext v; dsimp only [Φ_star]; rw [div_div]
       rw [h_eq_fn, ← integral_Ioc_eq_integral_Ioo, ← setIntegral_union (Set.Ioc_disjoint_Ioi le_rfl) measurableSet_Ioi
         (h_int_sub.mono_set Set.Ioc_subset_Ioi_self) (h_int_sub.mono_set (Set.Ioi_subset_Ioi (by linarith)))]
-      rw [show Set.Ioc (0 : ℝ) Δ ∪ Set.Ioi Δ = Set.Ioi 0 by ext x; simp only [Set.mem_union, Set.mem_Ioc, Set.mem_Ioi]; exact ⟨fun h => h.elim (fun a => a.1) (fun a => by linarith only [a, hΔ]), fun h => lt_or_ge x Δ |>.imp (fun h' => ⟨h, h'.le⟩) (fun h' => h')⟩]
+      rw [show Set.Ioc (0 : ℝ) Δ ∪ Set.Ioi Δ = Set.Ioi 0 by ext x; simp only [Set.mem_union, Set.mem_Ioc, Set.mem_Ioi]; exact ⟨fun h => h.elim (fun a => a.1) (fun a => by linarith only [a, hΔ]), fun h => by rcases lt_or_ge x Δ with h' | h'; exact Or.inl ⟨h, h'.le⟩; exact Or.inr h'⟩]
     have hΦy_int : IntegrableOn (fun v : ℝ => (Φ v / ((y : ℂ) - Complex.I * v)).im) (Set.Ioo 0 Δ) := by
       refine (continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self : IntegrableOn (fun _ : ℝ => (1 / c_sin ^ 2) / |y|) (Set.Ioo 0 Δ)).mono' ?_ ?_
       · refine Complex.continuous_im.comp_continuousOn ?_ |>.aestronglyMeasurable measurableSet_Ioo
@@ -751,7 +746,7 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
         rw [← integral_Ioc_eq_integral_Ioo, ← setIntegral_union (Set.Ioc_disjoint_Ioi le_rfl) measurableSet_Ioi
           (h_int_Φs.mono_set Set.Ioc_subset_Ioi_self) (h_int_Φs.mono_set (Set.Ioi_subset_Ioi (by linarith)))]
         congr 1; ext v; simp only [Set.mem_union, Set.mem_Ioc, Set.mem_Ioi]
-        exact ⟨fun h => lt_or_ge v Δ |>.imp (fun h' => ⟨h, h'.le⟩) (fun h' => h'),
+        exact ⟨fun h => by rcases lt_or_ge v Δ with h' | h'; exact Or.inl ⟨h, h'.le⟩; exact Or.inr h',
           fun h => h.elim (fun a => a.1) (fun a => by linarith)⟩
       have h_s2 : ∫ v in Set.Ioo (0 : ℝ) Δ, (Φ v - Φ_star v).im =
           (∫ v in Set.Ioo (0 : ℝ) Δ, (Φ v).im) - (∫ v in Set.Ioo (0 : ℝ) Δ, (Φ_star v).im) := by
@@ -1042,8 +1037,9 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   let C_diff : ℝ := 2 * Real.pi / c_sin ^ 4
   let C_tail : ℝ := 4 / Real.cos θ ^ 2
   let C_err1 : ℝ := C_diff * (2 + 1 / (2 * Real.pi)) + C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1
-  refine ⟨1, C_err1, le_rfl, by positivity, fun Δ α hΔ hα hα_near hsumm_b hsum0 => ?_⟩
-  exact ⟨majorant_contour_diff_small θ hθ Δ α hΔ hα hα_near hsumm_b hsum0,
-         majorant_contour_diff_large θ hθ Δ α hΔ hα hα_near hsumm_b hsum0⟩
+  refine ⟨1, diffA_C_err1 θ, le_rfl, ?_, fun Δ α hΔ hα hα_near hsumm_b hsum0 => ?_⟩
+  · change 0 < C_err1; positivity
+  · exact ⟨majorant_contour_diff_small θ hθ Δ α hΔ hα hα_near hsumm_b hsum0,
+           majorant_contour_diff_large θ hθ Δ α hΔ hα hα_near hsumm_b hsum0⟩
 
 end PolarEvaluation
