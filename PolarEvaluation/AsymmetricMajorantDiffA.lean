@@ -534,14 +534,16 @@ private lemma majorant_contour_diff_small (θ : ℝ) (hθ : |θ| < Real.pi / 2)
       have hsq : Δ ^ 2 ≤ ‖Complex.I * Δ - y‖ ^ 2 := by
         rw [normSq_I_mul_sub]; exact le_add_of_nonneg_left (sq_nonneg y)
       exact (sq_le_sq₀ (by linarith) (norm_nonneg _)).mp hsq
+    have hΔ0 : 0 ≤ Δ := zero_le_one.trans hΔ
+    have hΔ_pos : 0 < Δ := zero_lt_one.trans_le hΔ
     have hmul : (c_sin * Real.exp (Real.pi * Δ)) ^ 2 * Δ ≤
         ‖Complex.sin (Real.pi * (Complex.I * Δ - α))‖ ^ 2 * ‖Complex.I * Δ - y‖ :=
-      mul_le_mul hden h_iy (by linarith) (pow_nonneg (norm_nonneg _) 2)
+      mul_le_mul hden h_iy hΔ0 (pow_nonneg (norm_nonneg _) 2)
     calc Δ * |Real.sin θ| / (‖Complex.sin (Real.pi * (Complex.I * Δ - α))‖ ^ 2 * ‖Complex.I * Δ - y‖)
         ≤ Δ * 1 / ((c_sin * Real.exp (Real.pi * Δ)) ^ 2 * Δ) :=
-          div_le_div₀ (mul_nonneg (by linarith) zero_le_one)
-            (mul_le_mul_of_nonneg_left (Real.abs_sin_le_one θ) (by linarith))
-            (mul_pos (pow_pos (mul_pos hc_pos (Real.exp_pos _)) 2) (by linarith))
+          div_le_div₀ (mul_nonneg hΔ0 zero_le_one)
+            (mul_le_mul_of_nonneg_left (Real.abs_sin_le_one θ) hΔ0)
+            (mul_pos (pow_pos (mul_pos hc_pos (Real.exp_pos _)) 2) hΔ_pos)
             hmul
       _ = (1 / c_sin ^ 2) * Real.exp (-2 * Real.pi * Δ) := by
           rw [mul_pow, ← Real.exp_nat_mul]; push_cast
@@ -869,7 +871,7 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
         dsimp only
         rw [show (-(Real.pi : ℂ) * v) = ((-Real.pi * v : ℝ) : ℂ) by push_cast; ring,
           ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-      refine (h_e.const_mul _).mono' (by fun_prop) ?_
+      refine (h_e.const_mul (C_diff * |α - α_star| / y ^ 2)).mono' (by fun_prop) ?_
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
       rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
       have h_v : v ≤ Real.exp (Real.pi * v) := by have := Real.add_one_le_exp (Real.pi * v); nlinarith [Real.two_le_pi, hv.out]
@@ -939,7 +941,7 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
         dsimp only
         rw [show (-(Real.pi : ℂ) * v) = ((-Real.pi * v : ℝ) : ℂ) by push_cast; ring,
           ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-      refine (h_e.const_mul _).mono' (by fun_prop) ?_
+      refine (h_e.const_mul (C_tail / y ^ 2)).mono' (by fun_prop) ?_
       filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
       have hv0 : 0 ≤ v := by linarith [hv.out]
       rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
@@ -1037,13 +1039,29 @@ private lemma majorant_contour_diff_large (θ : ℝ) (hθ : |θ| < Real.pi / 2)
       ((Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ / ((y : ℂ) * (Complex.I * Δ - y)))).re)
     linarith
   have h_c1 : C_diff * (1 / (4 * Real.pi ^ 2)) ≤ C_err1 := by
-    dsimp only [C_err1]
-    have : 1 / (4 * Real.pi ^ 2) ≤ 2 + 1 / (2 * Real.pi) := by
-      have : 1 ≤ Real.pi ^ 2 := by nlinarith [Real.two_le_pi]
-      nlinarith [show 0 < 1 / (2 * Real.pi) by positivity]
-    nlinarith [show 0 < C_diff by positivity]
+    have hpi2 : (1 : ℝ) ≤ 4 * Real.pi ^ 2 := by nlinarith [Real.two_le_pi]
+    have h_inv : 1 / (4 * Real.pi ^ 2) ≤ 1 := div_le_one_of_le₀ hpi2 (by positivity)
+    have h_le1 : 1 / (4 * Real.pi ^ 2) ≤ 2 + 1 / (2 * Real.pi) :=
+      h_inv.trans (le_add_of_le_of_nonneg (by norm_num) (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le))
+    have h_le2 : C_diff * (1 / (4 * Real.pi ^ 2)) ≤ C_diff * (2 + 1 / (2 * Real.pi)) :=
+      mul_le_mul_of_nonneg_left h_le1 (div_nonneg (mul_pos two_pos Real.pi_pos).le (pow_nonneg hc_pos.le 4))
+    have h_tail_nn : 0 ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 + 1 :=
+      add_nonneg (add_nonneg (mul_nonneg (div_nonneg (by norm_num) (sq_nonneg _))
+        (add_nonneg (add_nonneg (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le)
+          (div_nonneg zero_le_one (mul_nonneg (by norm_num) (sq_nonneg _)))) zero_le_one))
+        (div_nonneg zero_le_one (sq_nonneg _))) zero_le_one
+    exact h_le2.trans (le_add_of_nonneg_right h_tail_nn)
   have h_c2 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) + 1 / c_sin ^ 2 ≤ C_err1 := by
-    dsimp only [C_err1]; positivity
+    have h_d_nn : 0 ≤ C_diff * (2 + 1 / (2 * Real.pi)) :=
+      mul_nonneg (div_nonneg (mul_pos two_pos Real.pi_pos).le (pow_nonneg hc_pos.le 4))
+        (add_nonneg (by norm_num) (div_nonneg zero_le_one (mul_pos two_pos Real.pi_pos).le))
+    have h_t_nn : 0 ≤ C_tail := div_nonneg (by norm_num) (sq_nonneg _)
+    have h_t_le : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) ≤ C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) :=
+      mul_le_mul_of_nonneg_left (le_add_of_nonneg_right zero_le_one) h_t_nn
+    have h1 : C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) + 1 / c_sin ^ 2 ≤
+        C_tail * (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2) + 1) + 1 / c_sin ^ 2 :=
+      add_le_add_left h_t_le _
+    exact h1.trans (le_trans (le_add_of_nonneg_left h_d_nn) (le_add_of_nonneg_right zero_le_one))
   have h_step1 : |((∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) -
       (∫ v in Set.Ioi Δ, (Φ_star v * (Complex.I * v / ((y : ℂ) * ((y : ℂ) - Complex.I * v)))).im) -
       (Δ * Real.sin θ / Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ / ((y : ℂ) * (Complex.I * Δ - y)))).re)| ≤
