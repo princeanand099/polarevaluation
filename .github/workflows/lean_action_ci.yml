@@ -2,7 +2,7 @@ name: Lean Action CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'sec*']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -42,6 +42,15 @@ jobs:
         run: |
           curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      - name: Cache project build (.lake/build)
+        uses: actions/cache@v4
+        with:
+          path: .lake/build
+          key: ${{ runner.os }}-lake-build-${{ hashFiles('lean-toolchain', 'lakefile.*', 'lake-manifest.json', 'GrasGreenbergBrocard/**/*.lean') }}
+          restore-keys: |
+            ${{ runner.os }}-lake-build-${{ hashFiles('lean-toolchain', 'lakefile.*', 'lake-manifest.json') }}-
+            ${{ runner.os }}-lake-build-
 
       - name: Cache and build
         id: build
