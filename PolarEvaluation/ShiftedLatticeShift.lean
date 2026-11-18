@@ -219,6 +219,7 @@ lemma intervalIntegral_tsum_of_dominated {a b : ℝ} (hab : a ≤ b)
   exact tendsto_nhds_unique h_dom h_lim_sum
 
 /-- **Lemma 3.1** (Optimal lattice shift `α_Δ ∈ (0, 1)`). -/
+set_option maxHeartbeats 800000 in
 theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ (Δ₁ C_α : ℝ), Δ₁ ≥ 1 ∧ C_α > 0 ∧
       ∀ Δ ≥ Δ₁, ∃! α : ℝ, α ∈ Set.Ioo (0 : ℝ) 1 ∧
@@ -405,9 +406,12 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           · ring
         have h2 : HasDerivAt (fun s : ℝ => ((n : ℝ) + s) / (((n : ℝ) + s) ^ 2 + Δ ^ 2))
             ((((n : ℝ) + t) ^ 2 + Δ ^ 2 - 2 * ((n : ℝ) + t) ^ 2) / (((n : ℝ) + t) ^ 2 + Δ ^ 2) ^ 2) t := by
-          have ha' := (hasDerivAt_id t).const_add (n : ℝ)
-          have hb' := ((hasDerivAt_pow 2 ((n : ℝ) + t)).comp t ha').add_const (Δ ^ 2)
-          convert ha'.div hb' (by positivity) using 1; ring
+          have ha' : HasDerivAt (fun s : ℝ => (n : ℝ) + s) 1 t := by
+            simpa using (hasDerivAt_id t).const_add (n : ℝ)
+          have hb' : HasDerivAt (fun s : ℝ => ((n : ℝ) + s) ^ 2 + Δ ^ 2) (2 * ((n : ℝ) + t)) t := by
+            simpa using (ha'.pow 2).add_const (Δ ^ 2)
+          convert ha'.div hb' (by positivity : ((n : ℝ) + t) ^ 2 + Δ ^ 2 ≠ 0) using 1
+          ring
         convert h1.sub h2 using 1; dsimp only [d₁]; ring
       · exact (hd_cont n).mono (by rw [Set.uIcc_of_le hab]) |>.intervalIntegrable
     have h_min_pos : 0 < min a (1 - b) := lt_min ha.1 (by linarith [hb.2])
@@ -430,19 +434,19 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have : |(n : ℝ)| ≤ |(n : ℝ) + t| + |t| := by
           have h := abs_sub ((n : ℝ) + t) t
           simpa using h
-        linarith
+        linarith [abs_nonneg ((n : ℝ) + t)]
       have h2 : (1 + |(n : ℝ) + t|) ^ 2 ≤ 2 * (1 + ((n : ℝ) + t) ^ 2) := by
         have : (1 - |(n : ℝ) + t|) ^ 2 ≥ 0 := sq_nonneg _; nlinarith [sq_abs ((n : ℝ) + t)]
       have h3 : 1 / ((n : ℝ) + t) ^ 2 ≤ (1 / δ₀ ^ 2 + 1) / (1 + ((n : ℝ) + t) ^ 2) := by
         have hdt : δ₀ ^ 2 ≤ ((n : ℝ) + t) ^ 2 := by
-          rw [← sq_abs ((n : ℝ) + t)]; exact sq_le_sq' (by linarith) (h_int_u n t ht)
-        have hpos : 0 < ((n : ℝ) + t) ^ 2 := by positivity
+          rw [← sq_abs ((n : ℝ) + t)]; exact sq_le_sq' (by linarith [h_min_pos, abs_nonneg ((n : ℝ) + t)]) (h_int_u n t ht)
+        have hpos : 0 < ((n : ℝ) + t) ^ 2 := lt_of_lt_of_le (sq_pos_of_pos h_min_pos) hdt
         rw [div_le_div_iff₀ hpos (by positivity)]
         have : 1 ≤ (1 / δ₀ ^ 2) * ((n : ℝ) + t) ^ 2 := by
           rw [one_div_mul_eq_div, one_le_div (sq_pos_of_pos h_min_pos)]; exact hdt
         nlinarith
       have h4 : |(((n : ℝ) + t) ^ 2 - Δ ^ 2) / (((n : ℝ) + t) ^ 2 + Δ ^ 2) ^ 2| ≤ 1 / (1 + ((n : ℝ) + t) ^ 2) := by
-        rw [abs_div, abs_of_pos (by positivity)]
+        rw [abs_div, abs_of_pos (by positivity : 0 < (((n : ℝ) + t) ^ 2 + Δ ^ 2) ^ 2)]
         have hnum : |((n : ℝ) + t) ^ 2 - Δ ^ 2| ≤ ((n : ℝ) + t) ^ 2 + Δ ^ 2 := by
           rw [abs_le]; constructor <;> linarith [sq_nonneg ((n : ℝ) + t), sq_nonneg Δ]
         have hden : 1 + ((n : ℝ) + t) ^ 2 ≤ ((n : ℝ) + t) ^ 2 + Δ ^ 2 := by nlinarith
@@ -457,7 +461,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         refine (abs_add_le _ _).trans ?_
         have hneg : |-1 / ((n : ℝ) + t) ^ 2| = 1 / ((n : ℝ) + t) ^ 2 := by
           rw [abs_div, abs_neg, abs_one, abs_of_nonneg (sq_nonneg _)]
-        linarith
+        linarith [show (1 / δ₀ ^ 2 + 1) / (1 + ((n : ℝ) + t) ^ 2) + 1 / (1 + ((n : ℝ) + t) ^ 2) = (1 / δ₀ ^ 2 + 2) / (1 + ((n : ℝ) + t) ^ 2) by ring]
       have hpow_eq : (1 + |(n : ℝ)|) ^ (-2 : ℝ) = 1 / (1 + |(n : ℝ)|) ^ 2 := by
         have hpos : 0 < 1 + |(n : ℝ)| := by positivity
         rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hpos.le, Real.rpow_natCast, one_div]
@@ -465,7 +469,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       rw [hpow_eq]
       have h_inv_le : 1 / (1 + ((n : ℝ) + t) ^ 2) ≤ 8 / (1 + |(n : ℝ)|) ^ 2 := by
         rw [div_le_div_iff₀ (by positivity) (by positivity)]
-        have : (1 + |(n : ℝ)|) ^ 2 ≤ 4 * (1 + |(n : ℝ) + t|) ^ 2 := by nlinarith
+        have hsq_le : (1 + |(n : ℝ)|) ^ 2 ≤ (2 * (1 + |(n : ℝ) + t|)) ^ 2 := sq_le_sq' (by linarith [abs_nonneg (n : ℝ), abs_nonneg ((n : ℝ) + t)]) h1
+        have : (1 + |(n : ℝ)|) ^ 2 ≤ 4 * (1 + |(n : ℝ) + t|) ^ 2 := by linarith
         linarith
       calc ‖d₁ n t‖ ≤ (1 / δ₀ ^ 2 + 2) * (1 / (1 + ((n : ℝ) + t) ^ 2)) := by
             rw [← mul_div_assoc, mul_one]; exact hd_norm
@@ -1047,15 +1052,15 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   have hr_pos : 0 < r := by positivity
   have hr_le_δ : r ≤ δ_star := le_trans h_r_le (min_le_left _ _)
   have hr_le_14 : r ≤ 1 / 4 := le_trans h_r_le (min_le_right _ _)
-  let α₋ : ℝ := α_star - r
-  let α₊ : ℝ := α_star + r
-  have hIcc_sub : Set.Icc α₋ α₊ ⊆ Set.Ioo (0 : ℝ) 1 := by
+  let alpha_minus : ℝ := α_star - r
+  let alpha_plus : ℝ := α_star + r
+  have hIcc_sub : Set.Icc alpha_minus alpha_plus ⊆ Set.Ioo (0 : ℝ) 1 := by
     intro α hα
     have h1 : δ_star ≤ α_star / 2 := min_le_left _ _
     have h2 : δ_star ≤ (1 - α_star) / 2 := min_le_right _ _
     constructor <;> linarith [hα.1, hα.2, hα_star.1, hα_star.2]
-  have hα₋_mem : α₋ ∈ Set.Ioo (0 : ℝ) 1 := hIcc_sub (Set.left_mem_Icc.mpr (by linarith))
-  have hα₊_mem : α₊ ∈ Set.Ioo (0 : ℝ) 1 := hIcc_sub (Set.right_mem_Icc.mpr (by linarith))
+  have halpha_minus_mem : alpha_minus ∈ Set.Ioo (0 : ℝ) 1 := hIcc_sub (Set.left_mem_Icc.mpr (by linarith))
+  have halpha_plus_mem : alpha_plus ∈ Set.Ioo (0 : ℝ) 1 := hIcc_sub (Set.right_mem_Icc.mpr (by linarith))
   have hg_approx : ∀ (s : ℝ), |s| ≤ r →
       |g (α_star + s) - (-Real.pi * Real.sin (Real.pi * s) / Real.sin (Real.pi * (α_star + s)))| ≤
         C_tot * Δ * Real.exp (-2 * Real.pi * Δ) := by
@@ -1105,36 +1110,36 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have : C_tot < Real.pi * (2 * (C_tot / (2 * Real.pi) + 1)) := by
       field_simp [Real.pi_ne_zero]; linarith [Real.pi_pos]
     nlinarith [Real.exp_pos (-2 * Real.pi * Δ)]
-  have hg_pos_neg : g α₊ < 0 ∧ 0 < g α₋ := by
-    have hsin_p : 0 < Real.sin (Real.pi * α₊) :=
-      Real.sin_pos_of_pos_of_lt_pi (by positivity) (by nlinarith [Real.pi_pos, hα₊_mem.2])
-    have hsin_p_le : Real.sin (Real.pi * α₊) ≤ 1 := Real.sin_le_one _
+  have hg_pos_neg : g alpha_plus < 0 ∧ 0 < g alpha_minus := by
+    have hsin_p : 0 < Real.sin (Real.pi * alpha_plus) :=
+      Real.sin_pos_of_pos_of_lt_pi (by positivity) (by nlinarith [Real.pi_pos, halpha_plus_mem.2])
+    have hsin_p_le : Real.sin (Real.pi * alpha_plus) ≤ 1 := Real.sin_le_one _
     have h_p := hg_approx r (by rw [abs_of_pos hr_pos])
-    have h_p_main : Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * α₊) ≥ Real.pi * (2 * r) := by
-      calc Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * α₊)
+    have h_p_main : Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_plus) ≥ Real.pi * (2 * r) := by
+      calc Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_plus)
           ≥ Real.pi * (2 * r) / 1 := div_le_div₀ (by positivity) (by gcongr) zero_lt_one hsin_p_le
         _ = Real.pi * (2 * r) := div_one _
-    have hg_p_lt : g α₊ < 0 := by
+    have hg_p_lt : g alpha_plus < 0 := by
       have := (abs_le.mp h_p).2
-      dsimp only [α₊]
+      dsimp only [alpha_plus]
       linarith
-    have hsin_m : 0 < Real.sin (Real.pi * α₋) :=
-      Real.sin_pos_of_pos_of_lt_pi (by positivity) (by nlinarith [Real.pi_pos, hα₋_mem.2])
-    have hsin_m_le : Real.sin (Real.pi * α₋) ≤ 1 := Real.sin_le_one _
+    have hsin_m : 0 < Real.sin (Real.pi * alpha_minus) :=
+      Real.sin_pos_of_pos_of_lt_pi (by positivity) (by nlinarith [Real.pi_pos, halpha_minus_mem.2])
+    have hsin_m_le : Real.sin (Real.pi * alpha_minus) ≤ 1 := Real.sin_le_one _
     have h_m := hg_approx (-r) (by rw [abs_neg, abs_of_pos hr_pos])
-    have h_m_main : -Real.pi * Real.sin (Real.pi * (-r)) / Real.sin (Real.pi * α₋) ≥ Real.pi * (2 * r) := by
+    have h_m_main : -Real.pi * Real.sin (Real.pi * (-r)) / Real.sin (Real.pi * alpha_minus) ≥ Real.pi * (2 * r) := by
       rw [mul_neg, Real.sin_neg, neg_mul, neg_neg]
-      calc Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * α₋)
+      calc Real.pi * Real.sin (Real.pi * r) / Real.sin (Real.pi * alpha_minus)
           ≥ Real.pi * (2 * r) / 1 := div_le_div₀ (by positivity) (by gcongr) zero_lt_one hsin_m_le
         _ = Real.pi * (2 * r) := div_one _
-    have hg_m_gt : 0 < g α₋ := by
+    have hg_m_gt : 0 < g alpha_minus := by
       have := (abs_le.mp h_m).1
-      dsimp only [α₋]
+      dsimp only [alpha_minus]
       rw [sub_eq_add_neg]
       linarith
     exact ⟨hg_p_lt, hg_m_gt⟩
-  have h_ivt := intermediate_value_Icc' (by linarith : α₋ ≤ α₊) (hg_cont.mono hIcc_sub)
-  have h0_mem : (0 : ℝ) ∈ Set.Icc (g α₊) (g α₋) := ⟨hg_pos_neg.1.le, hg_pos_neg.2.le⟩
+  have h_ivt := intermediate_value_Icc' (by linarith : alpha_minus ≤ alpha_plus) (hg_cont.mono hIcc_sub)
+  have h0_mem : (0 : ℝ) ∈ Set.Icc (g alpha_plus) (g alpha_minus) := ⟨hg_pos_neg.1.le, hg_pos_neg.2.le⟩
   obtain ⟨α, hα_icc, hα_zero⟩ := h_ivt h0_mem
   have hα_mem : α ∈ Set.Ioo (0 : ℝ) 1 := hIcc_sub hα_icc
   refine ⟨α, ⟨hα_mem, h_summ_all α hα_mem, by rw [hg_eq α hα_mem]; exact hα_zero, ?_⟩, ?_⟩
