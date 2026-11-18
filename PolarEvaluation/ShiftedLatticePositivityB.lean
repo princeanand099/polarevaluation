@@ -46,7 +46,8 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
       exact ne_of_gt (sub_pos.mpr (Real.exp_lt_one_iff.mpr (by nlinarith [Real.pi_pos])))
     have h_ne4' : -1 + Real.exp (Real.pi * ω) ^ 4 ≠ 0 := by
       have h1lt : 1 < Real.exp (Real.pi * ω) := Real.one_lt_exp_iff.mpr (by positivity)
-      nlinarith [sq_nonneg (Real.exp (Real.pi * ω))]
+      have h4lt : 1 < Real.exp (Real.pi * ω) ^ 4 := one_lt_pow₀ h1lt (by norm_num)
+      linarith
     have h_ne_sum : Real.exp (Real.pi * ω) + (Real.exp (Real.pi * ω))⁻¹ ≠ 0 := by positivity
     field_simp [hu.ne', h_ne4, h_ne4', h_ne_sum]
     ring
@@ -64,7 +65,9 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
         ext ω; rw [Complex.ofReal_exp, ← Complex.exp_add]; congr 1; push_cast; ring
       rw [h_eq]
       have h_re_neg : (-((c : ℂ) + Complex.I * x')).re < 0 := by simp [hc]
-      exact (integral_exp_mul_complex_Ioi h_re_neg 0).trans (by simp; rw [neg_div_neg_eq, one_div]; congr 1; ring)
+      exact (integral_exp_mul_complex_Ioi h_re_neg 0).trans (by
+        simp; rw [show -(Complex.I * (x' : ℂ)) + -(c : ℂ) = -((c : ℂ) + Complex.I * x') by ring,
+          div_neg, neg_div, neg_neg, one_div])
     have h_i1 : IntegrableOn (fun ω : ℝ => (Real.exp (-a * ω) : ℂ) * Complex.exp (-Complex.I * ω * x')) (Set.Ioi 0) := by
       have : (fun ω : ℝ => (Real.exp (-a * ω) : ℂ) * Complex.exp (-Complex.I * ω * x')) =
           fun ω : ℝ => Complex.exp (-((a : ℂ) + Complex.I * x') * ω) := by
@@ -152,14 +155,21 @@ lemma cosh_fourier_eq {θ x : ℝ} (hθ : |θ| < Real.pi / 2) (hx : x ≠ 0) :
             ((1 / (((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') -
               1 / (((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') : ℝ) : ℂ) := by
           rw [h_c]; push_cast; rfl
-        rw [integral_ofReal] at h_c''
-        rw [MeasureTheory.integral_const_mul, Complex.ofReal_injective h_c'']
+        have h_c''' : ((∫ ω in Set.Ioi (0 : ℝ), (Real.exp (-(((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω) -
+            Real.exp (-(((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') * ω))) : ℂ) =
+            ((1 / (((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') -
+              1 / (((4 * k + 3 : ℕ) : ℝ) * Real.pi + 2 * θ') : ℝ) : ℂ) :=
+          integral_ofReal.symm.trans h_c''
+        rw [MeasureTheory.integral_const_mul, Complex.ofReal_injective h_c''']
       have hf_int : IntegrableOn (f k) (Set.Ioi 0) := by
         refine h_int_norm.mono' (hf_meas k) ?_
         filter_upwards [ae_restrict_mem measurableSet_Ioi] with ω hω
-        rw [h_norm_eq hω]
-      rw [← MeasureTheory.ofReal_integral_norm_eq_lintegral_nnnorm hf_int,
-        MeasureTheory.setIntegral_congr_fun measurableSet_Ioi h_norm_eq, h_int_val]
+        exact (h_norm_eq hω).le
+      have h_lin : (∫⁻ ω in Set.Ioi (0 : ℝ), (‖f k ω‖₊ : ℝ≥0∞)) =
+          ENNReal.ofReal (∫ ω in Set.Ioi (0 : ℝ), ‖f k ω‖) := by
+        rw [MeasureTheory.ofReal_integral_eq_lintegral_ofReal hf_int.norm (Eventually.of_forall fun _ => norm_nonneg _)]
+        congr 1; ext ω; rw [← coe_nnnorm, ENNReal.ofReal_coe_nnreal]
+      rw [h_lin, MeasureTheory.setIntegral_congr_fun measurableSet_Ioi h_norm_eq, h_int_val]
     have h_tsum_ne_top : (∑' k : ℕ, ∫⁻ ω in Set.Ioi (0 : ℝ), ‖f k ω‖₊) ≠ ⊤ := by
       simp_rw [h_lintegral]
       have hM_summ : Summable (fun k : ℕ => 2 * (1 / (((4 * k + 1 : ℕ) : ℝ) * Real.pi + 2 * θ') -
@@ -732,7 +742,7 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
               ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
           refine (hc.const_mul 2).mono' (Continuous.aestronglyMeasurable (Continuous.div (by fun_prop) (by fun_prop) (fun ω => (Real.cosh_pos _).ne'))) ?_
           filter_upwards [ae_restrict_mem measurableSet_Ioi] with ω (hω : 0 < ω)
-          rw [Real.norm_eq_abs, abs_of_pos (div_pos (Real.exp_pos _) (Real.cosh_pos _)), mul_neg, Real.cosh_neg]
+          rw [Real.norm_eq_abs, abs_of_pos (div_pos (Real.exp_pos _) (Real.cosh_pos _)), mul_neg (Real.pi), Real.cosh_neg]
           have hch : Real.exp (Real.pi * ω) / 2 ≤ Real.cosh (Real.pi * ω) := by
             rw [Real.cosh_eq]; linarith [Real.exp_pos (-(Real.pi * ω))]
           have h2 : Real.exp (-2 * θ * (-ω)) ≤ Real.exp (2 * |θ| * ω) := by
