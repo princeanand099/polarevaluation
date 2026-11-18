@@ -7,15 +7,25 @@ open scoped FourierTransform
 
 namespace PolarEvaluation
 
+private lemma normSq_sub_I_mul (y v : ℝ) : ‖(y : ℂ) - Complex.I * v‖ ^ 2 = y ^ 2 + v ^ 2 := by
+  rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
+  simp [Complex.sub_re, Complex.sub_im, Complex.mul_re, Complex.mul_im]
+  ring
+
+private lemma normSq_I_mul_sub (Δ y : ℝ) : ‖Complex.I * Δ - (y : ℂ)‖ ^ 2 = y ^ 2 + Δ ^ 2 := by
+  rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]
+  simp [Complex.sub_re, Complex.sub_im, Complex.mul_re, Complex.mul_im]
+  ring
+
 lemma limitingJ_upper_bound (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ C_up > 0, ∀ y : ℝ, 1 ≤ |y| → |limitingJ y θ| ≤ C_up / y ^ 2 := by
   obtain ⟨Y₀, C_inf, hY₀, hC_inf, h_asymp⟩ := limitingJ_asymptotic θ hθ
   have hcont_pos : ContinuousOn (fun y : ℝ => |limitingJ y θ|) (Set.Icc 1 Y₀) :=
     (limitingJ_continuousOn_Icc θ hθ hY₀ (fun h => by linarith [h.1])).abs
-  obtain ⟨y_plus, _, hy_plus_max⟩ := isCompact_Icc.exists_isMaxOn ⟨1, left_mem_Icc.mpr hY₀⟩ hcont_pos
+  obtain ⟨y_plus, _, hy_plus_max⟩ := isCompact_Icc.exists_isMaxOn ⟨1, Set.left_mem_Icc.mpr hY₀⟩ hcont_pos
   have hcont_neg : ContinuousOn (fun y : ℝ => |limitingJ y θ|) (Set.Icc (-Y₀) (-1)) :=
     (limitingJ_continuousOn_Icc θ hθ (by linarith) (fun h => by linarith [h.2])).abs
-  obtain ⟨y_minus, _, hy_minus_max⟩ := isCompact_Icc.exists_isMaxOn ⟨-1, right_mem_Icc.mpr (by linarith)⟩ hcont_neg
+  obtain ⟨y_minus, _, hy_minus_max⟩ := isCompact_Icc.exists_isMaxOn ⟨-1, Set.right_mem_Icc.mpr (by linarith)⟩ hcont_neg
   let M_mid : ℝ := max |limitingJ y_plus θ| |limitingJ y_minus θ|
   let C_up : ℝ := max (M_mid * Y₀ ^ 2 + 1) (2 * |envelopeC θ| / Real.pi ^ 2 + C_inf)
   refine ⟨C_up, by positivity, fun y hy => ?_⟩
@@ -36,7 +46,7 @@ lemma limitingJ_upper_bound (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h1 : |limitingJ y θ| ≤ 2 * |envelopeC θ| / (Real.pi ^ 2 * y ^ 2) + C_inf / |y| ^ 3 := by
       have htri := abs_sub_abs_le_abs_sub (limitingJ y θ) (2 * envelopeC θ / (Real.pi ^ 2 * y ^ 2))
       have h_eq : |2 * envelopeC θ / (Real.pi ^ 2 * y ^ 2)| = 2 * |envelopeC θ| / (Real.pi ^ 2 * y ^ 2) := by
-        rw [abs_div, abs_mul, abs_two, abs_of_pos (by positivity : 0 < Real.pi ^ 2 * y ^ 2)]
+        rw [abs_div, abs_mul, abs_two, abs_of_pos (mul_pos (pow_pos Real.pi_pos 2) (by rw [← sq_abs]; positivity))]
       linarith
     have h2 : C_inf / |y| ^ 3 ≤ C_inf / y ^ 2 := by
       rw [show |y| ^ 3 = |y| * y ^ 2 by rw [← sq_abs y]; ring]
@@ -68,7 +78,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     · dsimp only [α_star]; rw [sub_lt_iff_lt_add]; linarith [show -(1 / 2 : ℝ) < θ / Real.pi by rw [lt_div_iff₀ Real.pi_pos]; linarith]
   let δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
   let δ : ℝ := min (δ_star / 2) (1 / 2)
-  have hδ0 : 0 < δ := lt_min (by dsimp only [δ_star]; positivity) (by norm_num)
+  have hδ0 : 0 < δ := lt_min (div_pos (lt_min (div_pos hα_star.1 (by norm_num)) (div_pos (sub_pos.mpr hα_star.2) (by norm_num))) (by norm_num)) (by norm_num)
   have hδ1 : δ ≤ 1 / 2 := min_le_right _ _
   have hα_star1 : δ ≤ α_star := by
     have : δ ≤ δ_star / 2 := min_le_left _ _
@@ -90,11 +100,13 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h1 := (abs_le.mp hα_near).1
     have h2 : δ ≤ δ_star / 2 := min_le_left _ _
     have h3 : δ_star ≤ α_star / 2 := min_le_left _ _
+    dsimp only [δ_star, α_star] at h2 h3
     linarith
   have hα2 : α ≤ 1 - δ := by
     have h1 := (abs_le.mp hα_near).2
     have h2 : δ ≤ δ_star / 2 := min_le_left _ _
     have h3 : δ_star ≤ (1 - α_star) / 2 := min_le_right _ _
+    dsimp only [δ_star, α_star] at h2 h3
     linarith
   have h_sin_star : ∀ v : ℝ, Complex.sin (Real.pi * (Complex.I * v - α_star)) ^ 2 =
       Complex.cos (θ + Complex.I * Real.pi * v) ^ 2 := by
@@ -122,7 +134,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     intro a _
     have h_lim : Tendsto (fun v : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * v)) atTop (nhds 0) := by
       have h1 : Tendsto (fun v : ℝ => Real.exp (-(2 * Real.pi) * v)) atTop (nhds 0) :=
-        Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by positivity : -(2 * Real.pi) < 0))
+        Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by linarith [Real.pi_pos] : -(2 * Real.pi) < 0))
       simpa using h1.const_mul (-(1 / (2 * Real.pi)))
     have h_int : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi a) := by
       have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi a) :=
@@ -131,12 +143,12 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       dsimp only
       rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
         ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-    have h_d : ∀ v ∈ Set.Ioi a, HasDerivAt (fun t : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * t))
+    have h_d : ∀ v ∈ Set.Ici a, HasDerivAt (fun t : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * t))
         (Real.exp (-2 * Real.pi * v)) v := by
       intro v _
       have hd := ((hasDerivAt_id v).const_mul (-2 * Real.pi)).exp.const_mul (-(1 / (2 * Real.pi)))
       refine hd.congr_deriv ?_
-      field_simp [Real.pi_ne_zero]; ring
+      simp only [id_eq]; field_simp [Real.pi_ne_zero]; ring
     have hres := integral_Ioi_of_hasDerivAt_of_tendsto' h_d h_int h_lim
     linarith
   have h_int_v_exp_Ioi : ∀ a : ℝ, 0 ≤ a →
@@ -171,20 +183,20 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           nlinarith [Real.two_le_pi]
         calc (v / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * Real.exp (-2 * Real.pi * v)
             ≤ (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * v * Real.exp (-2 * Real.pi * v) := by
-              gcongr; nlinarith [show 0 < 1 / (4 * Real.pi ^ 2) by positivity]
+              gcongr; nlinarith [show 0 < 1 / (4 * Real.pi ^ 2) by positivity, hv]
           _ ≤ (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * Real.exp (Real.pi * v) * Real.exp (-2 * Real.pi * v) := by gcongr
           _ = (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * Real.exp (-Real.pi * v) := by
               rw [mul_assoc, ← Real.exp_add]; ring_nf
       have h_lim_r : Tendsto (fun v : ℝ => (1 / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2)) * Real.exp (-Real.pi * v)) atTop (nhds 0) := by
         have h1 : Tendsto (fun v : ℝ => Real.exp (-Real.pi * v)) atTop (nhds 0) :=
-          Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by positivity : -Real.pi < 0))
+          Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by linarith [Real.pi_pos] : -Real.pi < 0))
         simpa using h1.const_mul _
       exact tendsto_zero_iff_norm_tendsto_zero.mpr (tendsto_of_tendsto_of_tendsto_of_le_of_le'
         tendsto_const_nhds h_lim_r (Eventually.of_forall fun _ => norm_nonneg _) h_bnd)
-    have h_d : ∀ v ∈ Set.Ioi a, HasDerivAt G (v * Real.exp (-2 * Real.pi * v)) v := by
+    have h_d : ∀ v ∈ Set.Ici a, HasDerivAt G (v * Real.exp (-2 * Real.pi * v)) v := by
       intro v _
       have hd1 : HasDerivAt (fun t : ℝ => -(t / (2 * Real.pi) + 1 / (4 * Real.pi ^ 2))) (-(1 / (2 * Real.pi))) v := by
-        simpa using (((hasDerivAt_id v).div_const (2 * Real.pi)).add (hasDerivAt_const v (1 / (4 * Real.pi ^ 2)))).neg
+        simpa using ((hasDerivAt_id v).div_const (2 * Real.pi)).add_const (1 / (4 * Real.pi ^ 2)) |>.neg
       have hd2 : HasDerivAt (fun t : ℝ => Real.exp (-2 * Real.pi * t)) (-2 * Real.pi * Real.exp (-2 * Real.pi * v)) v := by
         simpa [mul_comm] using ((hasDerivAt_id v).const_mul (-2 * Real.pi)).exp
       refine (hd1.mul hd2).congr_deriv ?_
@@ -204,7 +216,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     calc 1 / ‖Complex.sin (Real.pi * (Complex.I * v - α))‖ ^ 2
         ≤ 1 / (c_sin * Real.exp (Real.pi * v)) ^ 2 := div_le_div_of_nonneg_left zero_le_one (by positivity) hden
       _ = 1 / c_sin ^ 2 * Real.exp (-2 * Real.pi * v) := by
-          rw [mul_pow, ← Real.exp_nat_mul, Real.exp_neg]; push_cast; ring
+          rw [mul_pow, ← Real.exp_nat_mul]; push_cast; rw [show (2 : ℝ) * (Real.pi * v) = -(-2 * Real.pi * v) by ring, Real.exp_neg]; ring
   have h_common_split : ∀ (y : ℝ) (hy_ne : y ≠ 0),
       ((∫ v in Set.Ioo (0 : ℝ) Δ, (Φ v / ((y : ℂ) - Complex.I * v)).im) -
         (Δ * Real.sin θ / (Complex.sin (Real.pi * (Complex.I * Δ - α)) ^ 2 * (Complex.I * Δ - y))).re) -
@@ -224,7 +236,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
         rw [Real.norm_eq_abs]; refine (Complex.abs_im_le_norm _).trans ?_; rw [norm_div]
         have h_sq : |y| ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-          rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, sq_abs]; simp; nlinarith [sq_nonneg v]
+          rw [normSq_sub_I_mul, sq_abs]; nlinarith [sq_nonneg v]
         exact div_le_div_of_nonneg_left (norm_nonneg _) hy0 ((sq_le_sq₀ (abs_nonneg y) (norm_nonneg _)).mp h_sq)
     have h_split : limitingJ y θ =
         (∫ v in Set.Ioo (0 : ℝ) Δ, (Φ_star v / ((y : ℂ) - Complex.I * v)).im) +
@@ -232,14 +244,12 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       unfold limitingJ
       have h_eq_fn : (fun v : ℝ => (Complex.exp (-Complex.I * θ) / (Complex.cos (θ + Complex.I * Real.pi * v) ^ 2 * (y - Complex.I * v))).im) =
           (fun v : ℝ => (Φ_star v / ((y : ℂ) - Complex.I * v)).im) := by
-        ext v; dsimp only [Φ_star]; ring_nf
+        ext v; dsimp only [Φ_star]; rw [div_div]
       rw [h_eq_fn, ← integral_Ioc_eq_integral_Ioo, ← setIntegral_union (Set.Ioc_disjoint_Ioi le_rfl) measurableSet_Ioi
         (h_int_sub.mono_set Set.Ioc_subset_Ioi_self) (h_int_sub.mono_set (Set.Ioi_subset_Ioi (by linarith)))]
-      congr 1; ext v; simp only [Set.mem_union, Set.mem_Ioc, Set.mem_Ioi]
-      exact ⟨fun h => lt_or_le v Δ |>.imp (fun h' => ⟨h, h'.le⟩) (fun h' => h'),
-        fun h => h.elim (fun a => a.1) (fun a => by linarith)⟩
+      rw [Set.Ioc_union_Ioi (by linarith)]
     have hΦy_int : IntegrableOn (fun v : ℝ => (Φ v / ((y : ℂ) - Complex.I * v)).im) (Set.Ioo 0 Δ) := by
-      refine (integrableOn_const (by positivity) : IntegrableOn (fun _ : ℝ => (1 / c_sin ^ 2) / |y|) (Set.Ioo 0 Δ)).mono' ?_ ?_
+      refine (continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self : IntegrableOn (fun _ : ℝ => (1 / c_sin ^ 2) / |y|) (Set.Ioo 0 Δ)).mono' ?_ ?_
       · refine Complex.continuous_im.comp_continuousOn ?_ |>.aestronglyMeasurable measurableSet_Ioo
         refine ContinuousOn.div (continuousOn_const.div (ContinuousOn.pow (Complex.continuous_sin.continuousOn.comp (by fun_prop) (fun _ _ => Set.mem_univ _)) 2) ?_) (by fun_prop) ?_
         · intro v hv; have hlb := sin_pi_iv_beta_lb hδ0 hδ1 hα1 hα2 v hv.1.le
@@ -250,7 +260,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have hΦ_n : ‖Φ v‖ ≤ 1 / c_sin ^ 2 := (hΦ_bd v hv.1.le).trans
           (mul_le_of_le_one_right (by positivity) (Real.exp_le_one_iff.mpr (by nlinarith [Real.pi_pos, hv.1])))
         have h_sq : |y| ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-          rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, sq_abs]; simp; nlinarith [sq_nonneg v]
+          rw [normSq_sub_I_mul, sq_abs]; nlinarith [sq_nonneg v]
         exact div_le_div₀ (by positivity) hΦ_n hy0 ((sq_le_sq₀ (abs_nonneg y) (norm_nonneg _)).mp h_sq)
     have h_sub_int : (∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) / ((y : ℂ) - Complex.I * v)).im) =
         (∫ v in Set.Ioo (0 : ℝ) Δ, (Φ v / ((y : ℂ) - Complex.I * v)).im) -
@@ -276,11 +286,11 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       refine (norm_integral_le_integral_norm _).trans ?_
       let g : ℝ → ℝ := fun v => C_diff * |α - α_star| * (Real.exp (-2 * Real.pi * v) / max |y| v)
       have hg_int1 : IntegrableOn g (Set.Ioo 0 |y|) := by
-        refine (integrableOn_const (by positivity) : IntegrableOn (fun _ => C_diff * |α - α_star| / |y|) (Set.Ioo 0 |y|)).mono' ?_ ?_
+        refine (continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self : IntegrableOn (fun _ => C_diff * |α - α_star| / |y|) (Set.Ioo 0 |y|)).mono' ?_ ?_
         · refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_Ioo
           dsimp only [g]
           refine ContinuousOn.mul continuousOn_const (ContinuousOn.div (by fun_prop) ?_ fun v _ => (lt_max_of_lt_left hy0).ne')
-          exact continuousOn_const.max continuousOn_id
+          exact Continuous.continuousOn (continuous_const.max continuous_id)
         · filter_upwards [ae_restrict_mem measurableSet_Ioo] with v hv
           dsimp only [g]
           rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
@@ -291,10 +301,10 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               ≤ C_diff * |α - α_star| * (1 / |y|) := by gcongr
             _ = C_diff * |α - α_star| / |y| := by ring
       have hg_int2 : IntegrableOn g (Set.Ioo |y| 1) := by
-        refine (integrableOn_const (by positivity) : IntegrableOn (fun _ => C_diff * |α - α_star| / |y|) (Set.Ioo |y| 1)).mono' ?_ ?_
+        refine (continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self : IntegrableOn (fun _ => C_diff * |α - α_star| / |y|) (Set.Ioo |y| 1)).mono' ?_ ?_
         · refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_Ioo
           dsimp only [g]
-          refine ContinuousOn.mul continuousOn_const (ContinuousOn.div (by fun_prop) (continuousOn_const.max continuousOn_id)
+          refine ContinuousOn.mul continuousOn_const (ContinuousOn.div (by fun_prop) (Continuous.continuousOn (continuous_const.max continuous_id))
             fun v _ => (lt_max_of_lt_left hy0).ne')
         · filter_upwards [ae_restrict_mem measurableSet_Ioo] with v hv
           dsimp only [g]
@@ -307,10 +317,10 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
                 gcongr; exact hv.1.le
             _ = C_diff * |α - α_star| / |y| := by ring
       have hg_int3 : IntegrableOn g (Set.Ioo 1 Δ) := by
-        refine (integrableOn_const (by positivity) : IntegrableOn (fun _ => C_diff * |α - α_star|) (Set.Ioo 1 Δ)).mono' ?_ ?_
+        refine (continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self : IntegrableOn (fun _ => C_diff * |α - α_star|) (Set.Ioo 1 Δ)).mono' ?_ ?_
         · refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_Ioo
           dsimp only [g]
-          refine ContinuousOn.mul continuousOn_const (ContinuousOn.div (by fun_prop) (continuousOn_const.max continuousOn_id)
+          refine ContinuousOn.mul continuousOn_const (ContinuousOn.div (by fun_prop) (Continuous.continuousOn (continuous_const.max continuous_id))
             fun v _ => (lt_max_of_lt_left hy0).ne')
         · filter_upwards [ae_restrict_mem measurableSet_Ioo] with v hv
           dsimp only [g]
@@ -321,18 +331,21 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               ≤ C_diff * |α - α_star| * (1 / 1) := by gcongr
             _ = C_diff * |α - α_star| := by ring
       have hg_int : IntegrableOn g (Set.Ioo 0 Δ) := by
-        have h_u : Set.Ioo (0 : ℝ) Δ ⊆ Set.Ioo 0 |y| ∪ Set.Ioo |y| 1 ∪ Set.Ioo 1 Δ ∪ {|y|, 1} := by
-          intro v hv
-          by_cases h1 : v = |y|
-          · exact Or.inr (Or.inl h1)
-          by_cases h2 : v = 1
-          · exact Or.inr (Or.inr h2)
-          rcases lt_or_gt_of_ne h1 with h1' | h1'
-          · exact Or.inl (Or.inl (Or.inl ⟨hv.1, h1'⟩))
-          · rcases lt_or_gt_of_ne h2 with h2' | h2'
-            · exact Or.inl (Or.inl (Or.inr ⟨h1', h2'⟩))
-            · exact Or.inl (Or.inr ⟨h2', hv.2⟩)
-        refine (((hg_int1.union hg_int2).union hg_int3).union (integrableOn_finite (by simp : ({|y|, (1 : ℝ)} : Set ℝ).Finite))).mono_set h_u
+        have h_u : Set.Ioo 0 |y| ∪ Set.Ioo |y| 1 ∪ Set.Ioo 1 Δ =ᵐ[volume] Set.Ioo (0 : ℝ) Δ := by
+          change ∀ᵐ v ∂volume, (v ∈ Set.Ioo 0 |y| ∪ Set.Ioo |y| 1 ∪ Set.Ioo 1 Δ) = (v ∈ Set.Ioo (0 : ℝ) Δ)
+          rw [ae_iff]
+          have h_null : volume ({|y|, (1 : ℝ)} : Set ℝ) = 0 := by simp [Set.insert_eq, measure_union_null]
+          refine measure_mono_null (fun v hv => ?_) h_null
+          simp only [Set.mem_setOf_eq, Set.mem_insert_iff, Set.mem_singleton_iff]
+          by_contra hne
+          push_neg at hne
+          apply hv; simp only [Set.mem_Ioo, Set.mem_union]
+          rcases lt_or_gt_of_ne hne.1 with h1 | h1 <;> rcases lt_or_gt_of_ne hne.2 with h2 | h2
+          · exact ⟨fun a => a.elim (fun b => b.elim (fun c => ⟨c.1, by linarith⟩) (fun c => by linarith [c.1])) (fun b => by linarith [b.1]), fun a => Or.inl (Or.inl ⟨a.1, h1⟩)⟩
+          · exact ⟨fun a => a.elim (fun b => b.elim (fun c => ⟨c.1, by linarith⟩) (fun c => by linarith [c.1])) (fun b => by linarith [b.1]), fun a => Or.inl (Or.inl ⟨a.1, h1⟩)⟩
+          · exact ⟨fun a => a.elim (fun b => b.elim (fun c => ⟨c.1, by linarith⟩) (fun c => ⟨by linarith, by linarith⟩)) (fun b => by linarith [b.1]), fun a => Or.inl (Or.inr ⟨h1, h2⟩)⟩
+          · exact ⟨fun a => a.elim (fun b => b.elim (fun c => ⟨c.1, by linarith⟩) (fun c => ⟨by linarith, by linarith⟩)) (fun b => ⟨by linarith, b.2⟩), fun a => Or.inr ⟨h2, a.2⟩⟩
+        exact ((hg_int1.union hg_int2).union hg_int3).congr_set_ae h_u
       have hf_le_g : ∀ v ∈ Set.Ioo (0 : ℝ) Δ, ‖((Φ v - Φ_star v) / ((y : ℂ) - Complex.I * v)).im‖ ≤ g v := by
         intro v hv
         rw [Real.norm_eq_abs]
@@ -340,7 +353,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [norm_div]
         have h_n : max |y| v ≤ ‖(y : ℂ) - Complex.I * v‖ := by
           have hsq : (max |y| v) ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-            rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]; simp
+            rw [normSq_sub_I_mul]
             rcases max_choice |y| v with h | h <;> rw [h]
             · rw [sq_abs]; nlinarith [sq_nonneg v]
             · nlinarith [sq_nonneg y]
@@ -402,7 +415,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           _ = C_diff * |α - α_star| / |y| := by ring
       have h_g2 : ∫ v in Set.Ioo |y| 1, g v ≤ C_diff * |α - α_star| * Real.log (1 / |y|) := by
         have h_inv_int : IntegrableOn (fun v : ℝ => C_diff * |α - α_star| * (1 / v)) (Set.Ioo |y| 1) := by
-          refine (integrableOn_const (by positivity) : IntegrableOn (fun _ => C_diff * |α - α_star| / |y|) (Set.Ioo |y| 1)).mono'
+          refine (continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self : IntegrableOn (fun _ => C_diff * |α - α_star| / |y|) (Set.Ioo |y| 1)).mono'
             (by fun_prop) ?_
           filter_upwards [ae_restrict_mem measurableSet_Ioo] with v hv
           rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
@@ -480,7 +493,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             refine (Complex.abs_im_le_norm _).trans ?_; rw [norm_div]
             have hv1 : 1 ≤ ‖(y : ℂ) - Complex.I * v‖ := by
               have hsq : 1 ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-                rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]; simp
+                rw [normSq_sub_I_mul]
                 have : 1 ≤ v := by linarith [hv.out]
                 nlinarith [sq_nonneg y]
               exact (sq_le_sq₀ zero_le_one (norm_nonneg _)).mp hsq
@@ -489,7 +502,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           refine (Complex.abs_im_le_norm _).trans ?_; rw [norm_div]
           have hv1 : 1 ≤ ‖(y : ℂ) - Complex.I * v‖ := by
             have hsq : 1 ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-              rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]; simp
+              rw [normSq_sub_I_mul]
               have : 1 ≤ v := by linarith [hv.out]
               nlinarith [sq_nonneg y]
             exact (sq_le_sq₀ zero_le_one (norm_nonneg _)).mp hsq
@@ -506,14 +519,15 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         sq_le_sq' (by linarith [mul_pos hc_pos (Real.exp_pos (Real.pi * Δ))]) hlb
       have h_iy : Δ ≤ ‖Complex.I * Δ - y‖ := by
         have hsq : Δ ^ 2 ≤ ‖Complex.I * Δ - y‖ ^ 2 := by
-          rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply]; simp; nlinarith [sq_nonneg y]
+          rw [normSq_I_mul_sub]; nlinarith [sq_nonneg y]
         exact (sq_le_sq₀ (by linarith) (norm_nonneg _)).mp hsq
       calc Δ * |Real.sin θ| / (‖Complex.sin (Real.pi * (Complex.I * Δ - α))‖ ^ 2 * ‖Complex.I * Δ - y‖)
           ≤ Δ * 1 / ((c_sin * Real.exp (Real.pi * Δ)) ^ 2 * Δ) := by
             gcongr; exact Real.abs_sin_le_one θ
         _ = (1 / c_sin ^ 2) * Real.exp (-2 * Real.pi * Δ) := by
-            rw [mul_pow, ← Real.exp_nat_mul, Real.exp_neg]
-            push_cast; field_simp [(by linarith : Δ ≠ 0), hc_pos.ne']; ring
+            rw [mul_pow, ← Real.exp_nat_mul]; push_cast
+            rw [show (2 : ℝ) * (Real.pi * Δ) = -(-2 * Real.pi * Δ) by ring, Real.exp_neg]
+            field_simp [(by linarith : Δ ≠ 0), hc_pos.ne']; ring
     have h_log_nonneg : 0 ≤ Real.log (1 / |y|) := Real.log_nonneg ((one_le_div hy0).mpr hy1.le)
     have h_1_le_log : 1 ≤ 1 + Real.log (1 / |y|) := by linarith
     have h_2_le : 2 + Real.log (1 / |y|) ≤ 2 * (1 + Real.log (1 / |y|)) := by linarith
@@ -566,7 +580,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     rw [h_eq1, h_common_split y hy_ne]
     -- Use hc₀_zero and hc_star_zero to replace 1/(y - Iv) with Iv/(y*(y - Iv))!
     have h_int_Φ : IntegrableOn (fun v : ℝ => (Φ v).im) (Set.Ioo 0 Δ) := by
-      refine (integrableOn_const (by positivity) : IntegrableOn (fun _ => 1 / c_sin ^ 2) (Set.Ioo 0 Δ)).mono' ?_ ?_
+      refine (continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self : IntegrableOn (fun _ => 1 / c_sin ^ 2) (Set.Ioo 0 Δ)).mono' ?_ ?_
       · refine Complex.continuous_im.comp_continuousOn ?_ |>.aestronglyMeasurable measurableSet_Ioo
         refine continuousOn_const.div (ContinuousOn.pow (Complex.continuous_sin.continuousOn.comp (by fun_prop) (fun _ _ => Set.mem_univ _)) 2) ?_
         intro v hv; have hlb := sin_pi_iv_beta_lb hδ0 hδ1 hα1 hα2 v hv.1.le
@@ -631,7 +645,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have hyc : (y : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hy_ne
         field_simp [hne, hyc]; ring
       have h_i1 : IntegrableOn (fun v : ℝ => ((Φ v - Φ_star v) / ((y : ℂ) - Complex.I * v)).im) (Set.Ioo 0 Δ) := by
-        refine (integrableOn_const (by positivity) : IntegrableOn (fun _ => C_diff * |α - α_star| / |y|) (Set.Ioo 0 Δ)).mono' ?_ ?_
+        refine (continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self : IntegrableOn (fun _ => C_diff * |α - α_star| / |y|) (Set.Ioo 0 Δ)).mono' ?_ ?_
         · refine Complex.continuous_im.comp_continuousOn ?_ |>.aestronglyMeasurable measurableSet_Ioo
           refine ContinuousOn.div (ContinuousOn.sub ?_ ?_) (by fun_prop) (fun v _ h => ?_)
           · refine continuousOn_const.div (ContinuousOn.pow (Complex.continuous_sin.continuousOn.comp (by fun_prop) (fun _ _ => Set.mem_univ _)) 2) ?_
@@ -643,7 +657,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         · filter_upwards [ae_restrict_mem measurableSet_Ioo] with v hv
           rw [Real.norm_eq_abs]; refine (Complex.abs_im_le_norm _).trans ?_; rw [norm_div]
           have h_sq : |y| ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-            rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, sq_abs]; simp; nlinarith [sq_nonneg v]
+            rw [normSq_sub_I_mul, sq_abs]; nlinarith [sq_nonneg v]
           have h1 := (hΦ_diff v hv.1.le).trans (mul_le_of_le_one_right (by positivity) (Real.exp_le_one_iff.mpr (by nlinarith [Real.pi_pos, hv.1])))
           exact div_le_div₀ (by positivity) h1 hy0 ((sq_le_sq₀ (abs_nonneg y) (norm_nonneg _)).mp h_sq)
       have h_i2 : IntegrableOn (fun v : ℝ => (Φ_star v / ((y : ℂ) - Complex.I * v)).im) (Set.Ioi Δ) := by
@@ -656,7 +670,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
           rw [Real.norm_eq_abs]; refine (Complex.abs_im_le_norm _).trans ?_; rw [norm_div]
           have h_sq : |y| ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-            rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, sq_abs]; simp; nlinarith [sq_nonneg v]
+            rw [normSq_sub_I_mul, sq_abs]; nlinarith [sq_nonneg v]
           exact div_le_div_of_nonneg_left (norm_nonneg _) hy0 ((sq_le_sq₀ (abs_nonneg y) (norm_nonneg _)).mp h_sq)
       have h_sub1 : (∫ v in Set.Ioo (0 : ℝ) Δ, ((Φ v - Φ_star v) / ((y : ℂ) - Complex.I * v)).im) -
           (∫ v in Set.Ioo (0 : ℝ) Δ, (Φ v - Φ_star v).im) / y =
@@ -710,7 +724,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             refine (Complex.abs_im_le_norm _).trans ?_; rw [norm_mul, norm_div, norm_mul, Complex.norm_I, one_mul,
               Complex.norm_real, Real.norm_eq_abs, abs_of_pos hv.1, norm_mul, Complex.norm_real, Real.norm_eq_abs]
             have h_sq : |y| ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-              rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, sq_abs]; simp; nlinarith [sq_nonneg v]
+              rw [normSq_sub_I_mul, sq_abs]; nlinarith [sq_nonneg v]
             have h_n : |y| ≤ ‖(y : ℂ) - Complex.I * v‖ := (sq_le_sq₀ (abs_nonneg y) (norm_nonneg _)).mp h_sq
             have h_y2 : y ^ 2 ≤ |y| * ‖(y : ℂ) - Complex.I * v‖ := by rw [← sq_abs y]; nlinarith
             calc ‖Φ v - Φ_star v‖ * (v / (|y| * ‖(y : ℂ) - Complex.I * v‖))
@@ -721,7 +735,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           refine (Complex.abs_im_le_norm _).trans ?_; rw [norm_mul, norm_div, norm_mul, Complex.norm_I, one_mul,
             Complex.norm_real, Real.norm_eq_abs, abs_of_pos hv.1, norm_mul, Complex.norm_real, Real.norm_eq_abs]
           have h_sq : |y| ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-            rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, sq_abs]; simp; nlinarith [sq_nonneg v]
+            rw [normSq_sub_I_mul, sq_abs]; nlinarith [sq_nonneg v]
           have h_n : |y| ≤ ‖(y : ℂ) - Complex.I * v‖ := (sq_le_sq₀ (abs_nonneg y) (norm_nonneg _)).mp h_sq
           have h_y2 : y ^ 2 ≤ |y| * ‖(y : ℂ) - Complex.I * v‖ := by rw [← sq_abs y]; nlinarith
           calc ‖Φ v - Φ_star v‖ * (v / (|y| * ‖(y : ℂ) - Complex.I * v‖))
@@ -773,7 +787,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             refine (Complex.abs_im_le_norm _).trans ?_; rw [norm_mul, norm_div, norm_mul, Complex.norm_I, one_mul,
               Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hv0, norm_mul, Complex.norm_real, Real.norm_eq_abs]
             have h_sq : |y| ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-              rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, sq_abs]; simp; nlinarith [sq_nonneg v]
+              rw [normSq_sub_I_mul, sq_abs]; nlinarith [sq_nonneg v]
             have h_n : |y| ≤ ‖(y : ℂ) - Complex.I * v‖ := (sq_le_sq₀ (abs_nonneg y) (norm_nonneg _)).mp h_sq
             have h_y2 : y ^ 2 ≤ |y| * ‖(y : ℂ) - Complex.I * v‖ := by rw [← sq_abs y]; nlinarith
             calc ‖Φ_star v‖ * (v / (|y| * ‖(y : ℂ) - Complex.I * v‖))
@@ -785,7 +799,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           refine (Complex.abs_im_le_norm _).trans ?_; rw [norm_mul, norm_div, norm_mul, Complex.norm_I, one_mul,
             Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hv0, norm_mul, Complex.norm_real, Real.norm_eq_abs]
           have h_sq : |y| ^ 2 ≤ ‖(y : ℂ) - Complex.I * v‖ ^ 2 := by
-            rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, sq_abs]; simp; nlinarith [sq_nonneg v]
+            rw [normSq_sub_I_mul, sq_abs]; nlinarith [sq_nonneg v]
           have h_n : |y| ≤ ‖(y : ℂ) - Complex.I * v‖ := (sq_le_sq₀ (abs_nonneg y) (norm_nonneg _)).mp h_sq
           have h_y2 : y ^ 2 ≤ |y| * ‖(y : ℂ) - Complex.I * v‖ := by rw [← sq_abs y]; nlinarith
           calc ‖Φ_star v‖ * (v / (|y| * ‖(y : ℂ) - Complex.I * v‖))
@@ -808,14 +822,15 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hden : (c_sin * Real.exp (Real.pi * Δ)) ^ 2 ≤ ‖Complex.sin (Real.pi * (Complex.I * Δ - α))‖ ^ 2 :=
         sq_le_sq' (by linarith [mul_pos hc_pos (Real.exp_pos (Real.pi * Δ))]) hlb
       have h_sq : |y| ^ 2 ≤ ‖Complex.I * Δ - y‖ ^ 2 := by
-        rw [← Complex.normSq_eq_norm_sq, Complex.normSq_apply, sq_abs]; simp; nlinarith [sq_nonneg Δ]
+        rw [normSq_I_mul_sub, sq_abs]; nlinarith [sq_nonneg Δ]
       have h_n : |y| ≤ ‖Complex.I * Δ - y‖ := (sq_le_sq₀ (abs_nonneg y) (norm_nonneg _)).mp h_sq
       have h_y2 : y ^ 2 ≤ |y| * ‖Complex.I * Δ - y‖ := by rw [← sq_abs y]; nlinarith
       calc Δ * |Real.sin θ| / ‖Complex.sin (Real.pi * (Complex.I * Δ - α))‖ ^ 2 * (Δ / (|y| * ‖Complex.I * Δ - y‖))
           ≤ Δ * 1 / (c_sin * Real.exp (Real.pi * Δ)) ^ 2 * (Δ / y ^ 2) := by
             gcongr; exact Real.abs_sin_le_one θ
         _ = (1 / c_sin ^ 2) * Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) / y ^ 2 := by
-            rw [mul_pow, ← Real.exp_nat_mul, Real.exp_neg]; push_cast
+            rw [mul_pow, ← Real.exp_nat_mul]; push_cast
+            rw [show (2 : ℝ) * (Real.pi * Δ) = -(-2 * Real.pi * Δ) by ring, Real.exp_neg]
             field_simp [hc_pos.ne']; ring
     have h_Δ_le : Δ * Real.exp (-2 * Real.pi * Δ) ≤ Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) := by
       have : Δ ≤ Δ ^ 2 := by nlinarith
