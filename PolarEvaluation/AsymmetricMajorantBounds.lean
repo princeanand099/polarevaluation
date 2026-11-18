@@ -1501,7 +1501,7 @@ private lemma contour_c0_lhs_hb_bd_aux (b_fn : ℤ → ℝ) (Δ α y : ℝ) (m :
           tsum_mul_left]
         ring
     _ ≤ 2 * (∑' n : ℤ, |b_fn n|) / m + 48 * Δ ^ 2 / m := by
-        gcongr; exact div_le_div_of_nonneg_left (by positivity) hm_pos hy_ge_m
+        gcongr
     _ = (2 * (∑' n : ℤ, |b_fn n|) + 48 * Δ ^ 2) / m := by ring
 
 private lemma contour_c0_lhs_hb_bd (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
