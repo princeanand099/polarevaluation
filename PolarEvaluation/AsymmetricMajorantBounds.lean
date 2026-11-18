@@ -1383,7 +1383,7 @@ private lemma contour_c0_lhs_ha_bd_aux (a_fn : ℤ → ℝ) (Δ α y : ℝ) (m :
     ((ha_summ.mul_left (4 / y)).congr (fun n => by ring)).add (h_s_inv.mul_left (16 * Δ ^ 2 / y))
   have h_abs_tsum : |∑' n : ℤ, y * (a_fn n / (y - n - α) ^ 2)| ≤
       ∑' n : ℤ, |y * (a_fn n / (y - n - α) ^ 2)| := by
-    have h := norm_tsum_le_tsum_norm (ha_s.mul_left y)
+    have h := norm_tsum_le_tsum_norm (ha_s.mul_left y).norm
     simp only [Real.norm_eq_abs] at h
     exact h
   calc |∑' n : ℤ, y * (a_fn n / (y - n - α) ^ 2)|
@@ -1471,14 +1471,13 @@ private lemma contour_c0_lhs_hb_bd_aux (b_fn : ℤ → ℝ) (Δ α y : ℝ) (m :
     (h_term : ∀ n : ℤ, |b_fn n / (y - n - α)| ≤ 2 * |b_fn n| / y + g_fin n) :
     |∑' n : ℤ, b_fn n / (y - n - α)| ≤
       (2 * (∑' n : ℤ, |b_fn n|) + 48 * Δ ^ 2) / (m : ℝ) := by
-  subst hg_def
   have hy_pos : 0 < y := by linarith
-  have hg_summ : Summable g_fin := summable_of_ne_finset_zero (s := F_fin) (fun n hn => by simp [g_fin, hn])
+  have hg_summ : Summable g_fin := summable_of_ne_finset_zero (s := F_fin) (fun n hn => by simp [hg_def, hn])
   have hg_sum : ∑' n : ℤ, g_fin n ≤ 48 * Δ ^ 2 / m := by
-    rw [tsum_eq_sum (s := F_fin) (fun n hn => by simp [g_fin, hn])]
+    rw [tsum_eq_sum (s := F_fin) (fun n hn => by simp [hg_def, hn])]
     have h_eq : ∑ n ∈ F_fin, g_fin n = (F_fin.card : ℝ) * (16 * Δ ^ 2 / (m : ℝ) ^ 2) := by
       have h_eq1 : ∑ n ∈ F_fin, g_fin n = ∑ _n ∈ F_fin, (16 * Δ ^ 2 / (m : ℝ) ^ 2) :=
-        Finset.sum_congr rfl (fun n hn => by simp [g_fin, hn])
+        Finset.sum_congr rfl (fun n hn => by simp [hg_def, hn])
       rw [h_eq1, Finset.sum_const, nsmul_eq_mul]
     rw [h_eq]
     have hcard : (F_fin.card : ℝ) ≤ 3 * m := by
@@ -1489,7 +1488,7 @@ private lemma contour_c0_lhs_hb_bd_aux (b_fn : ℤ → ℝ) (Δ α y : ℝ) (m :
   have h_sum_term : Summable (fun n : ℤ => 2 * |b_fn n| / y + g_fin n) :=
     ((hb_mul_summ.mul_left (2 / y)).congr (fun n => by ring)).add hg_summ
   have h_abs_tsum : |∑' n : ℤ, b_fn n / (y - n - α)| ≤ ∑' n : ℤ, |b_fn n / (y - n - α)| := by
-    have h := norm_tsum_le_tsum_norm h_bm_s
+    have h := norm_tsum_le_tsum_norm h_bm_s.norm
     simp only [Real.norm_eq_abs] at h
     exact h
   calc |∑' n : ℤ, b_fn n / (y - n - α)|
