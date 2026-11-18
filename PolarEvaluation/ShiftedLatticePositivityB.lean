@@ -454,7 +454,8 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
           (Complex.cos (θ + Complex.I * Real.pi * v) ^ 2 * (y - Complex.I * v))).im) =
           fun v => (cTheta θ v / ((y : ℂ) - Complex.I * v)).im := by
         ext v; dsimp only [cTheta]; congr 1; ring
-      rw [h_eq, Complex.im_integral h_int_v]
+      rw [h_eq]
+      simpa only [Complex.imCLM_apply] using Complex.imCLM.integral_comp_comm h_int_v
     rw [h_J_im]
     have h_eq1 : (∫ v in Set.Ioi (0 : ℝ), cTheta θ v / ((y : ℂ) - Complex.I * v)) =
         ∫ s in Set.Ioi (0 : ℝ), ((Real.exp (-s * y) : ℝ) : ℂ) *
@@ -476,7 +477,8 @@ lemma limitingJ_pos_of_pos {θ y : ℝ} (hθ : |θ| < Real.pi / 2) (hy : 0 < y) 
       rw [← Complex.ofReal_exp, show -((y : ℂ) - Complex.I * v) * s = (-s * y : ℝ) + Complex.I * s * v by push_cast; ring,
         Complex.exp_add]
       push_cast; ring
-    rw [h_eq1, ← Complex.im_integral h_s_int]
+    rw [h_eq1, ← Complex.imCLM.integral_comp_comm h_s_int]
+    dsimp only [Complex.imCLM_apply]
     congr 1; ext s
     rw [Complex.im_ofReal_mul]
   have h_Psi_pos : ∀ s : ℝ, 0 < s → 0 < Ψ s := by
