@@ -243,7 +243,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     · dsimp only [α_star]; rw [sub_lt_iff_lt_add]; linarith [show -(1 / 2 : ℝ) < θ / Real.pi by rw [lt_div_iff₀ Real.pi_pos]; linarith]
   let δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
   let δ : ℝ := min (δ_star / 2) (1 / 2)
-  have hδ0 : 0 < δ := lt_min (by dsimp only [δ_star]; positivity) (by norm_num)
+  have hδ0 : 0 < δ := lt_min (div_pos (lt_min (div_pos hα_star.1 (by norm_num)) (div_pos (sub_pos.mpr hα_star.2) (by norm_num))) (by norm_num)) (by norm_num)
   let C_mid : ℝ := C_up + C_err1 * (1 + δ_star / 2)
   let C_z : ℝ := ∑' k : ℕ, (1 : ℝ) / (k + 1 : ℝ) ^ 2
   have hCz_pos : 0 < C_z := tsum_pos summable_one_div_sq_nat (fun _ => by positivity) 0 (by positivity)
@@ -271,11 +271,13 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h1 := (abs_le.mp hα_near).1
       have h2 : δ ≤ δ_star / 2 := min_le_left _ _
       have h3 : δ_star ≤ α_star / 2 := min_le_left _ _
+      dsimp only [δ_star, α_star] at h2 h3
       linarith
     have hα2 : α ≤ 1 - δ := by
       have h1 := (abs_le.mp hα_near).2
       have h2 : δ ≤ δ_star / 2 := min_le_left _ _
       have h3 : δ_star ≤ (1 - α_star) / 2 := min_le_right _ _
+      dsimp only [δ_star, α_star] at h2 h3
       linarith
     rcases le_or_gt (0 : ℤ) n with hn | hn
     · have : (0 : ℝ) ≤ n := by exact_mod_cast hn
@@ -787,7 +789,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   have h_int2 : ∫ x in S2, |majorantM θ Δ α x| ≤ 2 * C_mid + ∫ x in Set.Ioo (-1 : ℝ) 1, |kernelK θ x| := by
     let g2 : ℝ → ℝ := fun x => C_mid / (Δ * x) ^ 2 + |kernelK θ x|
     have hg2_1 : IntegrableOn (fun x => C_mid / (Δ * x) ^ 2) S2 := by
-      refine (integrableOn_const (by positivity) : IntegrableOn (fun _ => C_mid) S2).mono'
+      refine ((continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self).union (continuousOn_const.integrableOn_Icc.mono_set Set.Ioo_subset_Icc_self) : IntegrableOn (fun _ : ℝ => C_mid) S2 volume).mono'
         (by fun_prop) ?_
       filter_upwards [ae_restrict_mem (measurableSet_Ioo.union measurableSet_Ioo)] with x hx
       rw [Real.norm_eq_abs, abs_of_nonneg (by positivity)]
@@ -841,7 +843,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       simpa [mul_neg, neg_sq] using h_c_pos
     have h_s2_c : ∫ x in S2, C_mid / (Δ * x) ^ 2 ≤ 2 * C_mid := by
       dsimp only [S2]
-      rw [setIntegral_union (Set.Ioo_disjoint_Ioo_of_le (by rw [neg_div]; linarith [show 0 < 1 / Δ by positivity]))
+      rw [setIntegral_union (Set.disjoint_iff.mpr fun x ⟨hx1, hx2⟩ => by rw [neg_div] at hx1; linarith only [hx1.2, hx2.1, hΔ_pos])
         measurableSet_Ioo (hg2_1.mono_set Set.subset_union_left) (hg2_1.mono_set Set.subset_union_right)]
       linarith
     have h_s2_k : ∫ x in S2, |kernelK θ x| ≤ ∫ x in Set.Ioo (-1 : ℝ) 1, |kernelK θ x| := by
