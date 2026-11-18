@@ -634,9 +634,11 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           ≤ ∫ t in Set.Ioc a b, ‖((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * ((-t : ℂ) + Complex.I * Δ)) ^ 2).re‖ :=
             norm_integral_le_integral_norm _
         _ ≤ ∫ t in Set.Ioc a b, C_sin * Real.exp (-2 * Real.pi * Δ) := by
-            refine setIntegral_mono_on ?_ ((continuousOn_const : ContinuousOn (fun _ : ℝ => (_ : ℝ)) _).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self)
+            have h_const_int : IntegrableOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc a b) :=
+              (continuousOn_const : ContinuousOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Icc a b)).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+            refine setIntegral_mono_on ?_ h_const_int
               measurableSet_Ioc fun t _ => ?_
-            · refine ((continuousOn_const (c := C_sin * Real.exp (-2 * Real.pi * Δ))).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self : IntegrableOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc a b)).mono' ?_ ?_
+            · refine h_const_int.mono' ?_ ?_
               · refine Continuous.aestronglyMeasurable (Continuous.norm (Complex.continuous_re.comp ?_))
                 refine continuous_const.div (Continuous.pow (Complex.continuous_sin.comp (by fun_prop)) 2) fun t => ?_
                 have h1m : 0 < 1 - Real.exp (-2 * Real.pi) := by
@@ -846,9 +848,11 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           ≤ ∫ t in Set.Ioc a b, ‖-((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * ((-t : ℂ) + Complex.I * Δ)) ^ 2).im‖ :=
             norm_integral_le_integral_norm _
         _ ≤ ∫ t in Set.Ioc a b, C_sin * Real.exp (-2 * Real.pi * Δ) := by
-            refine setIntegral_mono_on ?_ ((continuousOn_const : ContinuousOn (fun _ : ℝ => (_ : ℝ)) _).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self)
+            have h_const_int : IntegrableOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc a b) :=
+              (continuousOn_const : ContinuousOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Icc a b)).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+            refine setIntegral_mono_on ?_ h_const_int
               measurableSet_Ioc fun t _ => ?_
-            · refine ((continuousOn_const (c := C_sin * Real.exp (-2 * Real.pi * Δ))).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self : IntegrableOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc a b)).mono' ?_ ?_
+            · refine h_const_int.mono' ?_ ?_
               · refine Continuous.aestronglyMeasurable (Continuous.norm (Continuous.neg (Complex.continuous_im.comp ?_)))
                 refine continuous_const.div (Continuous.pow (Complex.continuous_sin.comp (by fun_prop)) 2) fun t => ?_
                 have h1m : 0 < 1 - Real.exp (-2 * Real.pi) := by
@@ -928,9 +932,11 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       rw [intervalIntegral.integral_of_le hab.le]
       calc ∫ t in Set.Ioc a b, ((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * ((-t : ℂ) + Complex.I * Δ)) ^ 2).re
           ≤ ∫ t in Set.Ioc a b, C_sin * Real.exp (-2 * Real.pi * Δ) := by
-            refine setIntegral_mono_on ?_ ((continuousOn_const : ContinuousOn (fun _ : ℝ => (_ : ℝ)) _).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self)
+            have h_const_int : IntegrableOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc a b) :=
+              (continuousOn_const : ContinuousOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Icc a b)).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+            refine setIntegral_mono_on ?_ h_const_int
               measurableSet_Ioc fun t _ => ?_
-            · refine ((continuousOn_const (c := C_sin * Real.exp (-2 * Real.pi * Δ))).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self : IntegrableOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc a b)).mono' ?_ ?_
+            · refine h_const_int.mono' ?_ ?_
               · refine Continuous.aestronglyMeasurable (Complex.continuous_re.comp ?_)
                 refine continuous_const.div (Continuous.pow (Complex.continuous_sin.comp (by fun_prop)) 2) fun t => ?_
                 have h1m : 0 < 1 - Real.exp (-2 * Real.pi) := by
@@ -1045,9 +1051,11 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             ≤ ∫ t in Set.Ioc u v, ‖((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * ((-t : ℂ) + Complex.I * Δ)) ^ 2).re‖ :=
               norm_integral_le_integral_norm _
           _ ≤ ∫ _t in Set.Ioc u v, C_sin * Real.exp (-2 * Real.pi * Δ) := by
-              refine setIntegral_mono_on ?_ ((continuousOn_const : ContinuousOn (fun _ : ℝ => (_ : ℝ)) _).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self)
+              have h_const_int : IntegrableOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc u v) :=
+                (continuousOn_const : ContinuousOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Icc u v)).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self
+              refine setIntegral_mono_on ?_ h_const_int
                 measurableSet_Ioc fun t _ => ?_
-              · refine ((continuousOn_const (c := C_sin * Real.exp (-2 * Real.pi * Δ))).integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self : IntegrableOn (fun _ : ℝ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc u v)).mono' ?_ ?_
+              · refine h_const_int.mono' ?_ ?_
                 · refine Continuous.aestronglyMeasurable (Continuous.norm (Complex.continuous_re.comp ?_))
                   refine continuous_const.div (Continuous.pow (Complex.continuous_sin.comp (by fun_prop)) 2) fun t => ?_
                   have heq : (Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ) = ((-Real.pi * t : ℝ) : ℂ) + Complex.I * ((Real.pi * Δ : ℝ) : ℂ) := by
