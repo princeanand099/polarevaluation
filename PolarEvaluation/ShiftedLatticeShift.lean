@@ -603,14 +603,16 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
                 IntegrableOn (fun _ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc a b)).mono' ?_ ?_
               · refine Continuous.aestronglyMeasurable (Continuous.norm (Complex.continuous_re.comp ?_))
                 refine continuous_const.div (Continuous.pow (Complex.continuous_sin.comp (by fun_prop)) 2) fun t => ?_
-                have heq : (Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ) = ((-Real.pi * t : ℝ) : ℂ) + Complex.I * (Real.pi * Δ) := by
-                  push_cast; ring
+                have h1m : 0 < 1 - Real.exp (-2 * Real.pi) := by
+                  linarith [Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos] : -2 * Real.pi < 0)]
                 have hs1 : 0 < ((1 - Real.exp (-2 * Real.pi)) / 2) * Real.exp (Real.pi * Δ) := by positivity
                 have hs2 := sin_norm_ge_sinh (-Real.pi * t) (Real.pi * Δ)
                 rw [abs_of_pos (by positivity)] at hs2
                 have hs3 := (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs2
-                rw [← heq] at hs3
-                exact pow_ne_zero 2 (norm_ne_zero_iff.mp (by linarith))
+                have hnorm_pos : 0 < ‖Complex.sin ((Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ))‖ := by
+                  rw [show (Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ) = ((-Real.pi * t : ℝ) : ℂ) + Complex.I * ((Real.pi * Δ : ℝ) : ℂ) by push_cast; ring]
+                  linarith
+                exact pow_ne_zero 2 (norm_ne_zero_iff.mp hnorm_pos.ne')
               · filter_upwards [ae_restrict_mem measurableSet_Ioc] with t _
                 rw [Real.norm_eq_abs, abs_norm, Real.norm_eq_abs]
                 exact (Complex.abs_re_le_norm _).trans (complex_inv_sin_sq_bound Δ hΔ_ge_1 t)
@@ -787,7 +789,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [hsq]
         simp only [Complex.sub_re, Complex.ofReal_re, Complex.mul_re, Complex.I_re, mul_zero,
           Complex.ofReal_im, Complex.I_im, mul_one, sub_zero, Complex.sub_im, Complex.mul_im, zero_sub]
-        have hden : ((n + t : ℝ) ^ 2 - Δ ^ 2) ^ 2 + (-(2 * (n + t : ℝ) * Δ)) ^ 2 = ((n + t : ℝ) ^ 2 + Δ ^ 2) ^ 2 := by ring
+        have hden : ((n + t : ℝ) ^ 2 - Δ ^ 2) * ((n + t : ℝ) ^ 2 - Δ ^ 2) +
+            -(2 * (n + t : ℝ) * Δ + 0) * -(2 * (n + t : ℝ) * Δ + 0) = ((n + t : ℝ) ^ 2 + Δ ^ 2) ^ 2 := by ring
         rw [hden]; dsimp only [d₂]; ring
       simp_rw [h_inner_eq]
       calc ‖∫ t in Set.Ioc a b, -((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * ((-t : ℂ) + Complex.I * Δ)) ^ 2).im‖
@@ -800,14 +803,16 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
                 IntegrableOn (fun _ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc a b)).mono' ?_ ?_
               · refine Continuous.aestronglyMeasurable (Continuous.norm (Continuous.neg (Complex.continuous_im.comp ?_)))
                 refine continuous_const.div (Continuous.pow (Complex.continuous_sin.comp (by fun_prop)) 2) fun t => ?_
-                have heq : (Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ) = ((-Real.pi * t : ℝ) : ℂ) + Complex.I * (Real.pi * Δ) := by
-                  push_cast; ring
+                have h1m : 0 < 1 - Real.exp (-2 * Real.pi) := by
+                  linarith [Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos] : -2 * Real.pi < 0)]
                 have hs1 : 0 < ((1 - Real.exp (-2 * Real.pi)) / 2) * Real.exp (Real.pi * Δ) := by positivity
                 have hs2 := sin_norm_ge_sinh (-Real.pi * t) (Real.pi * Δ)
                 rw [abs_of_pos (by positivity)] at hs2
                 have hs3 := (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs2
-                rw [← heq] at hs3
-                exact pow_ne_zero 2 (norm_ne_zero_iff.mp (by linarith))
+                have hnorm_pos : 0 < ‖Complex.sin ((Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ))‖ := by
+                  rw [show (Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ) = ((-Real.pi * t : ℝ) : ℂ) + Complex.I * ((Real.pi * Δ : ℝ) : ℂ) by push_cast; ring]
+                  linarith
+                exact pow_ne_zero 2 (norm_ne_zero_iff.mp hnorm_pos.ne')
               · filter_upwards [ae_restrict_mem measurableSet_Ioc] with t _
                 rw [Real.norm_eq_abs, abs_norm, Real.norm_eq_abs, abs_neg]
                 exact (Complex.abs_im_le_norm _).trans (complex_inv_sin_sq_bound Δ hΔ_ge_1 t)
@@ -820,6 +825,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         intro α
         have hs2 := tsum_inv_sub_I_sq ((-α : ℂ) + Complex.I * Δ) (by simp; positivity)
         rw [← hs2.2, Complex.re_tsum hs2.1, ← tsum_mul_left]
+        dsimp only [h_rem]
         congr 1; ext n
         have heq : ((-α : ℂ) + Complex.I * Δ) - n = -((n + α : ℝ) : ℂ) + Complex.I * Δ := by push_cast; ring
         rw [heq, one_div, Complex.inv_re, Complex.normSq_apply]
@@ -866,7 +872,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               refine continuousOn_const.div (ContinuousOn.pow (Real.continuous_sin.continuousOn.comp
                 (continuousOn_const.mul continuousOn_id) (fun _ _ => Set.mem_univ _)) 2) ?_
               intro t ht; exact pow_ne_zero 2 (h_sin_ne t ⟨lt_of_lt_of_le ha.1 ht.1, lt_of_le_of_lt ht.2 hb.2⟩)
-            · have hpos : 0 < Real.sin (Real.pi * t) ^ 2 := sq_pos_of_ne_zero (h_sin_ne t ⟨lt_of_lt_of_le ha.1 ht.1, lt_of_le_of_lt ht.2 hb.2⟩)
+            · have hpos : 0 < Real.sin (Real.pi * t) ^ 2 := sq_pos_of_ne_zero (h_sin_ne t ⟨lt_of_lt_of_le ha.1 ht.1.le, lt_of_le_of_lt ht.2 hb.2⟩)
               exact one_le_one_div hpos (Real.sin_sq_le_one _)
     have h_rem_bd : ∫ t in a..b, ((Real.pi : ℂ) ^ 2 / Complex.sin (Real.pi * ((-t : ℂ) + Complex.I * Δ)) ^ 2).re ≤
         C_sin * Real.exp (-2 * Real.pi * Δ) * (b - a) := by
@@ -879,14 +885,16 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
                 IntegrableOn (fun _ => C_sin * Real.exp (-2 * Real.pi * Δ)) (Set.Ioc a b)).mono' ?_ ?_
               · refine Continuous.aestronglyMeasurable (Complex.continuous_re.comp ?_)
                 refine continuous_const.div (Continuous.pow (Complex.continuous_sin.comp (by fun_prop)) 2) fun t => ?_
-                have heq : (Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ) = ((-Real.pi * t : ℝ) : ℂ) + Complex.I * (Real.pi * Δ) := by
-                  push_cast; ring
+                have h1m : 0 < 1 - Real.exp (-2 * Real.pi) := by
+                  linarith [Real.exp_lt_one_iff.mpr (by linarith [Real.pi_pos] : -2 * Real.pi < 0)]
                 have hs1 : 0 < ((1 - Real.exp (-2 * Real.pi)) / 2) * Real.exp (Real.pi * Δ) := by positivity
                 have hs2 := sin_norm_ge_sinh (-Real.pi * t) (Real.pi * Δ)
                 rw [abs_of_pos (by positivity)] at hs2
                 have hs3 := (sinh_ge_mul_exp (by nlinarith [Real.pi_pos])).trans hs2
-                rw [← heq] at hs3
-                exact pow_ne_zero 2 (norm_ne_zero_iff.mp (by linarith))
+                have hnorm_pos : 0 < ‖Complex.sin ((Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ))‖ := by
+                  rw [show (Real.pi : ℂ) * ((-t : ℂ) + Complex.I * Δ) = ((-Real.pi * t : ℝ) : ℂ) + Complex.I * ((Real.pi * Δ : ℝ) : ℂ) by push_cast; ring]
+                  linarith
+                exact pow_ne_zero 2 (norm_ne_zero_iff.mp hnorm_pos.ne')
               · filter_upwards [ae_restrict_mem measurableSet_Ioc] with t _
                 rw [Real.norm_eq_abs]
                 exact (Complex.abs_re_le_norm _).trans (complex_inv_sin_sq_bound Δ hΔ_ge_1 t)
@@ -894,6 +902,8 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         _ = C_sin * Real.exp (-2 * Real.pi * Δ) * (b - a) := by
             rw [setIntegral_const, Real.volume_real_Ioc_of_le hab.le, smul_eq_mul, mul_comm]
     have hg1_le : g₁ b - g₁ a ≤ -(Real.pi ^ 2 * (b - a)) + C_sin * Real.exp (-2 * Real.pi * Δ) * (b - a) := by
+      have hpi2 : Real.pi ^ 2 * (b - a) ≤ Real.pi ^ 2 * ∫ t in a..b, 1 / Real.sin (Real.pi * t) ^ 2 :=
+        mul_le_mul_of_nonneg_left h_sin_int (sq_nonneg _)
       rw [hd1]; linarith
     have hg2_le : -Real.sin θ * (g₂ b - g₂ a) ≤ (C_sin + C_lip * Δ) * Real.exp (-2 * Real.pi * Δ) * (b - a) := by
       have h1 := hg2_diff hab.le
@@ -960,9 +970,9 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               · have ht_icc : t ∈ Set.Icc δ₁ (1 - δ₁) := ⟨le_trans hu.1 ht.1.le, le_trans ht.2 hv.2⟩
                 have hsin_t : Real.sin (Real.pi * δ₁) ≤ Real.sin (Real.pi * t) := by
                   rcases le_total t (1 / 2) with ht12 | ht12
-                  · exact Real.sin_le_sin ⟨by linarith [Real.pi_pos, ht_icc.1], by nlinarith [Real.pi_pos, ht_icc.1]⟩ ⟨by linarith [Real.pi_pos], by nlinarith [Real.pi_pos]⟩ (by nlinarith [Real.pi_pos, ht_icc.1])
+                  · exact Real.strictMonoOn_sin.monotoneOn ⟨by linarith [Real.pi_pos, ht_icc.1], by nlinarith [Real.pi_pos, ht_icc.1]⟩ ⟨by linarith [Real.pi_pos], by nlinarith [Real.pi_pos]⟩ (by nlinarith [Real.pi_pos, ht_icc.1])
                   · rw [← Real.sin_pi_sub (Real.pi * t)]
-                    exact Real.sin_le_sin ⟨by linarith [Real.pi_pos, ht_icc.1], by nlinarith [Real.pi_pos, ht_icc.1]⟩ ⟨by linarith [Real.pi_pos, ht_icc.2], by nlinarith [Real.pi_pos, ht_icc.2]⟩ (by nlinarith [Real.pi_pos, ht_icc.2])
+                    exact Real.strictMonoOn_sin.monotoneOn ⟨by linarith [Real.pi_pos, ht_icc.1], by nlinarith [Real.pi_pos, ht_icc.1]⟩ ⟨by linarith [Real.pi_pos, ht_icc.2], by nlinarith [Real.pi_pos, ht_icc.2]⟩ (by nlinarith [Real.pi_pos, ht_icc.2])
                 exact one_div_le_one_div_of_le (sq_pos_of_pos hsin_δ₁) (sq_le_sq' (by linarith) hsin_t)
           _ = (v - u) / Real.sin (Real.pi * δ₁) ^ 2 := by
               rw [setIntegral_const, Real.volume_real_Ioc_of_le huv, smul_eq_mul]; ring
@@ -1065,7 +1075,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have hαs : α_star + s ∈ Set.Ioo (0 : ℝ) 1 :=
       hIcc_sub ⟨by linarith [(abs_le.mp hs).1], by linarith [(abs_le.mp hs).2]⟩
     have hsin_αs : 0 < Real.sin (Real.pi * (α_star + s)) :=
-      Real.sin_pos_of_pos_of_lt_pi (by positivity) (by nlinarith [Real.pi_pos, hαs.2])
+      Real.sin_pos_of_pos_of_lt_pi (mul_pos Real.pi_pos hαs.1) (by nlinarith [Real.pi_pos, hαs.2])
     have h_trig : Real.cos θ * (Real.pi * Real.cos (Real.pi * (α_star + s)) / Real.sin (Real.pi * (α_star + s))) -
         Real.sin θ * Real.pi = -Real.pi * Real.sin (Real.pi * s) / Real.sin (Real.pi * (α_star + s)) := by
       have h_ang : Real.pi * (α_star + s) = Real.pi / 2 + (Real.pi * s - θ) := by
@@ -1075,7 +1085,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [← Real.cos_add]
         have heq : θ + Real.pi * (α_star + s) = Real.pi / 2 + Real.pi * s := by
           rw [h_ang]; ring
-        rw [heq, Real.cos_pi_div_two_add]
+        rw [heq, Real.cos_add, Real.cos_pi_div_two, Real.sin_pi_div_two]; ring
       field_simp [hsin_αs.ne']
       nlinarith
     have h1 := hg1_approx (α_star + s) hαs
