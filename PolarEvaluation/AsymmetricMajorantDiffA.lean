@@ -216,7 +216,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       refine ((cTheta_integrableOn hθ).norm.div_const |y|).mono' ?_ ?_
       · refine Complex.continuous_im.comp_continuousOn ?_ |>.aestronglyMeasurable measurableSet_Ioi
         refine ContinuousOn.div ?_ (by fun_prop) (fun v _ h => ?_)
-        · exact continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos (by fun_prop)).continuousOn 2)
+        · exact continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos.comp (by fun_prop)).continuousOn 2)
             (fun v _ => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
         · have hre := congr_arg Complex.re h; simp at hre; exact hy_ne hre
       · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
@@ -359,7 +359,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           · refine continuousOn_const.div (ContinuousOn.pow (Complex.continuous_sin.continuousOn.comp (by fun_prop) (fun _ _ => Set.mem_univ _)) 2) ?_
             intro v hv; have hlb := sin_pi_iv_beta_lb hδ0 hδ1 hα1 hα2 v hv.1.le
             exact pow_ne_zero 2 (norm_ne_zero_iff.mp (by linarith [mul_pos hc_pos (Real.exp_pos (Real.pi * v))]))
-          · exact continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos (by fun_prop)).continuousOn 2)
+          · exact continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos.comp (by fun_prop)).continuousOn 2)
               (fun v _ => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
           · have hre := congr_arg Complex.re h; simp at hre; exact hy_ne hre
         · filter_upwards [ae_restrict_mem measurableSet_Ioo] with v hv
@@ -470,7 +470,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         · refine h_e_int.mono' ?_ ?_
           · refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_Ioi
             refine ContinuousOn.norm (Complex.continuous_im.comp_continuousOn ?_)
-            refine ContinuousOn.div (continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos (by fun_prop)).continuousOn 2)
+            refine ContinuousOn.div (continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos.comp (by fun_prop)).continuousOn 2)
               (fun v _ => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))) (by fun_prop) (fun v _ h => ?_)
             have hre := congr_arg Complex.re h; simp at hre; exact hy_ne hre
           · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v hv
@@ -637,7 +637,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           · refine continuousOn_const.div (ContinuousOn.pow (Complex.continuous_sin.continuousOn.comp (by fun_prop) (fun _ _ => Set.mem_univ _)) 2) ?_
             intro v hv; have hlb := sin_pi_iv_beta_lb hδ0 hδ1 hα1 hα2 v hv.1.le
             exact pow_ne_zero 2 (norm_ne_zero_iff.mp (by linarith [mul_pos hc_pos (Real.exp_pos (Real.pi * v))]))
-          · exact continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos (by fun_prop)).continuousOn 2)
+          · exact continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos.comp (by fun_prop)).continuousOn 2)
               (fun v _ => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
           · have hre := congr_arg Complex.re h; simp at hre; exact hy_ne hre
         · filter_upwards [ae_restrict_mem measurableSet_Ioo] with v hv
@@ -650,7 +650,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         refine ((cTheta_integrableOn hθ).norm.div_const |y|).mono_set (Set.Ioi_subset_Ioi (by linarith)) |>.mono' ?_ ?_
         · refine Complex.continuous_im.comp_continuousOn ?_ |>.aestronglyMeasurable measurableSet_Ioi
           refine ContinuousOn.div ?_ (by fun_prop) (fun v _ h => ?_)
-          · exact continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos (by fun_prop)).continuousOn 2)
+          · exact continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos.comp (by fun_prop)).continuousOn 2)
               (fun v _ => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
           · have hre := congr_arg Complex.re h; simp at hre; exact hy_ne hre
         · filter_upwards [ae_restrict_mem measurableSet_Ioi] with v _
@@ -699,7 +699,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             · refine continuousOn_const.div (ContinuousOn.pow (Complex.continuous_sin.continuousOn.comp (by fun_prop) (fun _ _ => Set.mem_univ _)) 2) ?_
               intro v hv; have hlb := sin_pi_iv_beta_lb hδ0 hδ1 hα1 hα2 v hv.1.le
               exact pow_ne_zero 2 (norm_ne_zero_iff.mp (by linarith [mul_pos hc_pos (Real.exp_pos (Real.pi * v))]))
-            · exact continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos (by fun_prop)).continuousOn 2)
+            · exact continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos.comp (by fun_prop)).continuousOn 2)
                 (fun v _ => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
             · rcases mul_eq_zero.mp h with h1 | h1
               · exact hy_ne (Complex.ofReal_eq_zero.mp h1)
@@ -760,7 +760,7 @@ lemma majorant_contour_diff_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         · refine h_v_int.mono' ?_ ?_
           · refine ContinuousOn.aestronglyMeasurable ?_ measurableSet_Ioi
             refine ContinuousOn.norm (Complex.continuous_im.comp_continuousOn ?_)
-            refine ContinuousOn.mul (continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos (by fun_prop)).continuousOn 2)
+            refine ContinuousOn.mul (continuousOn_const.div (ContinuousOn.pow (Complex.continuous_cos.comp (by fun_prop)).continuousOn 2)
               (fun v _ => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))) (ContinuousOn.div (by fun_prop) (by fun_prop) fun v _ h => ?_)
             rcases mul_eq_zero.mp h with h1 | h1
             · exact hy_ne (Complex.ofReal_eq_zero.mp h1)
