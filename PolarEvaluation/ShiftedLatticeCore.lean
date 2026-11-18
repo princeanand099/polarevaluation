@@ -240,18 +240,30 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         fun t => Complex.reCLM.differentiableAt.comp t (hc_diff t)
       have hf_cont : Continuous f := by
         dsimp only [f]
-        have hderiv_eq : ∀ t : ℝ, deriv (fun s : ℝ => (cTheta θ s).re) t = (deriv (fun s : ℝ => cTheta θ s) t).re := fun t =>
-          (Complex.reCLM.hasFDerivAt.comp_hasDerivAt t (hc_diff t).hasDerivAt).deriv
-        have hc_c1 : ContDiff ℝ 1 (fun t : ℝ => cTheta θ t) := by
-          have hw_c : ContDiff ℝ 1 (fun t : ℝ => (θ : ℂ) + Complex.I * Real.pi * t) :=
-            (contDiff_const (𝕜 := ℝ)).add ((contDiff_const (𝕜 := ℝ)).mul Complex.ofRealCLM.contDiff)
-          have hcos_c : ContDiff ℝ 1 (fun t : ℝ => Complex.cos ((θ : ℂ) + Complex.I * Real.pi * t) ^ 2) :=
-            ((Complex.contDiff_cos.restrict_scalars ℝ).comp hw_c).pow 2
-          dsimp only [cTheta]
-          have hconst : ContDiff ℝ 1 (fun _ : ℝ => Complex.exp (-Complex.I * θ)) := contDiff_const
-          exact hconst.div hcos_c (fun t => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
-        exact (hc_c1.continuous_deriv (by norm_num) |> fun h => (Complex.continuous_re.comp h).norm).congr fun t => by
-          dsimp only [Function.comp_def]; rw [hderiv_eq t]
+        have hc_hasDeriv : ∀ t : ℝ, HasDerivAt (fun s : ℝ => cTheta θ s)
+            (2 * Complex.exp (-Complex.I * θ) * Complex.sin ((θ : ℂ) + Complex.I * Real.pi * t) * (Complex.I * Real.pi) /
+              Complex.cos ((θ : ℂ) + Complex.I * Real.pi * t) ^ 3) t := by
+          intro t
+          have hw : HasDerivAt (fun s : ℝ => (θ : ℂ) + Complex.I * Real.pi * s) (Complex.I * Real.pi) t := by
+            simpa using ((hasDerivAt_id t).ofReal_comp.const_mul (Complex.I * Real.pi)).const_add (θ : ℂ)
+          have hcos_d := (Complex.hasDerivAt_cos _).comp t hw
+          have hsq_d := hcos_d.pow 2
+          have hq := (hasDerivAt_const t (Complex.exp (-Complex.I * θ))).div hsq_d (pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
+          refine hq.congr_deriv ?_
+          have hne := cos_ne_zero_of_abs_lt (v := t) hθ
+          field_simp [hne]; ring
+        have hderiv_eq : ∀ t : ℝ, deriv (fun s : ℝ => (cTheta θ s).re) t =
+            (2 * Complex.exp (-Complex.I * θ) * Complex.sin ((θ : ℂ) + Complex.I * Real.pi * t) * (Complex.I * Real.pi) /
+              Complex.cos ((θ : ℂ) + Complex.I * Real.pi * t) ^ 3).re := fun t =>
+          (Complex.reCLM.hasFDerivAt.comp_hasDerivAt t (hc_hasDeriv t)).deriv
+        have hcont_g : Continuous (fun t : ℝ =>
+            (2 * Complex.exp (-Complex.I * θ) * Complex.sin ((θ : ℂ) + Complex.I * Real.pi * t) * (Complex.I * Real.pi) /
+              Complex.cos ((θ : ℂ) + Complex.I * Real.pi * t) ^ 3).re) := by
+          refine Complex.continuous_re.comp ?_
+          refine Continuous.div ?_ (Continuous.pow (Complex.continuous_cos.comp (by fun_prop)) 3)
+            (fun t => pow_ne_zero 3 (cos_ne_zero_of_abs_lt hθ))
+          exact (continuous_const.mul (Complex.continuous_sin.comp (by fun_prop))).mul continuous_const
+        exact hcont_g.norm.congr fun t => (hderiv_eq t).symm
       obtain ⟨v₀, _, hv₀⟩ := isCompact_Icc.exists_isMaxOn (⟨0, by norm_num, by norm_num⟩ : (Set.Icc (0 : ℝ) 1).Nonempty) hf_cont.continuousOn
       refine ⟨max 1 (f v₀), by positivity, fun v hv => (hv₀ hv).trans (le_max_right _ _)⟩
     obtain ⟨C_A, hC_A, hbd⟩ := hderiv_bd
@@ -553,8 +565,7 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have hch : Real.exp (Real.pi * v) / 2 ≤ Real.cosh (Real.pi * v) := by
           rw [Real.cosh_eq]; linarith [Real.exp_pos (-(Real.pi * v))]
         have h1 : Real.cos θ ^ 2 * Real.cosh (Real.pi * v) ^ 2 ≤ Real.sinh (Real.pi * v) ^ 2 + Real.cos θ ^ 2 := by
-          have := Real.cosh_sq (Real.pi * v)
-          have := Real.cos_sq_add_sin_sq θ
+          have := Real.cosh_sq (Real.pi * v); have := Real.cos_sq_add_sin_sq θ
           nlinarith [sq_nonneg (Real.sin θ), sq_nonneg (Real.sinh (Real.pi * v))]
         rw [cos_normSq_eq]
         nlinarith [sq_le_sq' (by linarith [Real.exp_pos (Real.pi * v)]) hch]
