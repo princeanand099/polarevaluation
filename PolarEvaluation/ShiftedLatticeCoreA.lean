@@ -125,7 +125,7 @@ lemma tsum_int_split (φ : ℤ → ℝ) (hφ : Summable φ) :
           omega }
   have he : Summable (fun s => φ (e s)) := e.summable_iff.mpr hφ
   have he2 : Summable (fun s : ℕ ⊕ ℕ => φ (e (Sum.inr s))) := he.comp_injective Sum.inr_injective
-  rw [← e.tsum_eq, tsum_sum (he.comp_injective Sum.inl_injective) he2, tsum_sum (he2.comp_injective Sum.inl_injective) (he2.comp_injective Sum.inr_injective)]
+  rw [← e.tsum_eq, Summable.tsum_sum (he.comp_injective Sum.inl_injective) he2, Summable.tsum_sum (he2.comp_injective Sum.inl_injective) (he2.comp_injective Sum.inr_injective)]
   simp only [tsum_unique, e, Function.comp_def]
   ring
 
@@ -508,7 +508,7 @@ lemma cauchy_sq_fourier (v : ℝ) (hv : 0 < v) (ξ : ℝ) :
       have h2 : ((x : ℂ) + Complex.I * v) * star ((x : ℂ) + Complex.I * v) = ((x ^ 2 + v ^ 2 : ℝ) : ℂ) := by
         simp [Complex.conj_ofReal]; ring_nf; simp [Complex.I_sq]
       rw [← h1, h2, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (by positivity)]
-    rw [hsq, Real.norm_of_nonneg (by positivity : 0 ≤ 1 / (x ^ 2 + v ^ 2))]
+    rw [hsq]; exact le_norm_self _
   have hinv := congr_fun (Continuous.fourierInv_fourier_eq hg_cont hg_int hFg_int) ξ
   rw [fourierInv_eq_fourierHat_neg] at hinv
   have heq_f : fourierHat (𝓕 g) (-ξ) = fourierHat (fun u : ℝ => 1 / ((u : ℂ) - Complex.I * v) ^ 2) ξ := by
@@ -653,7 +653,7 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
       conv_rhs => rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hpos.le, Real.rpow_natCast]
       rw [le_mul_inv_iff₀ (by positivity)]
       rw [show -2 * Real.pi * v * |ξ| = -(2 * Real.pi * v * |ξ|) by ring, Real.exp_neg,
-        mul_assoc, mul_inv_le_iff₀ (Real.exp_pos _)]
+        mul_comm (Real.exp (2 * Real.pi * v * |ξ|))⁻¹ ((1 + |ξ|) ^ 2), ← mul_assoc, mul_inv_le_iff₀ (Real.exp_pos _)]
       calc 4 * Real.pi ^ 2 * |ξ| * (1 + |ξ|) ^ 2
           = 4 * Real.pi ^ 2 * (|ξ| * (1 + |ξ|) ^ 2) := by ring
         _ ≤ 4 * Real.pi ^ 2 * ((2 / (2 * Real.pi * v) + 12 / (2 * Real.pi * v) ^ 3) *
@@ -778,7 +778,7 @@ lemma tsum_inv_sub_I_sq (z : ℂ) (hz : 0 < z.im) :
           conv_rhs => rw [show (-2 : ℝ) = -(2 : ℕ) by norm_num, Real.rpow_neg hpos.le, Real.rpow_natCast]
           rw [le_mul_inv_iff₀ (by positivity)]
           rw [show -2 * Real.pi * v * |ξ| = -(2 * Real.pi * v * |ξ|) by ring, Real.exp_neg,
-            mul_assoc, mul_inv_le_iff₀ (Real.exp_pos _)]
+            mul_comm (Real.exp (2 * Real.pi * v * |ξ|))⁻¹ ((1 + |ξ|) ^ 2), ← mul_assoc, mul_inv_le_iff₀ (Real.exp_pos _)]
           calc 4 * Real.pi ^ 2 * |ξ| * (1 + |ξ|) ^ 2
               = 4 * Real.pi ^ 2 * (|ξ| * (1 + |ξ|) ^ 2) := by ring
             _ ≤ 4 * Real.pi ^ 2 * ((2 / (2 * Real.pi * v) + 12 / (2 * Real.pi * v) ^ 3) *
