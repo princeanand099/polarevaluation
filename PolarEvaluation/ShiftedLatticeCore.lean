@@ -115,13 +115,12 @@ lemma uTheta_deriv {θ v : ℝ} (hθ : |θ| < Real.pi / 2) :
       ring
     rw [h1, show -Complex.I * ((θ : ℂ) + Complex.I * Real.pi * v) =
         -Complex.I * θ + ((Real.pi * v : ℝ) : ℂ) by push_cast; ring_nf; simp [Complex.I_sq],
-      Complex.exp_add, Complex.ofReal_exp,
-      mul_comm (Complex.exp (-Complex.I * θ)) (Complex.exp ((Real.pi * v : ℝ) : ℂ)),
-      ← mul_assoc, ← Complex.ofReal_exp, ← Real.exp_add]
-    simp
+      Complex.exp_add, Complex.ofReal_exp, ← Complex.ofReal_exp, ← Complex.exp_add]
+    congr 1; push_cast; ring
   dsimp only [cTheta]
   rw [hcexp]
   field_simp [Real.pi_ne_zero, hcos_ne]
+  dsimp only [Function.comp_def]
   try simp only [Complex.I_sq]
   ring
 
@@ -183,7 +182,7 @@ lemma cTheta_integral_eq {θ : ℝ} (hθ : |θ| < Real.pi / 2) :
 lemma cTheta_im_integral_zero {θ : ℝ} (hθ : |θ| < Real.pi / 2) :
     (∫ v in Set.Ioi (0 : ℝ), (cTheta θ v).im) = 0 := by
   have him : (∫ v in Set.Ioi (0 : ℝ), (cTheta θ v).im) = (∫ v in Set.Ioi (0 : ℝ), cTheta θ v).im := by
-    simpa only [Complex.imCLM_apply] using (Complex.imCLM.integral_comp_comm (cTheta_integrableOn hθ)).symm
+    simpa only [Complex.imCLM_apply] using Complex.imCLM.integral_comp_comm (cTheta_integrableOn hθ)
   rw [him, cTheta_integral_eq hθ]
   simp [show (1 / (Real.pi * Real.cos θ) : ℂ) = ((1 / (Real.pi * Real.cos θ) : ℝ) : ℂ) by push_cast; ring]
 
@@ -207,9 +206,7 @@ lemma limitingJ_neg_neg (y θ : ℝ) : limitingJ (-y) (-θ) = limitingJ y θ := 
       simp [map_sub, map_mul, Complex.conj_I]
       ring
     rw [map_div₀, map_mul, map_pow, h1, h2', h3, mul_neg, div_neg]
-    congr 1; congr 1
-    · push_cast; ring
-    · rw [show ((-y : ℝ) : ℂ) = -(y : ℂ) by push_cast; ring]
+    congr 1; push_cast; ring
   rw [hconj, Complex.neg_im, Complex.conj_im, neg_neg]
 
 /-- **Lemma 3.3 (Part 2)**: Near-zero asymptotic `J(y, θ) = (1/cos θ) log(1/|y|) + O_θ(1)`. -/
@@ -242,7 +239,9 @@ theorem limitingJ_near_zero (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have hc_c1 : ContDiff ℝ 1 (fun t : ℝ => cTheta θ t) := by
           have hw_c : ContDiff ℝ 1 (fun t : ℝ => (θ : ℂ) + Complex.I * Real.pi * t) :=
             (contDiff_const (𝕜 := ℝ)).add ((contDiff_const (𝕜 := ℝ)).mul Complex.ofRealCLM.contDiff)
-          exact (contDiff_const (𝕜 := ℝ)).div (((Complex.contDiff_cos.restrict_scalars ℝ).comp hw_c).pow 2) (fun t => by dsimp only [Function.comp_def]; exact pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
+          have hcos_c : ContDiff ℝ 1 (fun t : ℝ => Complex.cos ((θ : ℂ) + Complex.I * Real.pi * t) ^ 2) :=
+            ((Complex.contDiff_cos.restrict_scalars ℝ).comp hw_c).pow 2
+          exact (contDiff_const (𝕜 := ℝ)).div hcos_c (fun t => pow_ne_zero 2 (cos_ne_zero_of_abs_lt hθ))
         exact (hc_c1.continuous_deriv (by norm_num) |> fun h => (Complex.continuous_re.comp h).norm).congr fun t => by
           dsimp only [Function.comp_def]; rw [hderiv_eq t]
       obtain ⟨v₀, _, hv₀⟩ := isCompact_Icc.exists_isMaxOn (⟨0, by norm_num, by norm_num⟩ : (Set.Icc (0 : ℝ) 1).Nonempty) hf_cont.continuousOn
@@ -688,8 +687,8 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [Complex.add_re, Complex.one_re, show 2 * Complex.I * (θ : ℂ) - 2 * Real.pi * v =
           ((-2 * Real.pi * v : ℝ) : ℂ) + ((2 * θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
           Complex.exp_add, Complex.exp_mul_I, ← Complex.ofReal_exp, ← Complex.ofReal_cos, ← Complex.ofReal_sin]
-        simp only [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, Complex.I_re, Complex.I_im,
-          mul_zero, sub_zero, mul_one, zero_mul, add_zero]
+        simp only [Complex.add_re, Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, Complex.I_re,
+          Complex.I_im, mul_zero, sub_zero, mul_one, zero_mul, add_zero]
       rw [hre]
       have hcos2 : -1 < Real.cos (2 * θ) := by
         have h2θ : 2 * θ ∈ Set.Ioo (-Real.pi) Real.pi := by
@@ -780,8 +779,8 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring, Complex.exp_mul_I]
       simp [Complex.cos_neg, Complex.sin_neg]; ring
     rw [hexp_re_im]
-    rw [← Complex.ofReal_inv, ← Complex.ofReal_pow]
-    simp only [div_mul_eq_mul_div, Complex.div_ofReal_re, Complex.mul_re, Complex.sub_re,
+    rw [← Complex.ofReal_pow, div_mul_eq_mul_div, Complex.div_ofReal_re]
+    simp only [Complex.mul_re, Complex.sub_re,
       Complex.ofReal_re, Complex.mul_im, Complex.I_re, mul_zero, Complex.ofReal_im, Complex.I_im,
       mul_one, sub_zero, zero_add, Complex.add_re, Complex.add_im, Complex.sub_im,
       zero_sub, neg_mul, sub_neg_eq_add]
@@ -802,7 +801,7 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ring_nf; rw [Complex.I_sq]; ring
   have hc_int := cTheta_integrableOn hθ
   have h_int_1 : IntegrableOn (fun v : ℝ => (cTheta θ v / (y : ℂ)).im) (Set.Ioi 0) :=
-    (IntegrableOn.congr_fun (Integrable.const_mul hc_int ((1 : ℂ) / y)) (fun v _ => by rw [one_div, mul_comm, div_eq_mul_inv]) measurableSet_Ioi).im
+    (IntegrableOn.congr_fun (Integrable.const_mul hc_int ((1 : ℂ) / y)) (fun v _ => by simp only [div_eq_mul_inv, one_div, mul_comm]) measurableSet_Ioi).im
   have h_int_2 : IntegrableOn (fun v : ℝ => (Complex.I * ((v : ℂ) * cTheta θ v) / (y : ℂ) ^ 2).im) (Set.Ioi 0) :=
     (IntegrableOn.congr_fun (Integrable.const_mul h_vc_int (Complex.I / (y : ℂ) ^ 2)) (fun v _ => by ring) measurableSet_Ioi).im
   have h_int_3 : IntegrableOn (fun v : ℝ => ((cTheta θ v * (v : ℂ) ^ 2) / ((y : ℂ) ^ 2 * ((y : ℂ) - Complex.I * v))).im) (Set.Ioi 0) := by
@@ -851,7 +850,7 @@ theorem limitingJ_asymptotic (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       rw [← Complex.ofReal_pow, Complex.div_ofReal_im, Complex.I_mul_im]
     have hre_int : (∫ v in Set.Ioi (0 : ℝ), ((v : ℂ) * cTheta θ v).re) =
         (∫ v in Set.Ioi (0 : ℝ), (v : ℂ) * cTheta θ v).re := by
-      simpa only [Complex.reCLM_apply] using (Complex.reCLM.integral_comp_comm h_vc_int).symm
+      simpa only [Complex.reCLM_apply] using Complex.reCLM.integral_comp_comm h_vc_int
     rw [this, integral_div, hre_int, h_main_re]
     ring
   have hcancel : (2 * envelopeC θ) / (Real.pi ^ 2 * y ^ 2) -
