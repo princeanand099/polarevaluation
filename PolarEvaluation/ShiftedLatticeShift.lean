@@ -277,7 +277,7 @@ theorem optimal_lattice_shift (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hK_lt : K_big < Real.pi * Δ := by
         have h1 : K_big / Real.pi + 1 ≤ Δ := le_trans (le_max_right _ _) hΔ
         have h3 := (div_le_iff₀ Real.pi_pos).mp (by linarith : K_big / Real.pi ≤ Δ - 1)
-        linarith [mul_pos Real.pi_pos hΔ_pos]
+        linarith [Real.pi_pos]
       have h_quad : 1 + Real.pi * Δ + (Real.pi * Δ) ^ 2 / 2 ≤ Real.exp (Real.pi * Δ) := by
         simpa [Finset.sum_range_succ, pow_two] using Real.sum_le_exp_of_nonneg (by positivity : 0 ≤ Real.pi * Δ) 3
       have h_pi_gt : 2 < Real.pi := by linarith [Real.pi_gt_three]
