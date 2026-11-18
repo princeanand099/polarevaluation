@@ -33,7 +33,7 @@ lemma tsum_int_split_gen {E : Type*} [NormedAddCommGroup E] [CompleteSpace E]
           simp
         · change (if 0 ≤ -((n + 1 : ℕ) : ℤ) then Sum.inl (-((n + 1 : ℕ) : ℤ)).natAbs else Sum.inr ((-((n + 1 : ℕ) : ℤ)).natAbs - 1)) = Sum.inr n
           rw [if_neg (by omega)]
-          simp [Int.natAbs_neg]
+          congr 1; omega
       right_inv := fun m => by
         dsimp only; split_ifs with h
         · simp only [Sum.elim_inl]; exact Int.natAbs_of_nonneg h
