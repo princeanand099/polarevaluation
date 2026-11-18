@@ -86,7 +86,9 @@ lemma vaaler_integral_eq_tsum (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
   have hf_fourier_zero : ∀ ξ : ℝ, 1 ≤ |ξ| → 𝓕 f ξ = 0 := by
     intro ξ hξ
     have h_sin_bd : ∀ w : ℂ, ‖Complex.sin w‖ ≤ Real.exp |w.im| := by
-      intro w; rw [Complex.sin_apply]
+      intro w
+      have hsin_def : Complex.sin w = (Complex.exp (-w * Complex.I) - Complex.exp (w * Complex.I)) * Complex.I / 2 := by unfold Complex.sin; ring_nf
+      rw [hsin_def]
       have h1 : ‖Complex.exp (-w * Complex.I)‖ ≤ Real.exp |w.im| := by
         rw [Complex.norm_exp]; exact Real.exp_le_exp.mpr (by simp [Complex.mul_re]; exact le_abs_self _)
       have h2 : ‖Complex.exp (w * Complex.I)‖ ≤ Real.exp |w.im| := by
@@ -1181,7 +1183,11 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       dsimp only [rem_fn]
       have h_cos_eq : 1 + Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * v)) =
           2 * Complex.exp (Complex.I * (θ + Complex.I * Real.pi * v)) * Complex.cos (θ + Complex.I * Real.pi * v) := by
-        rw [Complex.cos_apply, ← Complex.exp_add]
+        have hcos_def : Complex.cos (θ + Complex.I * Real.pi * v) =
+            (Complex.exp ((θ + Complex.I * Real.pi * v) * Complex.I) +
+              Complex.exp (-(θ + Complex.I * Real.pi * v) * Complex.I)) / 2 := by
+          unfold Complex.cos; ring_nf
+        rw [hcos_def, ← Complex.exp_add]
         have he1 : Complex.I * (θ + Complex.I * Real.pi * v) + (θ + Complex.I * Real.pi * v) * Complex.I =
             2 * Complex.I * (θ + Complex.I * Real.pi * v) := by ring
         have he2 : Complex.I * (θ + Complex.I * Real.pi * v) + -(θ + Complex.I * Real.pi * v) * Complex.I = 0 := by ring
@@ -1214,7 +1220,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have hG_0 : Tendsto G (𝓝[>] 0) (nhds (-2 * envelopeC θ)) := by
       have h_cont : ContinuousAt G 0 := by
         refine (Complex.imCLM.continuousAt.comp (continuousAt_const.mul ?_)).neg
-        refine Complex.continuousAt_clog (Complex.mem_slitPlane_iff.mpr (Or.inl (h_slit 0 le_rfl))) |>.comp ?_
+        refine (Complex.hasDerivAt_log (Complex.mem_slitPlane_iff.mpr (Or.inl (h_slit 0 le_rfl)))).continuousAt.comp ?_
         fun_prop
       have hG_val : G 0 = -2 * envelopeC θ := by
         dsimp only [G]
@@ -1222,7 +1228,10 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             Complex.exp ((Real.log (2 * Real.cos θ) : ℂ) + Complex.I * θ) := by
           rw [mul_zero, add_zero, Complex.exp_add, Complex.ofReal_log (by positivity),
             show 2 * Complex.I * (θ : ℂ) = Complex.I * θ + Complex.I * θ by ring,
-            Complex.exp_add, Complex.cos_apply]
+            Complex.exp_add]
+          have hcos_def : Complex.cos (θ : ℂ) = (Complex.exp ((θ : ℂ) * Complex.I) + Complex.exp (-(θ : ℂ) * Complex.I)) / 2 := by
+            unfold Complex.cos; ring_nf
+          rw [← Complex.ofReal_cos, hcos_def]
           push_cast; rw [Complex.exp_mul_I, Complex.exp_neg_mul_I]
           ring_nf; simp [Complex.I_sq]; ring
         rw [heq, Complex.log_exp (by
@@ -1249,7 +1258,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         simpa using tendsto_const_nhds.add h0
       have h_log1 : Tendsto (fun v : ℝ => Complex.log (1 + Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * v))))
           atTop (nhds 0) := by
-        have hc := (Complex.continuousAt_clog (by norm_num : (1 : ℂ) ∈ Complex.slitPlane)).tendsto.comp h1
+        have hc := (Complex.hasDerivAt_log (by norm_num : (1 : ℂ) ∈ Complex.slitPlane)).continuousAt.tendsto.comp h1
         simpa [Complex.log_one] using hc
       simpa [G] using (Complex.imCLM.continuousAt.tendsto.comp (tendsto_const_nhds.mul h_log1)).neg
     have hres := integral_Ioi_of_hasDerivAt_of_tendsto' hG_deriv h_int_r hG_0 hG_inf
