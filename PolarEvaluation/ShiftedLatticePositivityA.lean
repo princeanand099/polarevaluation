@@ -28,10 +28,10 @@ lemma tsum_int_split_gen {E : Type*} [NormedAddCommGroup E] [CompleteSpace E]
       invFun := fun m : ℤ => if 0 ≤ m then Sum.inl m.natAbs else Sum.inr (m.natAbs - 1)
       left_inv := fun s => by
         rcases s with n | n
-        · simp only [Sum.elim_inl]
+        · change (if 0 ≤ (n : ℤ) then Sum.inl (n : ℤ).natAbs else Sum.inr ((n : ℤ).natAbs - 1)) = Sum.inl n
           rw [if_pos (by omega)]
           simp
-        · simp only [Sum.elim_inr]
+        · change (if 0 ≤ -((n + 1 : ℕ) : ℤ) then Sum.inl (-((n + 1 : ℕ) : ℤ)).natAbs else Sum.inr ((-((n + 1 : ℕ) : ℤ)).natAbs - 1)) = Sum.inr n
           rw [if_neg (by omega)]
           simp [Int.natAbs_neg]
       right_inv := fun m => by
