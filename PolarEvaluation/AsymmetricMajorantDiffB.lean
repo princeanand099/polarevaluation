@@ -339,6 +339,81 @@ private lemma diffB_tail_bound (θ Δ α δ y : ℝ) (hΔ : 1 ≤ Δ) (hα : α 
       _ ≤ (1 / Real.pi ^ 2) * (((4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24) * (1 / (n : ℝ) ^ 2) + f_mid n) := by
           gcongr; linarith
 
+private lemma diffB_f_inv_sum (F5 : Finset ℤ) (hF5 : F5 = Finset.Icc (-2) 2)
+    (C_z : ℝ) (hCz : C_z = ∑' k : ℕ, (1 : ℝ) / (k + 1 : ℝ) ^ 2) :
+    Summable (fun n : ℤ => if n ∈ F5 then (0 : ℝ) else 1 / (n : ℝ) ^ 2) ∧
+    (∑' n : ℤ, if n ∈ F5 then (0 : ℝ) else 1 / (n : ℝ) ^ 2) ≤ 8 * C_z := by
+  subst hF5 hCz
+  let f_inv_sq : ℤ → ℝ := fun n => if n ∈ Finset.Icc (-2 : ℤ) 2 then 0 else 1 / (n : ℝ) ^ 2
+  have hf_inv_pos : Summable (fun k : ℕ => f_inv_sq k) := by
+    refine (summable_one_div_sq_nat.mul_left 4).of_nonneg_of_le
+      (fun k => by dsimp only [f_inv_sq]; split_ifs <;> positivity) (fun k => ?_)
+    dsimp only [f_inv_sq]; split_ifs with h
+    · positivity
+    · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
+      have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
+      have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
+      simp only [Int.cast_natCast]
+      rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
+  have hf_inv_neg : Summable (fun k : ℕ => f_inv_sq (-↑k)) := by
+    refine (summable_one_div_sq_nat.mul_left 4).of_nonneg_of_le
+      (fun k => by dsimp only [f_inv_sq]; split_ifs <;> positivity) (fun k => ?_)
+    dsimp only [f_inv_sq]; split_ifs with h
+    · positivity
+    · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
+      have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
+      have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
+      simp only [Int.cast_neg, Int.cast_natCast, neg_sq]
+      rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
+  have hf_inv_s : Summable f_inv_sq := Summable.of_nat_of_neg hf_inv_pos hf_inv_neg
+  refine ⟨hf_inv_s, ?_⟩
+  have h1 : ∑' k : ℕ, f_inv_sq k ≤ 4 * ∑' k : ℕ, (1 : ℝ) / (k + 1 : ℝ) ^ 2 := by
+    rw [← tsum_mul_left]
+    refine Summable.tsum_le_tsum (fun k => ?_) hf_inv_pos (summable_one_div_sq_nat.mul_left 4)
+    dsimp only [f_inv_sq]; split_ifs with h
+    · positivity
+    · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
+      have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
+      have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
+      simp only [Int.cast_natCast]
+      rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
+  have h2 : ∑' k : ℕ, f_inv_sq (-↑k) ≤ 4 * ∑' k : ℕ, (1 : ℝ) / (k + 1 : ℝ) ^ 2 := by
+    rw [← tsum_mul_left]
+    refine Summable.tsum_le_tsum (fun k => ?_) hf_inv_neg (summable_one_div_sq_nat.mul_left 4)
+    dsimp only [f_inv_sq]; split_ifs with h
+    · positivity
+    · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
+      have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
+      have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
+      simp only [Int.cast_neg, Int.cast_natCast, neg_sq]
+      rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
+  have hf_nn : ∀ n : ℤ, 0 ≤ f_inv_sq n := fun n => by dsimp only [f_inv_sq]; split_ifs <;> positivity
+  have h_fin : ∀ s : Finset ℤ, ∑ n ∈ s, f_inv_sq n ≤ (∑' k : ℕ, f_inv_sq k) + ∑' k : ℕ, f_inv_sq (-↑k) := by
+    intro s
+    let sN : Finset ℕ := s.image Int.natAbs
+    have h_sub : s ⊆ sN.image (fun k : ℕ => (k : ℤ)) ∪ sN.image (fun k : ℕ => -(k : ℤ)) := by
+      intro n hn
+      rcases Int.natAbs_eq n with h_eq | h_eq
+      · exact Finset.mem_union_left _ (Finset.mem_image.mpr ⟨n.natAbs, Finset.mem_image_of_mem _ hn, h_eq.symm⟩)
+      · exact Finset.mem_union_right _ (Finset.mem_image.mpr ⟨n.natAbs, Finset.mem_image_of_mem _ hn, h_eq.symm⟩)
+    calc ∑ n ∈ s, f_inv_sq n
+        ≤ ∑ n ∈ sN.image (fun k : ℕ => (k : ℤ)) ∪ sN.image (fun k : ℕ => -(k : ℤ)), f_inv_sq n :=
+          Finset.sum_le_sum_of_subset_of_nonneg h_sub (fun n _ _ => hf_nn n)
+      _ ≤ (∑ n ∈ sN.image (fun k : ℕ => (k : ℤ)), f_inv_sq n) +
+          ∑ n ∈ sN.image (fun k : ℕ => -(k : ℤ)), f_inv_sq n := by
+          have h_ui := Finset.sum_union_inter (s₁ := sN.image (fun k : ℕ => (k : ℤ)))
+            (s₂ := sN.image (fun k : ℕ => -(k : ℤ))) (f := f_inv_sq)
+          have h_in : 0 ≤ ∑ n ∈ sN.image (fun k : ℕ => (k : ℤ)) ∩ sN.image (fun k : ℕ => -(k : ℤ)), f_inv_sq n :=
+            Finset.sum_nonneg (fun n _ => hf_nn n)
+          linarith
+      _ = (∑ k ∈ sN, f_inv_sq k) + ∑ k ∈ sN, f_inv_sq (-↑k) := by
+          rw [Finset.sum_image (fun a _ b _ h => Int.ofNat.inj h),
+              Finset.sum_image (fun a _ b _ h => Int.ofNat.inj (neg_inj.mp h))]
+      _ ≤ (∑' k : ℕ, f_inv_sq k) + ∑' k : ℕ, f_inv_sq (-↑k) :=
+          add_le_add (hf_inv_pos.sum_le_tsum sN (fun k _ => hf_nn k))
+            (hf_inv_neg.sum_le_tsum sN (fun k _ => hf_nn (-↑k)))
+  exact (le_of_tendsto_of_tendsto' hf_inv_s.hasSum tendsto_const_nhds h_fin).trans (by linarith)
+
 lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ (Δ₃ C_sup C_L1 : ℝ), Δ₃ ≥ 2 ∧ C_sup > 0 ∧ C_L1 > 0 ∧
       ∀ (Δ α : ℝ), Δ ≥ Δ₃ → α ∈ Set.Ioo (0 : ℝ) 1 →
@@ -487,7 +562,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have hk0_lt : y - α < (k0 : ℝ) + 1 := Int.lt_floor_add_one (y - α)
         let d_min : ℝ := min |y - k0 - α| |y - (k0 + 1 : ℤ) - α|
         have hd_pos : 0 < d_min := lt_min (abs_pos.mpr (fun h => hlat ⟨k0, by linarith⟩))
-          (abs_pos.mpr (fun h => hlat ⟨k0 + 1, by push_cast; linarith⟩))
+          (abs_pos.mpr (fun h => hlat ⟨k0 + 1, by push_cast at h ⊢; linarith⟩))
         have h_dlb : ∀ n : ℤ, d_min ≤ |y - n - α| := by
           intro n
           rcases le_or_gt n k0 with hn | hn
@@ -520,7 +595,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_eq_sum : (Real.sin (Real.pi * (y - α)) ^ 2 / Real.pi ^ 2) *
           ∑' n : ℤ, (rescaledF θ Δ (n + α) / (y - n - α) ^ 2 + rescaledFDeriv θ Δ (n + α) / (y - n - α)) =
           ∑' n : ℤ, term n := by
-        rw [← tsum_mul_left]; rfl
+        rw [← tsum_mul_left]
       rw [h_eq_sum]
       have h_split : ∑' n : ℤ, term n = (∑ n ∈ F5, term n) + ∑' n : ℤ, (if n ∈ F5 then 0 else term n) := by
         have h_fin_s : Summable (fun n : ℤ => if n ∈ F5 then term n else 0) :=
@@ -529,7 +604,9 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have : (fun n : ℤ => if n ∈ F5 then 0 else term n) = fun n => term n - (if n ∈ F5 then term n else 0) := by
             ext n; split_ifs <;> ring
           rw [this]; exact hterm_s.sub h_fin_s
-        rw [← Summable.tsum_add h_fin_s h_cofin_s]
+        have h_add : (fun n : ℤ => (if n ∈ F5 then term n else 0) + (if n ∈ F5 then 0 else term n)) = term := by
+          ext n; split_ifs <;> ring
+        rw [← h_add, h_fin_s.tsum_add h_cofin_s]
         have h_t1 : ∑' n : ℤ, (if n ∈ F5 then term n else 0) = ∑ n ∈ F5, term n :=
           tsum_eq_sum (s := F5) (fun n hn => by simp [hn])
         rw [← h_t1]
@@ -541,16 +618,17 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have h_sin_div : |Real.sin (Real.pi * (y - α)) / (Real.pi * (y - n - α))| ≤ 1 := by
             have heq : Real.sin (Real.pi * (y - α)) = (-1 : ℝ) ^ n * Real.sin (Real.pi * (y - n - α)) := by
               have h1 : Real.pi * (y - α) = Real.pi * (y - n - α) + (n : ℝ) * Real.pi := by ring
-              rw [h1, Real.sin_add_int_mul_pi]; ring
+              rw [h1, Real.sin_add_int_mul_pi]
             rw [heq, abs_div, abs_mul, abs_zpow, abs_neg, abs_one, one_zpow, one_mul,
               abs_mul, abs_of_pos Real.pi_pos]
-            have hne : Real.pi * |y - n - α| ≠ 0 := mul_ne_zero Real.pi_ne_zero (abs_pos.mpr (fun h => hlat ⟨n, by linarith⟩))
+            have hyna_ne : y - n - α ≠ 0 := fun h => hlat ⟨n, by linarith⟩
+            have hne : Real.pi * |y - n - α| ≠ 0 := mul_ne_zero Real.pi_ne_zero (abs_pos.mpr hyna_ne)
             rw [div_le_one (lt_of_le_of_ne (by positivity) hne.symm)]
             exact Real.abs_sin_le_abs
           have h_t1 : |(Real.sin (Real.pi * (y - α)) ^ 2 / Real.pi ^ 2) * (rescaledF θ Δ (n + α) / (y - n - α) ^ 2)| ≤
               4 + Real.log (1 / δ) + Real.log Δ := by
             have heq : (Real.sin (Real.pi * (y - α)) ^ 2 / Real.pi ^ 2) * (rescaledF θ Δ (n + α) / (y - n - α) ^ 2) =
-                (Real.sin (Real.pi * (y - α)) / (Real.pi * (y - n - α))) ^ 2 * rescaledF θ Δ (n + α) := by ring
+                (Real.sin (Real.pi * (y - α)) / (Real.pi * (y - n - α))) ^ 2 * rescaledF θ Δ (n + α) := by field_simp [Real.pi_ne_zero]; ring
             rw [heq, abs_mul, abs_pow]
             have hsq : |Real.sin (Real.pi * (y - α)) / (Real.pi * (y - n - α))| ^ 2 ≤ 1 := by
               nlinarith [abs_nonneg (Real.sin (Real.pi * (y - α)) / (Real.pi * (y - n - α)))]
@@ -561,7 +639,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               1 / δ + 2 := by
             have heq : (Real.sin (Real.pi * (y - α)) ^ 2 / Real.pi ^ 2) * (rescaledFDeriv θ Δ (n + α) / (y - n - α)) =
                 (Real.sin (Real.pi * (y - α)) / (Real.pi * (y - n - α))) *
-                (Real.sin (Real.pi * (y - α)) / Real.pi) * rescaledFDeriv θ Δ (n + α) := by ring
+                (Real.sin (Real.pi * (y - α)) / Real.pi) * rescaledFDeriv θ Δ (n + α) := by field_simp [Real.pi_ne_zero]; ring
             rw [heq, abs_mul, abs_mul]
             have h_s2 : |Real.sin (Real.pi * (y - α)) / Real.pi| ≤ 1 := by
               rw [abs_div, abs_of_pos Real.pi_pos, div_le_one Real.pi_pos]
@@ -586,74 +664,9 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               rw [Finset.sum_const, show F5.card = 5 by decide, nsmul_eq_mul]; ring
       let F_mid : Finset ℤ := (Finset.Icc (-Int.floor Δ) (Int.floor Δ)).filter (fun n => n ∉ F5)
       let f_inv_sq : ℤ → ℝ := fun n => if n ∈ F5 then 0 else 1 / (n : ℝ) ^ 2
-      have hf_inv_pos : Summable (fun k : ℕ => f_inv_sq k) := by
-        refine (summable_one_div_sq_nat.mul_left 4).of_nonneg_of_le (fun k => by dsimp only [f_inv_sq]; split_ifs <;> positivity) (fun k => ?_)
-        dsimp only [f_inv_sq]; split_ifs with h
-        · positivity
-        · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
-          have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
-          have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
-          simp only [Int.cast_natCast]
-          rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
-      have hf_inv_neg : Summable (fun k : ℕ => f_inv_sq (-↑k)) := by
-        refine (summable_one_div_sq_nat.mul_left 4).of_nonneg_of_le (fun k => by dsimp only [f_inv_sq]; split_ifs <;> positivity) (fun k => ?_)
-        dsimp only [f_inv_sq]; split_ifs with h
-        · positivity
-        · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
-          have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
-          have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
-          simp only [Int.cast_neg, Int.cast_natCast, neg_sq]
-          rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
-      have hf_inv_s : Summable f_inv_sq := Summable.of_nat_of_neg hf_inv_pos hf_inv_neg
-      have hf_inv_sum : ∑' n : ℤ, f_inv_sq n ≤ 8 * C_z := by
-        have h1 : ∑' k : ℕ, f_inv_sq k ≤ 4 * C_z := by
-          rw [← tsum_mul_left]
-          refine Summable.tsum_le_tsum (fun k => ?_) hf_inv_pos (summable_one_div_sq_nat.mul_left 4)
-          dsimp only [f_inv_sq]; split_ifs with h
-          · positivity
-          · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
-            have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
-            have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
-            simp only [Int.cast_natCast]
-            rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
-        have h2 : ∑' k : ℕ, f_inv_sq (-↑k) ≤ 4 * C_z := by
-          rw [← tsum_mul_left]
-          refine Summable.tsum_le_tsum (fun k => ?_) hf_inv_neg (summable_one_div_sq_nat.mul_left 4)
-          dsimp only [f_inv_sq]; split_ifs with h
-          · positivity
-          · have hk0 : k ≠ 0 := by rintro rfl; exact h (by decide)
-            have hk1 : (1 : ℝ) ≤ k := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr hk0
-            have hsq : ((k : ℝ) + 1) ^ 2 ≤ 4 * (k : ℝ) ^ 2 := by nlinarith
-            simp only [Int.cast_neg, Int.cast_natCast, neg_sq]
-            rw [mul_one_div, div_le_div_iff₀ (by positivity) (by positivity)]; nlinarith
-        have hf_nn : ∀ n : ℤ, 0 ≤ f_inv_sq n := fun n => by dsimp only [f_inv_sq]; split_ifs <;> positivity
-        have h_fin : ∀ s : Finset ℤ, ∑ n ∈ s, f_inv_sq n ≤ (∑' k : ℕ, f_inv_sq k) + ∑' k : ℕ, f_inv_sq (-↑k) := by
-          intro s
-          let sN : Finset ℕ := s.image Int.natAbs
-          have h_sub : s ⊆ sN.image (fun k : ℕ => (k : ℤ)) ∪ sN.image (fun k : ℕ => -(k : ℤ)) := by
-            intro n hn
-            rcases Int.natAbs_eq n with h_eq | h_eq
-            · exact Finset.mem_union_left _ (Finset.mem_image.mpr ⟨n.natAbs, Finset.mem_image_of_mem _ hn, h_eq.symm⟩)
-            · exact Finset.mem_union_right _ (Finset.mem_image.mpr ⟨n.natAbs, Finset.mem_image_of_mem _ hn, h_eq.symm⟩)
-          calc ∑ n ∈ s, f_inv_sq n
-              ≤ ∑ n ∈ sN.image (fun k : ℕ => (k : ℤ)) ∪ sN.image (fun k : ℕ => -(k : ℤ)), f_inv_sq n :=
-                Finset.sum_le_sum_of_subset_of_nonneg h_sub (fun n _ _ => hf_nn n)
-            _ ≤ (∑ n ∈ sN.image (fun k : ℕ => (k : ℤ)), f_inv_sq n) +
-                ∑ n ∈ sN.image (fun k : ℕ => -(k : ℤ)), f_inv_sq n := by
-                have h_ui := Finset.sum_union_inter (s₁ := sN.image (fun k : ℕ => (k : ℤ)))
-                  (s₂ := sN.image (fun k : ℕ => -(k : ℤ))) (f := f_inv_sq)
-                have h_in : 0 ≤ ∑ n ∈ sN.image (fun k : ℕ => (k : ℤ)) ∩ sN.image (fun k : ℕ => -(k : ℤ)), f_inv_sq n :=
-                  Finset.sum_nonneg (fun n _ => hf_nn n)
-                linarith
-            _ = (∑ k ∈ sN, f_inv_sq k) + ∑ k ∈ sN, f_inv_sq (-↑k) := by
-                rw [Finset.sum_image (fun a _ b _ h => Int.ofNat.inj h),
-                    Finset.sum_image (fun a _ b _ h => Int.ofNat.inj (neg_inj.mp h))]
-            _ ≤ (∑' k : ℕ, f_inv_sq k) + ∑' k : ℕ, f_inv_sq (-↑k) :=
-                add_le_add (hf_inv_pos.sum_le_tsum sN (fun k _ => hf_nn k))
-                  (hf_inv_neg.sum_le_tsum sN (fun k _ => hf_nn (-↑k)))
-        exact (le_of_tendsto_of_tendsto' hf_inv_s.hasSum tendsto_const_nhds h_fin).trans (by linarith)
+      obtain ⟨hf_inv_s, hf_inv_sum⟩ := diffB_f_inv_sum F5 rfl C_z rfl
       let f_mid : ℤ → ℝ := fun n => if n ∈ F_mid then 2 / Δ else 0
-      have hf_mid_s : Summable f_mid := summable_of_ne_finset_zero (s := F_mid) (fun n hn => by simp [f_mid, hn])
+      have hf_mid_s : Summable f_mid := summable_of_ne_finset_zero (s := F_mid) (fun n hn => if_neg hn)
       have hf_mid_sum : ∑' n : ℤ, f_mid n ≤ 4 := by
         rw [tsum_eq_sum (s := F_mid) (fun n hn => by simp [f_mid, hn])]
         have h_sum_eq : ∑ n ∈ F_mid, f_mid n = ∑ _n ∈ F_mid, (2 / Δ) :=
