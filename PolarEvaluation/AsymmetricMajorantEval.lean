@@ -927,9 +927,11 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             intro h0; have hre := congr_arg Complex.re h0; simp [z] at hre; linarith [hα.2]
           have hne2 : z - (k + 1 : ℕ) ≠ 0 := by
             intro h0; have hre := congr_arg Complex.re h0; simp [z] at hre; linarith [hα.1]
+          have hne3 : z ^ 2 - ((k + 1 : ℕ) : ℂ) ^ 2 ≠ 0 := by
+            rw [sq_sub_sq]; exact mul_ne_zero hne1 hne2
           have heq : 1 / (z + (k + 1 : ℕ)) + 1 / (z - (k + 1 : ℕ)) =
               2 * z / (z ^ 2 - ((k + 1 : ℕ) : ℂ) ^ 2) := by
-            field_simp [hne1, hne2]; ring
+            field_simp [hne1, hne2, hne3]; ring
           rw [heq, norm_div, norm_mul, Complex.norm_ofNat]
           have hden : ((k + 1 : ℝ) ^ 2) / 2 ≤ ‖z ^ 2 - ((k + 1 : ℕ) : ℂ) ^ 2‖ := by
             have h1 : ‖z ^ 2‖ = ‖z‖ ^ 2 := norm_pow z 2
@@ -940,14 +942,14 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             have h_z_le : ‖z‖ ^ 2 ≤ (k + 1 : ℝ) ^ 2 / 2 := by
               have h_1d : 1 + Δ ≤ (k + 1 : ℝ) / 2 := by linarith
               calc ‖z‖ ^ 2 ≤ (1 + Δ) ^ 2 := sq_le_sq' (by linarith [norm_nonneg z]) hz_norm
-                _ ≤ ((k + 1 : ℝ) / 2) ^ 2 := sq_le_sq' (by positivity) h_1d
+                _ ≤ ((k + 1 : ℝ) / 2) ^ 2 := sq_le_sq' (by linarith) h_1d
                 _ = (k + 1 : ℝ) ^ 2 / 4 := by ring
                 _ ≤ (k + 1 : ℝ) ^ 2 / 2 := by gcongr; norm_num
             linarith
           calc 2 * ‖z‖ / ‖z ^ 2 - ((k + 1 : ℕ) : ℂ) ^ 2‖
               ≤ 2 * (1 + Δ) / ((k + 1 : ℝ) ^ 2 / 2) :=
                 div_le_div₀ (by positivity) (by gcongr) (by positivity) hden
-            _ = 4 * (1 + Δ) / (k + 1 : ℝ) ^ 2 := by ring
+            _ = 4 * (1 + Δ) / (k + 1 : ℝ) ^ 2 := by field_simp; ring
       have h_sum_k : ∑ k ∈ Finset.range N, ‖1 / (z + (k + 1 : ℕ)) + 1 / (z - (k + 1 : ℕ))‖ ≤
           (K0 : ℝ) * (2 / δ) + 4 * (1 + Δ) * C_z := by
         have h1 : ∑ k ∈ Finset.range N, ‖1 / (z + (k + 1 : ℕ)) + 1 / (z - (k + 1 : ℕ))‖ ≤
@@ -956,7 +958,9 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           rw [← Finset.sum_add_distrib]
           refine Finset.sum_le_sum fun k _ => ?_
           refine (h_each_k k).trans ?_
-          split_ifs <;> positivity
+          split_ifs
+          · exact le_add_of_nonneg_right (by positivity)
+          · exact le_add_of_nonneg_left (by positivity)
         have h2 : ∑ k ∈ Finset.range N, (if k < K0 then (2 / δ : ℝ) else 0) ≤ (K0 : ℝ) * (2 / δ) := by
           have h_sub : (Finset.range N).filter (· < K0) ⊆ Finset.range K0 := fun k hk => by
             rw [Finset.mem_filter] at hk; exact Finset.mem_range.mpr hk.2
@@ -970,43 +974,42 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           calc ∑ k ∈ Finset.range N, (4 * (1 + Δ) / (k + 1 : ℝ) ^ 2)
               ≤ ∑' k : ℕ, (4 * (1 + Δ) / (k + 1 : ℝ) ^ 2) := h_s.sum_le_tsum (Finset.range N) (fun _ _ => by positivity)
             _ = 4 * (1 + Δ) * C_z := by
-                rw [show (fun k : ℕ => 4 * (1 + Δ) / (k + 1 : ℝ) ^ 2) = fun k => (4 * (1 + Δ)) * (1 / (k + 1 : ℝ) ^ 2) by ext k; ring,
+                rw [show (fun k : ℕ => 4 * (1 + Δ) / (k + 1 : ℝ) ^ 2) = fun k : ℕ => (4 * (1 + Δ)) * (1 / (k + 1 : ℝ) ^ 2) by ext k; ring,
                   tsum_mul_left]
         linarith
       calc ‖1 / z + ∑ k ∈ Finset.range N, (1 / (z + (k + 1 : ℕ)) + 1 / (z - (k + 1 : ℕ)))‖
           ≤ ‖1 / z‖ + ∑ k ∈ Finset.range N, ‖1 / (z + (k + 1 : ℕ)) + 1 / (z - (k + 1 : ℕ))‖ :=
-            (norm_add_le _ _).trans (add_le_add_left (norm_sum_le _ _) _)
+            (norm_add_le _ _).trans (add_le_add le_rfl (norm_sum_le _ _))
         _ ≤ 1 / δ + ((K0 : ℝ) * (2 / δ) + 4 * (1 + Δ) * C_z) := add_le_add hz0 h_sum_k
         _ ≤ C_dom := by dsimp only [C_dom]; linarith
     obtain ⟨C_dom, hC_dom, h_dom⟩ := h_dom_bd
     have h_int_tend : Tendsto (fun N : ℕ => ∫ v in (0 : ℝ)..Δ, (Complex.exp (-Complex.I * θ) *
         ∑ n ∈ Finset.Icc (-(N : ℤ)) (N : ℤ), (1 / (((n + α : ℝ) : ℂ) - Complex.I * v))).im)
         atTop (nhds (∫ v in (0 : ℝ)..Δ, (Complex.exp (-Complex.I * θ) * cot_fn v).im)) := by
-      refine intervalIntegral.tendsto_integral_of_dominated_convergence (bound := fun _ => C_dom) ?_ ?_
-        intervalIntegrable_const ?_
+      simp_rw [intervalIntegral.integral_of_le hΔ_pos.le]
+      refine MeasureTheory.tendsto_integral_of_dominated_convergence (fun _ => C_dom) ?_
+        (continuousOn_const.integrableOn_Icc.mono_set Set.Ioc_subset_Icc_self) ?_ ?_
       · intro N
         refine (Complex.continuous_im.comp (continuous_const.mul (continuous_finset_sum _ fun n _ =>
           continuous_const.div (continuous_const.sub (continuous_const.mul Complex.continuous_ofReal)) fun v => ?_))).aestronglyMeasurable
         intro h0; have hre := congr_arg Complex.re h0; simp at hre; exact hx_ne n hre
       · intro N
-        rw [ae_restrict_iff' (by simp : MeasurableSet (Set.uIoc 0 Δ))]
+        rw [ae_restrict_iff' measurableSet_Ioc]
         filter_upwards with v hv
-        rw [Set.uIoc_of_le hΔ_pos.le] at hv
         rw [Real.norm_eq_abs]
         refine (Complex.abs_im_le_norm _).trans ?_
         rw [norm_mul, show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
           Complex.norm_exp_ofReal_mul_I, one_mul]
         exact h_dom N v ⟨hv.1.le, hv.2⟩
-      · rw [ae_restrict_iff' (by simp : MeasurableSet (Set.uIoc 0 Δ))]
+      · rw [ae_restrict_iff' measurableSet_Ioc]
         have h_ae : ∀ᵐ v : ℝ ∂volume, v ∈ Set.Ioc 0 Δ → v ∈ Set.Ioo 0 Δ := by
           filter_upwards [ae_iff.mpr (by simp : volume {v : ℝ | v = Δ} = 0)] with v hv h1
           exact ⟨h1.1, lt_of_le_of_ne h1.2 hv⟩
         filter_upwards [h_ae] with v hv1 hv2
-        rw [Set.uIoc_of_le hΔ_pos.le] at hv2
         exact (Complex.imCLM.continuous.continuousAt.comp ((continuousAt_const).mul continuousAt_id)).tendsto.comp
           (h_cot_lim v (hv1 hv2))
     have h_bd_tend : Tendsto (fun N : ℕ => ∑ n ∈ Finset.Icc (-(N : ℤ)) (N : ℤ), (n + α) / ((n + α) ^ 2 + Δ ^ 2))
-        atTop (nhds (cot_fn Δ).re) := by
+        atTop (nhds ((cot_fn Δ).re)) := by
       have hz := pi_cot_tsum_eq (z := -α + Complex.I * Δ) (by simp [hΔ_pos])
       have h_cot_neg : -(Real.pi : ℂ) * Complex.cos (Real.pi * (-α + Complex.I * Δ)) / Complex.sin (Real.pi * (-α + Complex.I * Δ)) =
           cot_fn Δ := by
@@ -1292,11 +1295,8 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hexp : Complex.exp (-Complex.I * θ) * ((Real.pi : ℂ) * Complex.I) =
           ((Real.pi * Real.sin θ : ℝ) : ℂ) + ((Real.pi * Real.cos θ : ℝ) : ℂ) * Complex.I := by
         rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
-
           Complex.exp_mul_I]
-
         simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
-
         ring
       simp_rw [hexp]
       simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.I_re, Complex.I_im,
@@ -1606,8 +1606,9 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               _ ≤ C_α * (1 / Δ) := by gcongr
               _ = C_α / Δ := by ring
           linarith [show (1 : ℝ) / Δ + C_α / Δ = (1 + C_α) / Δ by ring]
-        have h_2 : C_err1 * (1 + C_α) / c'_J ≤ Δ :=
+        have h_2' : C_err1 * (1 + C_α) / c'_J + 1 ≤ Δ :=
           le_trans (le_trans (le_max_left _ _) (le_trans (le_max_right _ _) (le_max_right _ _))) hΔ
+        have h_2 : C_err1 * (1 + C_α) / c'_J ≤ Δ := by linarith
         calc C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ) + |α - α_star|)
             ≤ C_err1 * ((1 + C_α) / Δ) := by gcongr
           _ = C_err1 * (1 + C_α) / Δ := by ring
@@ -1633,8 +1634,9 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               _ ≤ C_α * (1 / Δ) := by gcongr
               _ = C_α / Δ := by ring
           linarith [show (1 : ℝ) / Δ + C_α / Δ = (1 + C_α) / Δ by ring]
-        have h_2 : C_err1 * (1 + C_α) / (c_J / 2) ≤ Δ :=
+        have h_2' : C_err1 * (1 + C_α) / (c_J / 2) + 1 ≤ Δ :=
           le_trans (le_trans (le_max_right _ _) (le_trans (le_max_right _ _) (le_max_right _ _))) hΔ
+        have h_2 : C_err1 * (1 + C_α) / (c_J / 2) ≤ Δ := by linarith
         calc C_err1 * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) + |α - α_star|)
             ≤ C_err1 * ((1 + C_α) / Δ) := by gcongr
           _ = C_err1 * (1 + C_α) / Δ := by ring
@@ -1669,14 +1671,14 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have h1 : ∫ x in Set.Iio (0 : ℝ), fV (Δ * x) = ∫ x in Set.Ioi (0 : ℝ), fV (-(Δ * x)) := by
           rw [← (Measure.measurePreserving_neg volume).setIntegral_preimage_emb h_emb (fun x => fV (Δ * x)) (Set.Iio 0)]
           have h_pre' : Neg.neg ⁻¹' Set.Iio (0 : ℝ) = Set.Ioi 0 := h_pre
-          rw [h_pre']; congr 1; ext x; dsimp only [Homeomorph.coe_neg]; rw [mul_neg]
+          rw [h_pre']; simp only [Homeomorph.coe_neg, mul_neg]
         have h2 : ∫ y in Set.Iio (0 : ℝ), fV y = ∫ y in Set.Ioi (0 : ℝ), fV (-y) := by
           rw [← (Measure.measurePreserving_neg volume).setIntegral_preimage_emb h_emb fV (Set.Iio 0)]
           have h_pre' : Neg.neg ⁻¹' Set.Iio (0 : ℝ) = Set.Ioi 0 := h_pre
-          rw [h_pre']; rfl
+          rw [h_pre']
         have h3 := MeasureTheory.integral_comp_mul_left_Ioi (fun y : ℝ => fV (-y)) (0 : ℝ) hΔ_pos
         rw [mul_zero, smul_eq_mul, inv_eq_one_div] at h3
-        rw [h1, h2, ← h3]; congr 1; ext x; rw [mul_neg]
+        rw [h1, h2, ← h3]
       have h_split1 : ∫ x : ℝ, fV (Δ * x) = (∫ x in Set.Iio (0 : ℝ), fV (Δ * x)) + ∫ x in Set.Ioi (0 : ℝ), fV (Δ * x) := by
         rw [← integral_Ici_eq_integral_Ioi, ← setIntegral_union (Set.disjoint_iff.mpr fun x ⟨h1, h2⟩ => by linarith [h1.out, h2.out])
           measurableSet_Ici hfVc_int.integrableOn hfVc_int.integrableOn, Set.Iio_union_Ici, setIntegral_univ]
