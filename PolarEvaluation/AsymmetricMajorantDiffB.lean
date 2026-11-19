@@ -35,7 +35,8 @@ lemma sincPi_deriv_bound (R : ℝ) (hR : 0 ≤ R) :
       have hpw : HasDerivAt (fun w : ℂ => (Real.pi : ℂ) * w) (Real.pi : ℂ) u := by
         simpa using (hasDerivAt_id u).const_mul (Real.pi : ℂ)
       have hpi : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-      have hq := (hpw.sin).div hpw (mul_ne_zero hpi hu_ne)
+      have h_mul_ne : (Real.pi : ℂ) * u ≠ 0 := mul_ne_zero hpi hu_ne
+      have hq := (hpw.sin).div hpw h_mul_ne
       rw [hq.deriv]
       field_simp [hpi, hu_ne]; ring
     have h_sin_bd : ∀ w : ℂ, ‖Complex.sin w‖ ≤ Real.exp |w.im| := by
@@ -173,13 +174,12 @@ lemma majorantEntire_props (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.I
       have heq : (Δ * (x : ℂ) - n - α) = ((Δ * x - n - α : ℝ) : ℂ) := by push_cast; ring
       rw [heq, sincPi_ofReal (Δ * x - n - α)]
       norm_cast
-      simp
     have h_re_sum : (majorantEntire θ Δ α x).im = 0 ∧ (majorantEntire θ Δ α x).re =
         ∑' n : ℤ, (term n x).re := by
       have hs := h_summ_z x
       rw [majorantEntire, Complex.im_tsum hs, Complex.re_tsum hs]
       simp_rw [h_real, tsum_zero]
-      exact ⟨trivial, rfl⟩
+      exact ⟨by simp, by simp⟩
     refine ⟨h_re_sum.1, ?_⟩
     rw [h_re_sum.2]
     unfold majorantM vaalerInterpolant
@@ -214,9 +214,9 @@ lemma majorantEntire_props (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.I
         have hne : Δ * x - n - α ≠ 0 := fun h => hlat ⟨n, by linarith⟩
         have hsin_eq : Real.sin (Real.pi * (Δ * x - n - α)) ^ 2 = Real.sin (Real.pi * (Δ * x - α)) ^ 2 := by
           have h1 : Real.pi * (Δ * x - α) = Real.pi * (Δ * x - n - α) + (n : ℝ) * Real.pi := by ring
-          rw [h1, Real.sin_add_int_mul_pi]
-          simp [mul_pow, ← pow_mul, mul_comm n 2]
-        simp only [if_neg hne, hsin_eq]
+          rw [h1, Real.sin_add_int_mul_pi, mul_pow, ← pow_mul, mul_comm n 2, pow_mul]
+          norm_num
+        rw [if_neg hne, hsin_eq]
         field_simp [hne, Real.pi_ne_zero]; ring
       simp_rw [h_eq, tsum_mul_left]
 
@@ -240,7 +240,8 @@ private lemma diffB_tail_bound (θ Δ α δ y : ℝ) (hΔ : 1 ≤ Δ) (hα : α 
   by_cases hn : n ∈ F5
   · simp only [hn, ↓reduceIte, abs_zero]
     have hK_nn : 0 ≤ (4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24 := by
-      have h1 := Real.log_nonneg ((one_le_div hδ0).mpr (by linarith))
+      have h_inv_δ : 1 ≤ 1 / δ := (one_le_div hδ0).mpr (by linarith [hδ1])
+      have h1 := Real.log_nonneg h_inv_δ
       have h2 := Real.log_nonneg hΔ
       linarith
     exact mul_nonneg (div_nonneg zero_le_one (sq_nonneg _)) (add_nonneg (mul_nonneg hK_nn (hf_inv_nn n)) (hf_mid_nn n))
@@ -273,7 +274,8 @@ private lemma diffB_tail_bound (θ Δ α δ y : ℝ) (hΔ : 1 ≤ Δ) (hα : α 
         (4 + Real.log (1 / δ) + Real.log Δ) * (9 / (n : ℝ) ^ 2) := by
       rw [abs_div, abs_of_nonneg (sq_nonneg (y - n - α)), div_eq_mul_one_div]
       exact mul_le_mul (hF_unif n) h_inv_sq (by positivity) (by
-        have := Real.log_nonneg ((one_le_div hδ0).mpr (by linarith))
+        have h_inv_δ : 1 ≤ 1 / δ := (one_le_div hδ0).mpr (by linarith [hδ1])
+        have := Real.log_nonneg h_inv_δ
         have := Real.log_nonneg hΔ
         linarith)
     have h_t2 : |rescaledFDeriv θ Δ (n + α) / (y - n - α)| ≤ 24 / (n : ℝ) ^ 2 + f_mid n := by
@@ -492,7 +494,7 @@ private lemma diffB_h_sup (θ Δ α C_small C_mid C_sup : ℝ)
 
 private lemma integral_univ_inv_one_add_sq : ∫ x : ℝ, (1 + x ^ 2)⁻¹ = Real.pi := by
   have h_tend := intervalIntegral_tendsto_integral integrable_inv_one_add_sq tendsto_neg_atTop_atBot tendsto_id
-  have h_eq : (fun R : ℝ => ∫ x in (-R)..R, (1 + x ^ 2)⁻¹) = fun R : ℝ => Real.arctan R - Real.arctan (-R) := by
+  have h_eq : (fun R : ℝ => ∫ x in (-R)..id R, (1 + x ^ 2)⁻¹) = fun R : ℝ => Real.arctan R - Real.arctan (-R) := by
     ext R; exact integral_inv_one_add_sq
   rw [h_eq] at h_tend
   have h_lim : Tendsto (fun R : ℝ => Real.arctan R - Real.arctan (-R)) atTop (𝓝 (Real.pi / 2 - -(Real.pi / 2))) :=
@@ -667,7 +669,8 @@ private lemma diffB_L1_bound (θ Δ α C_small C_mid C_L1 : ℝ)
       · rw [neg_div] at hx1; exact ⟨by linarith only [hx1.1, h_1_div_lt], by linarith only [hx1.2, h_1_div_lt]⟩
       · exact ⟨hx2.1, by rw [neg_div] at hx2; linarith only [hx2.2, h_1_div_lt, show 0 < 1 / Δ by positivity]⟩
       · exact ⟨by linarith only [hx2.1, h_1_div_lt, show 0 < 1 / Δ by positivity], hx2.2⟩
-    have h123 := setIntegral_mono_set h_abs_int.integrableOn (Eventually.of_forall fun _ => abs_nonneg _) (Eventually.of_forall fun x _ => h_u (Set.mem_univ x))
+    have h123 : ∫ x in Set.univ, |majorantM θ Δ α x| ≤ ∫ x in S1 ∪ S2 ∪ S3, |majorantM θ Δ α x| :=
+      setIntegral_mono_set h_abs_int.integrableOn (Eventually.of_forall fun _ => abs_nonneg _) (Eventually.of_forall fun x _ => h_u (Set.mem_univ x))
     calc ∫ x : ℝ, |majorantM θ Δ α x| = ∫ x in Set.univ, |majorantM θ Δ α x| := setIntegral_univ.symm
       _ ≤ ∫ x in S1 ∪ S2 ∪ S3, |majorantM θ Δ α x| := h123
       _ = (∫ x in S1 ∪ S2, |majorantM θ Δ α x|) + ∫ x in S3, |majorantM θ Δ α x| :=
@@ -1068,14 +1071,8 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       |majorantM θ Δ α x - kernelK θ x| ≤ C_mid / (Δ * x) ^ 2 :=
     diffB_large_x θ Δ α C_err1 C_up δ_star C_mid hΔ_pos hΔ_ge_2 hC_err1 (diffB_exp_le Δ hΔ_ge_2) hα_near
       (h_diff_bd Δ α hΔ_ge_Δ₂ hα hα_near hsumm_b hsum0).2 hJ_up rfl
-  have hC_mid_nn : 0 ≤ C_mid := by
-    have h1 : 0 < δ_star :=
-      lt_min (div_pos hα_star.1 (by norm_num)) (div_pos (sub_pos.mpr hα_star.2) (by norm_num))
-    dsimp only [C_mid]
-    positivity
-  have hC_small_nn : 0 ≤ C_small := by
-    dsimp only [C_small, C_small_0, C_small_1]
-    positivity
+  have hC_mid_nn : 0 ≤ C_mid := hC_mid_pos.le
+  have hC_small_nn : 0 ≤ C_small := hC_small_pos.le
   have h_sup1 : 2 * C_small ≤ C_sup := le_max_left (2 * C_small) ((2 * C_mid + 8) / Real.log 2 + 2)
   have h_sup2 : (2 * C_mid + 8) / Real.log 2 + 2 ≤ C_sup := le_max_right (2 * C_small) ((2 * C_mid + 8) / Real.log 2 + 2)
   have h_sup : ∀ x : ℝ, (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_sup * Real.log Δ :=
