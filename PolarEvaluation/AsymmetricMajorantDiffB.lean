@@ -35,7 +35,7 @@ lemma sincPi_deriv_bound (R : ℝ) (hR : 0 ≤ R) :
       have hpw : HasDerivAt (fun w : ℂ => (Real.pi : ℂ) * w) (Real.pi : ℂ) u := by
         simpa using (hasDerivAt_id u).const_mul (Real.pi : ℂ)
       have hpi : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-      have hq := (hpw.sin).div hpw (show (fun w : ℂ => (Real.pi : ℂ) * w) u ≠ 0 from mul_ne_zero hpi hu_ne)
+      have hq := (hpw.sin).div hpw (by dsimp only; exact mul_ne_zero hpi hu_ne)
       rw [hq.deriv]
       field_simp [hpi, hu_ne]; ring
     have h_sin_bd : ∀ w : ℂ, ‖Complex.sin w‖ ≤ Real.exp |w.im| := by
@@ -213,10 +213,10 @@ lemma majorantEntire_props (θ Δ α : ℝ) (hΔ : Δ ≥ 1) (hα : α ∈ Set.I
         have hne : Δ * x - n - α ≠ 0 := fun h => hlat ⟨n, by linarith⟩
         have hsin_eq : Real.sin (Real.pi * (Δ * x - n - α)) ^ 2 = Real.sin (Real.pi * (Δ * x - α)) ^ 2 := by
           have h1 : Real.pi * (Δ * x - α) = Real.pi * (Δ * x - n - α) + (n : ℝ) * Real.pi := by ring
-          rw [h1, Real.sin_add_int_mul_pi, mul_pow, ← zpow_two, ← zpow_mul, mul_comm n 2, zpow_mul, zpow_two]
-          norm_num
+          have h_neg1 : ((-1 : ℝ) ^ n) ^ 2 = 1 := by rw [← zpow_natCast, ← zpow_mul, mul_comm n ((2 : ℕ) : ℤ), zpow_mul]; simp
+          rw [h1, Real.sin_add_int_mul_pi, mul_pow, h_neg1, one_mul]
         rw [if_neg hne, div_pow, hsin_eq]
-        field_simp [hne, Real.pi_ne_zero]; ring
+        field_simp [hne, Real.pi_ne_zero]
       simp_rw [h_eq, tsum_mul_left]
 
 private lemma diffB_tail_bound (θ Δ α δ y : ℝ) (hΔ : 1 ≤ Δ) (hα : α ∈ Set.Ioo (0 : ℝ) 1)
@@ -769,7 +769,6 @@ private lemma diffB_small_y (θ Δ α δ C_z C_small_0 C_small_1 C_small : ℝ)
     (hC1 : C_small_1 = 5 + 72 * C_z / Real.pi ^ 2 + 1)
     (hCs : C_small = C_small_0 / Real.log 2 + C_small_1) :
     ∀ y : ℝ, |y| ≤ 1 → |vaalerInterpolant θ Δ α y| ≤ C_small * Real.log Δ := by
-  subst hCz hC0 hC1 hCs
   intro y hy
   have hF_unif : ∀ n : ℤ, |rescaledF θ Δ (n + α)| ≤ 4 + Real.log (1 / δ) + Real.log Δ := by
     intro n
@@ -795,21 +794,22 @@ private lemma diffB_small_y (θ Δ α δ C_z C_small_0 C_small_1 C_small : ℝ)
     intro A B hA hB
     have h1 : A + B * Real.log Δ ≤ C_small_0 + C_small_1 * Real.log Δ := by gcongr
     refine h1.trans ?_
-    have hC0_nn : 0 ≤ C_small_0 := by dsimp only [C_small_0]; positivity
+    have hC0_nn : 0 ≤ C_small_0 := by rw [hC0]; positivity
     have h2 : C_small_0 ≤ (C_small_0 / Real.log 2) * Real.log Δ := by
       rw [div_mul_eq_mul_div, le_div_iff₀ hlog2_pos]
       exact mul_le_mul_of_nonneg_left hlogΔ_ge hC0_nn
-    dsimp only [C_small]; rw [add_mul]; linarith
+    rw [hCs, add_mul]; linarith
   by_cases hlat : ∃ n : ℤ, y = n + α
   · obtain ⟨n, rfl⟩ := hlat
     unfold vaalerInterpolant
     rw [if_pos ⟨n, rfl⟩]
+    have hCz_nn : 0 ≤ C_z := by rw [hCz]; exact tsum_nonneg (fun _ => by positivity)
     have h_le_c0 : 4 + Real.log (1 / δ) ≤ C_small_0 := by
       have h_rem : 0 ≤ (1 / Real.pi ^ 2) * ((4 + Real.log (1 / δ)) * 72 * C_z + 192 * C_z + 4) := by positivity
       have h_inv_δ : 0 ≤ 1 / δ := by positivity
-      dsimp only [C_small_0]; linarith
+      rw [hC0]; linarith
     have h_le_c1 : (1 : ℝ) ≤ C_small_1 := by
-      dsimp only [C_small_1]; linarith [show 0 ≤ 72 * C_z / Real.pi ^ 2 by positivity]
+      rw [hC1]; linarith [show 0 ≤ 72 * C_z / Real.pi ^ 2 by positivity]
     exact (hF_unif n).trans (by
       rw [show 4 + Real.log (1 / δ) + Real.log Δ = (4 + Real.log (1 / δ)) + 1 * Real.log Δ by ring]
       exact h_to_Csmall _ _ h_le_c0 h_le_c1)
@@ -933,7 +933,7 @@ private lemma diffB_small_y (θ Δ α δ C_z C_small_0 C_small_1 C_small : ℝ)
             rw [Finset.sum_const, show F5.card = 5 by decide, nsmul_eq_mul]; ring
     let F_mid : Finset ℤ := (Finset.Icc (-Int.floor Δ) (Int.floor Δ)).filter (fun n => n ∉ F5)
     let f_inv_sq : ℤ → ℝ := fun n => if n ∈ F5 then 0 else 1 / (n : ℝ) ^ 2
-    obtain ⟨hf_inv_s, hf_inv_sum⟩ := diffB_f_inv_sum F5 rfl C_z rfl
+    obtain ⟨hf_inv_s, hf_inv_sum⟩ := diffB_f_inv_sum F5 rfl C_z hCz
     let f_mid : ℤ → ℝ := fun n => if n ∈ F_mid then 2 / Δ else 0
     have hf_mid_s : Summable f_mid := summable_of_ne_finset_zero (s := F_mid) (fun n hn => if_neg hn)
     have hf_mid_sum : ∑' n : ℤ, f_mid n ≤ 4 := by
@@ -1004,7 +1004,7 @@ private lemma diffB_small_y (θ Δ α δ C_z C_small_0 C_small_1 C_small : ℝ)
       have h_diff_eq : C_small_0 + C_small_1 * Real.log Δ -
           (5 * (4 + Real.log (1 / δ) + Real.log Δ + 1 / δ + 2) +
             (1 / Real.pi ^ 2) * (((4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24) * 8 * C_z + 4)) =
-          1 + Real.log Δ := by dsimp only [C_small_0, C_small_1]; ring
+          1 + Real.log Δ := by rw [hC0, hC1]; ring
       linarith [hlogΔ_pos]
     exact (add_le_add h_F5_bd h_tail_sum).trans (h_tot_le.trans (h_to_Csmall C_small_0 C_small_1 le_rfl le_rfl))
 
