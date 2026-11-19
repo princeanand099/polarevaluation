@@ -1,0 +1,117 @@
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α_star - I * ↑v)) / Complex.sin (↑π * (↑α_star - I * ↑v))
+h_cot_diff : ∀ (v : ℝ), 0 ≤ v → ‖cot_fn v - cot_star v‖ ≤ π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+rem_fn : ℝ → ℂ := fun v ↦ ↑π * (-I * cexp (I * (↑θ + I * ↑π * ↑v)) / Complex.cos (↑θ + I * ↑π * ↑v))
+h_cot_star_eq : ∀ (v : ℝ), cot_star v = ↑π * I + rem_fn v
+h_rem_bd : ∀ (v : ℝ), 0 ≤ v → ‖rem_fn v‖ ≤ 2 * π / Real.cos θ * rexp (-2 * π * v)
+G : ℝ → ℝ := fun v ↦ -(cexp (-I * ↑θ) * I * Complex.log (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v)))).im
+h_slit : ∀ (v : ℝ), 0 ≤ v → 0 < (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v))).re
+v : ℝ
+hv : v ∈ Set.Ioi 0
+⊢ I * ↑π * ↑1 = I * ↑π
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:420:85: No goals to be solved
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:427:8: Type mismatch
+  HasDerivAt.clog ?m.8835 (mem_slitPlane_iff.mpr (Or.inl (h_slit v (LT.lt.le ?m.8845))))
+has type
+  HasDerivAt (fun (t : ℂ) ↦ Complex.log (1 + t)) (?m.8833 / (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v))))
+    (cexp (2 * I * (↑θ + I * ↑π * ↑v)))
+but is expected to have type
+  HasDerivAt (fun (t : ℝ) ↦ Complex.log (1 + cexp (2 * I * (↑θ + I * ↑π * ↑t))))
+    (-2 * ↑π * cexp (2 * I * (↑θ + I * ↑π * ↑v)) / (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v)))) v
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:427:8: Application type mismatch: The argument
+  h_inner
+has type
+  HasDerivAt (fun t ↦ 1 + cexp (2 * I * (↑θ + I * ↑π * ↑t))) (-2 * ↑π * cexp (2 * I * (↑θ + I * ↑π * ↑v))) v
+but is expected to have type
+  HasDerivAt (HAdd.hAdd 1) ?m.8833 (cexp (2 * I * (↑θ + I * ↑π * ↑v)))
+in the application
+  HasDerivAt.clog h_inner
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:473:13: Unknown constant `Complex.continuousAt_clog`
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:483:54: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  Complex.cos ↑?x
+in the target expression
+  1 + cexp (I * ↑θ) * cexp (I * ↑θ) = cexp (Complex.log (2 * ↑(Real.cos θ))) * cexp (I * ↑θ)
+
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α_star - I * ↑v)) / Complex.sin (↑π * (↑α_star - I * ↑v))
+h_cot_diff : ∀ (v : ℝ), 0 ≤ v → ‖cot_fn v - cot_star v‖ ≤ π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+rem_fn : ℝ → ℂ := fun v ↦ ↑π * (-I * cexp (I * (↑θ + I * ↑π * ↑v)) / Complex.cos (↑θ + I * ↑π * ↑v))
+h_cot_star_eq : ∀ (v : ℝ), cot_star v = ↑π * I + rem_fn v
+h_rem_bd : ∀ (v : ℝ), 0 ≤ v → ‖rem_fn v‖ ≤ 2 * π / Real.cos θ * rexp (-2 * π * v)
+G : ℝ → ℝ := fun v ↦ -(cexp (-I * ↑θ) * I * Complex.log (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v)))).im
+h_slit : ∀ (v : ℝ), 0 ≤ v → 0 < (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v))).re
+hG_deriv : ∀ v ∈ Set.Ioi 0, HasDerivAt G (-(cexp (-I * ↑θ) * rem_fn v).im) v
+h_int_r : IntegrableOn (fun v ↦ -(cexp (-I * ↑θ) * rem_fn v).im) (Set.Ioi 0) volume
+h_cont : ContinuousAt G 0
+hcos_def : Complex.cos ↑θ = (cexp (↑θ * I) + cexp (-↑θ * I)) / 2
+⊢ 1 + cexp (I * ↑θ) * cexp (I * ↑θ) = cexp (Complex.log (2 * ↑(Real.cos θ))) * cexp (I * ↑θ)
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:553:38: No goals to be solved
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:726:10: invalid 'calc' step, failed to synthesize `Trans` instance
+  Trans LE.le LE.le ?m.15487
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+Some required targets logged failures:
+- PolarEvaluation.TotientStar
+- PolarEvaluation.AsymmetricMajorantEvalA
+- PolarEvaluation.AsymmetricMajorantEvalB
+error: build failed

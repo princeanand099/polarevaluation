@@ -1,0 +1,150 @@
+hθ : |θ| < π / 2
+α_star : ℝ := ⋯
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := ⋯
+δ : ℝ := ⋯
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := ⋯
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ := ⋯
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := ⋯
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := ⋯
+h_cot_diff : ∀ (v : ℝ), 0 ≤ v → ‖cot_fn v - cot_star v‖ ≤ π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+rem_fn : ℝ → ℂ := ⋯
+v : ℝ
+h1 : ↑π * (↑α_star - I * ↑v) = ↑π / 2 - (↑θ + I * ↑π * ↑v)
+hcos : Complex.cos (↑θ + I * ↑π * ↑v) ≠ 0
+h_euler : Complex.sin (↑θ + I * ↑π * ↑v) - I * Complex.cos (↑θ + I * ↑π * ↑v) = -I * cexp (I * (↑θ + I * ↑π * ↑v))
+⊢ Complex.sin (↑θ + ↑π * I * ↑v) * (Complex.cos (↑θ + ↑π * I * ↑v))⁻¹ +
+              (Complex.cos (↑θ + ↑π * I * ↑v))⁻¹ * I * cexp (I * (↑θ + ↑π * I * ↑v)) -
+            ↑π * I * cexp (I * (↑θ + I * ↑π * ↑v)) +
+          ↑π * I * Complex.cos (↑θ + I * ↑π * ↑v) -
+        ↑π * Complex.sin (↑θ + I * ↑π * ↑v) -
+      I =
+    0
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:370:77: No goals to be solved
+info: PolarEvaluation/AsymmetricMajorantEvalB.lean:396:74: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:401:12: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  1 + Real.cos (2 * θ)
+in the target expression
+  0 < 1 + (Real.cos (2 * θ) + (0 - 0 * 1))
+
+case pos
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α_star - I * ↑v)) / Complex.sin (↑π * (↑α_star - I * ↑v))
+h_cot_diff : ∀ (v : ℝ), 0 ≤ v → ‖cot_fn v - cot_star v‖ ≤ π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+rem_fn : ℝ → ℂ := fun v ↦ ↑π * (-I * cexp (I * (↑θ + I * ↑π * ↑v)) / Complex.cos (↑θ + I * ↑π * ↑v))
+h_cot_star_eq : ∀ (v : ℝ), cot_star v = ↑π * I + rem_fn v
+h_rem_bd : ∀ (v : ℝ), 0 ≤ v → ‖rem_fn v‖ ≤ 2 * π / Real.cos θ * rexp (-2 * π * v)
+G : ℝ → ℝ := fun v ↦ -(cexp (-I * ↑θ) * I * Complex.log (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v)))).im
+hv : 0 ≤ 0
+heq : 1 + cexp (2 * I * (↑θ + I * ↑π * ↑0)) = 1 + cexp (↑(2 * θ) * I)
+h1 : 1 + Real.cos (2 * θ) = 2 * Real.cos θ ^ 2
+⊢ 0 < 1 + (Real.cos (2 * θ) + (0 - 0 * 1))
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:418:11: unsolved goals
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)

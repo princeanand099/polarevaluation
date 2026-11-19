@@ -1,0 +1,150 @@
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+h_vert_bd : ∀ (L : ℝ), 2 * Δ ≤ L → ∀ (x : ℝ), |x| = L → ∀ (y : ℝ), |y| ≤ R → ‖M_α (↑x + I * ↑y)‖ ≤ C_v / L
+L : ℝ
+hL : 0 ≤ L
+g_dom : ℤ → ℝ → ℝ :=
+  fun n x ↦
+    |rescaledF θ Δ (↑n + α)| / π ^ 2 * (1 / ((x - ↑n - α) ^ 2 + R ^ 2)) +
+      |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| / π ^ 2 * ((1 / (x ^ 2 + R ^ 2) + 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) / 2)
+hg_dom_int : ∀ (n : ℤ), Integrable (g_dom n) volume
+hg_dom_int_val :
+  ∀ (n : ℤ), ∫ (x : ℝ), g_dom n x = (|rescaledF θ Δ (↑n + α)| + |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|) / (π * R)
+n : ℤ
+⊢ ∫⁻ (x : ℝ), ‖g_dom n x‖ₑ = ENNReal.ofReal (∫ (x : ℝ), g_dom n x)
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:369:10: Unknown identifier `integrable_tsum`
+warning: PolarEvaluation/AsymmetricMajorantEvalA.lean:372:35: Possibly looping simp theorem: `div_eq_mul_one_div`
+
+Hint: You can disable a simp theorem from the default simp set by passing `- theoremName` to `simp`.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:372:35: Tactic `simp` failed with a nested error:
+maximum recursion depth has been reached
+use `set_option maxRecDepth <num>` to increase limit
+use `set_option diagnostics true` to get diagnostic information
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:381:41: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  (↑s * ↑R).re
+in the target expression
+  |s * R| = 0
+
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+h_vert_bd : ∀ (L : ℝ), 2 * Δ ≤ L → ∀ (x : ℝ), |x| = L → ∀ (y : ℝ), |y| ≤ R → ‖M_α (↑x + I * ↑y)‖ ≤ C_v / L
+L : ℝ
+hL : 0 ≤ L
+g_dom : ℤ → ℝ → ℝ :=
+  fun n x ↦
+    |rescaledF θ Δ (↑n + α)| / π ^ 2 * (1 / ((x - ↑n - α) ^ 2 + R ^ 2)) +
+      |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| / π ^ 2 * ((1 / (x ^ 2 + R ^ 2) + 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) / 2)
+hg_dom_int : ∀ (n : ℤ), Integrable (g_dom n) volume
+hg_dom_int_val :
+  ∀ (n : ℤ), ∫ (x : ℝ), g_dom n x = (|rescaledF θ Δ (↑n + α)| + |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|) / (π * R)
+hg_summ_int : ∑' (n : ℤ), ∫⁻ (x : ℝ), ‖g_dom n x‖ₑ < ⊤
+h_tot_int : Integrable (fun x ↦ ∑' (n : ℤ), g_dom n x) volume
+h_tot_val : ∫ (x : ℝ), ∑' (n : ℤ), g_dom n x = (S_a + S_bm) / (π * R)
+x : ℝ
+z : ℂ := ↑x + I * (↑s * ↑R)
+h0 : z = 0
+him : (↑s * ↑R).re = im 0
+⊢ |s * R| = 0
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:388:41: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  (↑s * ↑R).re
+in the target expression
+  |s * R| = 0
+
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+h_vert_bd : ∀ (L : ℝ), 2 * Δ ≤ L → ∀ (x : ℝ), |x| = L → ∀ (y : ℝ), |y| ≤ R → ‖M_α (↑x + I * ↑y)‖ ≤ C_v / L
+L : ℝ
+hL : 0 ≤ L
+g_dom : ℤ → ℝ → ℝ :=
+  fun n x ↦
+    |rescaledF θ Δ (↑n + α)| / π ^ 2 * (1 / ((x - ↑n - α) ^ 2 + R ^ 2)) +

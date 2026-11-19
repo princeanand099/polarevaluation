@@ -1,0 +1,150 @@
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_part_sum_eq :
+  ∀ (N : ℕ) (v : ℝ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v) =
+      -(1 / (-↑α + I * ↑v) + ∑ k ∈ Finset.range N, (1 / (-↑α + I * ↑v + ↑(k + 1)) + 1 / (-↑α + I * ↑v - ↑(k + 1))))
+h_cot_lim :
+  ∀ v ∈ Set.Ioo 0 Δ, Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)) atTop (𝓝 (cot_fn v))
+K0 : ℕ := ⌈2 * (1 + Δ)⌉₊ + 2
+C_z : ℝ := ∑' (k : ℕ), 1 / (↑k + 1) ^ 2
+C_dom : ℝ := 1 / δ + ↑K0 * (2 / δ) + 4 * (1 + Δ) * C_z + 1
+N : ℕ
+v : ℝ
+hv : v ∈ Set.Icc 0 Δ
+z : ℂ := -↑α + I * ↑v
+hz_norm : ‖z‖ ≤ 1 + Δ
+hz0 : ‖1 / z‖ ≤ 1 / δ
+k : ℕ
+hk : k < K0
+h1 : δ ≤ ‖z + ↑(k + 1)‖
+hre : (z - ↑(k + 1)).re = -(↑(↑k + 1) + α)
+h_lb : δ ≤ |↑(↑k + 1) + α|
+h_eq : |↑(↑k + 1) + α| = |(-(↑(↑k + 1) + α))|
+⊢ δ ≤ ‖z - ↑(k + 1)‖
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:253:37: Application type mismatch: The argument
+  ?m.5418
+has type
+  volume {v | v = Δ} = 0
+but is expected to have type
+  volume {a | ¬?m.5407 a} = 0
+in the application
+  ae_iff.mpr ?m.5418
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:268:28: Invalid field `hasSum`: The environment does not contain `Function.hasSum`, so it is not possible to project the field `hasSum` from an expression
+  h_summ_k
+of type
+  (∀ (n : ℕ), -↑α + I * ↑Δ + ↑(n + 1) ≠ 0) →
+    Summable fun n ↦ 1 / (-↑α + I * ↑Δ - ↑(n + 1)) + 1 / (-↑α + I * ↑Δ + ↑(n + 1))
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:306:19: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ∑ i ∈ ?s, ?a * ?f i
+in the target expression
+  (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+      ∑ x ∈ Finset.Icc (-↑N) ↑N, Real.sin θ * Δ * (↑x + α) / ((↑x + α) ^ 2 + Δ ^ 2) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+      Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+N : ℕ
+h_int_fin :
+  ∀ n ∈ Finset.Icc (-↑N) ↑N, IntervalIntegrable (fun v ↦ (cexp (-I * ↑θ) / (↑(↑n + α) - I * ↑v)).im) volume 0 Δ
+h_sum_int :
+  ∑ n ∈ Finset.Icc (-↑N) ↑N, ∫ (v : ℝ) in Set.Ioo 0 Δ, (cexp (-I * ↑θ) / (↑(↑n + α) - I * ↑v)).im =
+    ∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im
+⊢ (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+      ∑ x ∈ Finset.Icc (-↑N) ↑N, Real.sin θ * Δ * (↑x + α) / ((↑x + α) ^ 2 + Δ ^ 2) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+      Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+info: PolarEvaluation/AsymmetricMajorantEvalB.lean:333:31: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:330:117: unsolved goals
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :

@@ -1,0 +1,150 @@
+ f := ↑(Fintype.card (DirichletCharacter ℂ (p ^ e)))
+error: PolarEvaluation/TotientStar.lean:182:71: Type mismatch
+  p ^ (e - 1)
+has type
+  ℕ
+of sort `Type` but is expected to have type
+  Type ?u.150
+of sort `Type (?u.150 + 1)`
+error: PolarEvaluation/TotientStar.lean:183:67: Type mismatch
+  p ^ e
+has type
+  ℕ
+of sort `Type` but is expected to have type
+  Type ?u.160
+of sort `Type (?u.160 + 1)`
+error: PolarEvaluation/TotientStar.lean:145:77: unsolved goals
+p e : ℕ
+hp : Nat.Prime p
+he : e ≥ 2
+this : NeZero (p ^ e)
+hd : p ^ (e - 1) ∣ p ^ e := pow_dvd_pow p (Nat.sub_le e 1)
+S_nonprim : Finset (DirichletCharacter ℂ (p ^ e)) := Finset.image (⇑(DirichletCharacter.changeLevel hd)) Finset.univ
+h_sub : Finset.univ \ S_nonprim ⊆ {χ | χ.IsPrimitive}
+h_card : (Finset.univ \ S_nonprim).card ≤ {χ | χ.IsPrimitive}.card
+h_sdiff : (Finset.univ \ S_nonprim).card ≥ Fintype.card (DirichletCharacter ℂ (p ^ e)) - S_nonprim.card
+h_nonprim_le : S_nonprim.card ≤ (p ^ (e - 1)).totient
+⊢ totientStar (p ^ e) ≥ (p ^ e).totient - (p ^ (e - 1)).totient
+error: PolarEvaluation/TotientStar.lean:198:60: Application type mismatch: The argument
+  ↑u
+has type
+  ZMod m
+but is expected to have type
+  ℕ
+in the application
+  Nat.chineseRemainder hcop 1 ↑u
+error: PolarEvaluation/TotientStar.lean:202:12: Invalid rewrite argument: The pattern to be substituted is a metavariable (`?m.147`) in this equality
+  ?m.147 = ↑(ZMod.val ?m.147)
+error: PolarEvaluation/TotientStar.lean:202:36: Application type mismatch: The argument
+  u
+has type
+  (ZMod m)ˣ
+but is expected to have type
+  ZMod ?m.145
+in the application
+  ZMod.natCast_zmod_val u
+error: PolarEvaluation/TotientStar.lean:218:32: Application type mismatch: The argument
+  hu
+has type
+  ¬IsUnit u
+of sort `Prop` but is expected to have type
+  MulChar ?m.155 ?m.157
+of sort `Type (max ?u.67 ?u.66)` in the application
+  @MulChar.map_nonunit ?m.155 ?m.156 ?m.157 ?m.158 hu
+error: PolarEvaluation/TotientStar.lean:218:6: `simp` made no progress
+error: PolarEvaluation/TotientStar.lean:220:68: Application type mismatch: The argument
+  m
+has type
+  ℕ
+of sort `Type` but is expected to have type
+  Type ?u.77
+of sort `Type (?u.77 + 1)` in the application
+  @DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity m
+error: PolarEvaluation/TotientStar.lean:245:6: Type mismatch
+  Nat.coprime_ordCompl Nat.prime_two hq0
+has type
+  Nat.Coprime 2 (q / 2 ^ q.factorization 2)
+but is expected to have type
+  (2 ^ q.factorization 2).Coprime (q / 2 ^ q.factorization 2)
+error: PolarEvaluation/TotientStar.lean:262:74: failed to synthesize instance of type class
+  OfNat (Type ?u.139) 1
+numerals are polymorphic in Lean, but the numeral `1` cannot be used in a context where the expected type is
+  Type ?u.139
+due to the absence of the instance above
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PolarEvaluation/TotientStar.lean:263:51: Unknown constant `Fintype.card_eq_one_iff_unique.mp`
+error: PolarEvaluation/TotientStar.lean:260:37: unsolved goals
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+hs : ∀ p ∈ ∅, Nat.Prime p
+h_card : Fintype.card (DirichletCharacter ℂ 1) = 1
+this : Unique (DirichletCharacter ℂ 1)
+h_eq : {χ | χ.IsPrimitive} = Finset.univ
+⊢ {χ ∈ {default} | χ.IsPrimitive}.card = 1
+error: PolarEvaluation/TotientStar.lean:302:39: Application type mismatch: The argument
+  hq0
+has type
+  q ≠ 0
+but is expected to have type
+  ∀ p ∈ Finsupp.support ?m.615, Nat.Prime p
+in the application
+  Nat.factorization_prod_pow_eq_self hq0
+info: PolarEvaluation/TotientStar.lean:321:61: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/TotientStar.lean:320:93: unsolved goals
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+hp : 2 ∈ q.primeFactors
+hp_prime : Nat.Prime 2
+he_pos : 1 ≤ q.factorization 2
+he2 : 2 ≤ q.factorization 2
+h_star : totientStar (2 ^ q.factorization 2) ≥ (2 ^ q.factorization 2).totient - (2 ^ (q.factorization 2 - 1)).totient
+h_t1 : (2 ^ q.factorization 2).totient = 2 ^ (q.factorization 2 - 1)
+⊢ 2 ^ (q.factorization 2 - 1 - 1) = 2 ^ (q.factorization 2 - 2)
+error: PolarEvaluation/TotientStar.lean:339:53: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ↑(?m.1129 - ?m.1128)
+in the target expression
+  ↑p - 2 = ↑p - 2
+
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+p : ℕ
+hp : p ∈ q.primeFactors
+hp_prime : Nat.Prime p
+he_pos : 1 ≤ q.factorization p
+hp2 : ¬p = 2
+hp3 : p ≥ 3

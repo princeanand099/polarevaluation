@@ -1,0 +1,150 @@
+h_t2 : (p ^ (q.factorization p - 1)).totient = p ^ (q.factorization p - 2) * (p - 1)
+h_pow : p ^ (q.factorization p - 1) = p ^ (q.factorization p - 2) * p
+⊢ ↑(p * p ^ (q.factorization p - 2) * (p - 1) - p ^ (q.factorization p - 2) * (p - 1)) =
+    -(↑p * ↑p ^ (q.factorization p - 2) * 2) + ↑p ^ 2 * ↑p ^ (q.factorization p - 2) + ↑p ^ (q.factorization p - 2)
+error: PolarEvaluation/TotientStar.lean:434:10: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  (∏ x ∈ ?m.2861, ?f x) / ∏ x ∈ ?m.2861, ?g x
+in the target expression
+  ↑q.totient / ↑(totientStar q) ≤
+    ∏ p ∈ q.primeFactors, ↑(p ^ q.factorization p).totient / ↑(totientStar (p ^ q.factorization p))
+
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+h_ratio_term :
+  ∀ p ∈ q.primeFactors,
+    ↑(p ^ q.factorization p).totient / ↑(totientStar (p ^ q.factorization p)) ≤ if p = 2 then 2 else (↑p / (↑p - 1)) ^ 2
+h_star_pos_each : ∀ p ∈ q.primeFactors, 0 < ↑(totientStar (p ^ q.factorization p))
+h_prod_pos : 0 < ∏ p ∈ q.primeFactors, ↑(totientStar (p ^ q.factorization p))
+⊢ ↑q.totient / ↑(totientStar q) ≤
+    ∏ p ∈ q.primeFactors, ↑(p ^ q.factorization p).totient / ↑(totientStar (p ^ q.factorization p))
+error: PolarEvaluation/TotientStar.lean:444:13: Function expected at
+  Finset.prod_le_prod fun p x ↦ ?m.2943
+but this term has type
+  ∏ i ∈ ?m.2939, ?m.2937 i ≤ ∏ i ∈ ?m.2939, ?m.2938 i
+
+Note: Expected a function because this term is being applied to the argument
+  (fun p hp => h_ratio_term p hp)
+error: PolarEvaluation/TotientStar.lean:444:48: failed to synthesize
+  Zero ?m.2934
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/TotientStar.lean:453:15: Function expected at
+  Finset.prod_le_prod fun p x ↦ ?m.3134
+but this term has type
+  ∏ i ∈ ?m.3130, ?m.3128 i ≤ ∏ i ∈ ?m.3130, ?m.3129 i
+
+Note: Expected a function because this term is being applied to the argument
+  fun p hp => ?_
+error: PolarEvaluation/TotientStar.lean:453:50: failed to synthesize
+  Zero ?m.3125
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/TotientStar.lean:454:34: Unknown identifier `hp`
+error: PolarEvaluation/TotientStar.lean:462:35: invalid `▸` notation, argument
+  h
+has type
+  ?m.3257
+equality expected
+error: PolarEvaluation/TotientStar.lean:475:6: failed to prove nonzeroness, but it would be possible to prove nonnegativity if desired
+error: PolarEvaluation/TotientStar.lean:476:8: Function expected at
+  log_prod ?m.3501
+but this term has type
+  Real.log (∏ i ∈ ?m.3499, ?m.3500 i) = ∑ i ∈ ?m.3499, Real.log (?m.3500 i)
+
+Note: Expected a function because this term is being applied to the argument
+  _
+error: PolarEvaluation/TotientStar.lean:513:6: failed to prove strict positivity, but it would be possible to prove nonnegativity if desired
+✔ [9055/9073] Built PolarEvaluation.ShiftedLatticeShift (147s)
+✔ [9056/9073] Built PolarEvaluation.ShiftedLatticeContour (15s)
+⚠ [9057/9073] Built PolarEvaluation.ShiftedLatticePositivityA (24s)
+warning: PolarEvaluation/ShiftedLatticePositivityA.lean:190:28: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: PolarEvaluation/ShiftedLatticePositivityA.lean:190:42: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+✔ [9058/9073] Built PolarEvaluation.ShiftedLatticePositivityB (21s)
+ℹ [9059/9073] Built PolarEvaluation.AsymmetricMajorantBounds (28s)
+info: PolarEvaluation/AsymmetricMajorantBounds.lean:1162:96: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+✔ [9060/9073] Built PolarEvaluation.AsymmetricMajorantDiffA (27s)
+✔ [9061/9073] Built PolarEvaluation.AsymmetricMajorantDiffB (18s)
+✖ [9062/9073] Building PolarEvaluation.AsymmetricMajorantEvalA (17s)
+trace: .> LEAN_PATH=/home/runner/work/polarevaluation/polarevaluation/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.35.0/bin/lean /home/runner/work/polarevaluation/polarevaluation/PolarEvaluation/AsymmetricMajorantEvalA.lean -o /home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean/PolarEvaluation/AsymmetricMajorantEvalA.olean -i /home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean/PolarEvaluation/AsymmetricMajorantEvalA.ilean -c /home/runner/work/polarevaluation/polarevaluation/.lake/build/ir/PolarEvaluation/AsymmetricMajorantEvalA.c --setup /home/runner/work/polarevaluation/polarevaluation/.lake/build/ir/PolarEvaluation/AsymmetricMajorantEvalA.setup.json --json
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:13:4: Function expected at
+  integral_sub_right_eq_self (fun x ↦ 1 / (x ^ 2 + R ^ 2)) ?m.249
+but this term has type
+  ∫ (x : ℝ), 1 / ((x - ?m.249) ^ 2 + R ^ 2) ∂?m.208 = ∫ (x : ℝ), 1 / (x ^ 2 + R ^ 2) ∂?m.208
+
+Note: Expected a function because this term is being applied to the argument
+  c
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:13:62: Application type mismatch: The argument
+  volume
+has type
+  Measure ?m.247
+but is expected to have type
+  ℝ
+in the application
+  integral_sub_right_eq_self (fun x ↦ 1 / (x ^ 2 + R ^ 2)) volume
+info: PolarEvaluation/AsymmetricMajorantEvalA.lean:75:54: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:75:51: unsolved goals
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+y : ℝ
+h1 : (1 + (y / Δ) ^ 2) * |vaalerInterpolant θ Δ α y| ≤ C_s
+h_m : majorantM θ Δ α (y / Δ) = vaalerInterpolant θ Δ α y
+h_1y : (1 + y ^ 2) * |vaalerInterpolant θ Δ α y| ≤ Δ ^ 2 * C_s
+h_pos : 0 < 1 + |y|
+h_1y2 : (1 + |y|) ^ 2 ≤ 2 * (1 + y ^ 2)
+⊢ Δ ^ 2 * C_s * (1 + y ^ 2)⁻¹ = Δ ^ 2 * C_s * (2 + y ^ 2 * 2)⁻¹ * 2
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:159:82: No goals to be solved
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:160:18: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  x - ↑n - α
+in the target expression
+  L / 2 ≤ ‖↑x + I * ↑y - ↑n - ↑α‖
+

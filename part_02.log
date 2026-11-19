@@ -1,0 +1,150 @@
+hp_real : 3 ≤ ↑p
+he1 : 1 = q.factorization p
+h_star : totientStar p ≥ p - 2
+h_s_pos : 0 < ↑(totientStar p)
+⊢ ↑p - 2 = ↑p - 2
+error: PolarEvaluation/TotientStar.lean:340:23: mod_cast has type
+  totientStar p ≥ p - 2
+but is expected to have type
+  Int.subNatNat p 2 ≤ ↑(totientStar p)
+error: PolarEvaluation/TotientStar.lean:344:47: unsolved goals
+case hd
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+p : ℕ
+hp : p ∈ q.primeFactors
+hp_prime : Nat.Prime p
+he_pos : 1 ≤ q.factorization p
+hp2 : ¬p = 2
+hp3 : p ≥ 3
+hp_real : 3 ≤ ↑p
+he1 : 1 = q.factorization p
+h_star : totientStar p ≥ p - 2
+h_s_pos : 0 < ↑(totientStar p)
+h_s_ge : ↑p - 2 ≤ ↑(totientStar p)
+h_p1 : ↑p - 1 = ↑(p - 1)
+⊢ 0 < ↑p - 2
+info: PolarEvaluation/TotientStar.lean:359:40: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/TotientStar.lean:358:59: unsolved goals
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+p : ℕ
+hp : p ∈ q.primeFactors
+hp_prime : Nat.Prime p
+he_pos : 1 ≤ q.factorization p
+hp2 : ¬p = 2
+hp3 : p ≥ 3
+hp_real : 3 ≤ ↑p
+he2 : 1 < q.factorization p
+h_star :
+  totientStar (p ^ q.factorization p) ≥
+    p ^ (q.factorization p - 2) * p * (p - 1) - p ^ (q.factorization p - 2) * (p - 1)
+h_t1 : (p ^ q.factorization p).totient = p ^ (q.factorization p - 1) * (p - 1)
+h_t2 : (p ^ (q.factorization p - 1)).totient = p ^ (q.factorization p - 2) * (p - 1)
+h_pow : p ^ (q.factorization p - 1) = p ^ (q.factorization p - 2) * p
+⊢ ↑(p * p ^ (q.factorization p - 2) * (p - 1) - p ^ (q.factorization p - 2) * (p - 1)) =
+    -(↑p * ↑p ^ (q.factorization p - 2) * 2) + ↑p ^ 2 * ↑p ^ (q.factorization p - 2) + ↑p ^ (q.factorization p - 2)
+error: PolarEvaluation/TotientStar.lean:364:30: Invalid field `trans_le`: The environment does not contain `Nat.le.trans_le`, so it is not possible to project the field `trans_le` from an expression
+  this
+of type
+  Nat.le 1 (p ^ (q.factorization p - 2) * (p - 1) ^ 2)
+error: PolarEvaluation/TotientStar.lean:380:22: failed to prove positivity/nonnegativity/nonzeroness
+info: PolarEvaluation/TotientStar.lean:399:61: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/TotientStar.lean:398:93: unsolved goals
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+h_ratio_term :
+  ∀ p ∈ q.primeFactors,
+    ↑(p ^ q.factorization p).totient / ↑(totientStar (p ^ q.factorization p)) ≤ if p = 2 then 2 else (↑p / (↑p - 1)) ^ 2
+hp : 2 ∈ q.primeFactors
+hp_prime : Nat.Prime 2
+he_pos : 1 ≤ q.factorization 2
+he2 : 2 ≤ q.factorization 2
+h_star : totientStar (2 ^ q.factorization 2) ≥ (2 ^ q.factorization 2).totient - (2 ^ (q.factorization 2 - 1)).totient
+h_t1 : (2 ^ q.factorization 2).totient = 2 ^ (q.factorization 2 - 1)
+⊢ 2 ^ (q.factorization 2 - 1 - 1) = 2 ^ (q.factorization 2 - 2)
+info: PolarEvaluation/TotientStar.lean:422:40: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/TotientStar.lean:421:59: unsolved goals
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+h_ratio_term :
+  ∀ p ∈ q.primeFactors,
+    ↑(p ^ q.factorization p).totient / ↑(totientStar (p ^ q.factorization p)) ≤ if p = 2 then 2 else (↑p / (↑p - 1)) ^ 2
+p : ℕ
+hp : p ∈ q.primeFactors
+hp_prime : Nat.Prime p
+he_pos : 1 ≤ q.factorization p
+hp2 : ¬p = 2
+hp3 : p ≥ 3
+he2 : 1 < q.factorization p
+h_star :
+  totientStar (p ^ q.factorization p) ≥
+    p ^ (q.factorization p - 2) * p * (p - 1) - p ^ (q.factorization p - 2) * (p - 1)
+h_t1 : (p ^ q.factorization p).totient = p ^ (q.factorization p - 1) * (p - 1)

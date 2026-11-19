@@ -1,0 +1,150 @@
+      |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| / π ^ 2 * ((1 / (x ^ 2 + R ^ 2) + 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) / 2)
+hg_dom_int : ∀ (n : ℤ), Integrable (g_dom n) volume
+hg_dom_int_val :
+  ∀ (n : ℤ), ∫ (x : ℝ), g_dom n x = (|rescaledF θ Δ (↑n + α)| + |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|) / (π * R)
+hg_summ_int : ∑' (n : ℤ), ∫⁻ (x : ℝ), ‖g_dom n x‖ₑ < ⊤
+h_tot_int : Integrable (fun x ↦ ∑' (n : ℤ), g_dom n x) volume
+h_tot_val : ∫ (x : ℝ), ∑' (n : ℤ), g_dom n x = (S_a + S_bm) / (π * R)
+x : ℝ
+z : ℂ := ↑x + I * (↑s * ↑R)
+hz_ne : z ≠ 0
+n : ℤ
+h0 : z - ↑n - ↑α = 0
+him : (↑s * ↑R).re = im 0
+⊢ |s * R| = 0
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:398:12: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:404:10: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:310:90: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:310:90: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:111:80: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:21:0: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+✖ [9063/9073] Building PolarEvaluation.AsymmetricMajorantEvalB (26s)
+trace: .> LEAN_PATH=/home/runner/work/polarevaluation/polarevaluation/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.35.0/bin/lean /home/runner/work/polarevaluation/polarevaluation/PolarEvaluation/AsymmetricMajorantEvalB.lean -o /home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean/PolarEvaluation/AsymmetricMajorantEvalB.olean -i /home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean/PolarEvaluation/AsymmetricMajorantEvalB.ilean -c /home/runner/work/polarevaluation/polarevaluation/.lake/build/ir/PolarEvaluation/AsymmetricMajorantEvalB.c --setup /home/runner/work/polarevaluation/polarevaluation/.lake/build/ir/PolarEvaluation/AsymmetricMajorantEvalB.setup.json --json
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:25:54: failed to prove positivity/nonnegativity/nonzeroness
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:48:4: linarith failed to find a contradiction
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+h1 : -(min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2) ≤ α - (1 / 2 - θ / π)
+h2 : δ ≤ δ_star / 2
+h3 : δ_star ≤ α_star / 2
+a✝ : α < δ
+⊢ False
+failed
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:53:4: linarith failed to find a contradiction
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+h1 : α - (1 / 2 - θ / π) ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+h2 : δ ≤ δ_star / 2
+h3 : δ_star ≤ (1 - α_star) / 2
+a✝ : 1 - δ < α
+⊢ False
+failed
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:70:16: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  @Tendsto ?m.1246 ?m.1245 ?m.1250 atTop (𝓝 ?m.1251)
+in the target expression
+  @Tendsto (Finset ℤ) ℝ (fun s ↦ ∑ b ∈ s, rescaledF θ Δ (↑b + α)) (SummationFilter.unconditional ℤ).filter
+    (𝓝 (∑' (b : ℤ), rescaledF θ Δ (↑b + α)))
+
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+ε : ℝ
+hε : ε > 0
+hs :
+  Tendsto (fun s ↦ ∑ b ∈ s, rescaledF θ Δ (↑b + α)) (SummationFilter.unconditional ℤ).filter
+    (𝓝 (∑' (b : ℤ), rescaledF θ Δ (↑b + α)))
+⊢ ∃ N, ∀ n ≥ N, dist (∑ n ∈ Finset.Icc (-↑n) ↑n, rescaledF θ Δ (↑n + α)) (∑' (n : ℤ), rescaledF θ Δ (↑n + α)) < ε
+info: PolarEvaluation/AsymmetricMajorantEvalB.lean:99:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:96:13: unsolved goals
+case zero

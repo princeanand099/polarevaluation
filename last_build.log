@@ -1,0 +1,2067 @@
+COMMIT=b1164a49f83a14086faf308f5079906460c7f48c
+TIMESTAMP=2026-11-19T10:51:44Z
+⚠ [9047/9073] Replayed PolarEvaluation.Basic
+warning: PolarEvaluation/Basic.lean: imports `Mathlib` from package `mathlib`, which is designed for use with the module system; consider adding `module` to the start of this file
+ℹ [9049/9073] Replayed PolarEvaluation.ExplicitFormulae
+info: PolarEvaluation/ExplicitFormulae.lean:264:2: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: PolarEvaluation/ExplicitFormulae.lean:274:2: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: PolarEvaluation/ExplicitFormulae.lean:719:6: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: PolarEvaluation/ExplicitFormulae.lean:1026:24: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: PolarEvaluation/ExplicitFormulae.lean:1089:33: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+ℹ [9050/9073] Replayed PolarEvaluation.ShiftedLatticeCoreA
+info: PolarEvaluation/ShiftedLatticeCoreA.lean:264:26: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: PolarEvaluation/ShiftedLatticeCoreA.lean:274:26: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+info: PolarEvaluation/ShiftedLatticeCoreA.lean:363:17: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+✖ [9054/9073] Building PolarEvaluation.TotientStar (8.4s)
+trace: .> LEAN_PATH=/home/runner/work/polarevaluation/polarevaluation/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.35.0/bin/lean /home/runner/work/polarevaluation/polarevaluation/PolarEvaluation/TotientStar.lean -o /home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean/PolarEvaluation/TotientStar.olean -i /home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean/PolarEvaluation/TotientStar.ilean -c /home/runner/work/polarevaluation/polarevaluation/.lake/build/ir/PolarEvaluation/TotientStar.c --setup /home/runner/work/polarevaluation/polarevaluation/.lake/build/ir/PolarEvaluation/TotientStar.setup.json --json
+error: PolarEvaluation/TotientStar.lean:34:66: Unknown constant `DirichletCharacter.isPrimitive_def.mp`
+error: PolarEvaluation/TotientStar.lean:36:66: Unknown constant `DirichletCharacter.isPrimitive_def.mp`
+error: PolarEvaluation/TotientStar.lean:51:10: Unknown constant `DirichletCharacter.isPrimitive_def.mpr`
+error: PolarEvaluation/TotientStar.lean:58:59: Application type mismatch: The argument
+  ↑u
+has type
+  ZMod a
+but is expected to have type
+  ℕ
+in the application
+  Nat.chineseRemainder hab ↑u
+error: PolarEvaluation/TotientStar.lean:60:14: Invalid rewrite argument: The pattern to be substituted is a metavariable (`?m.507`) in this equality
+  ?m.507 = ↑(ZMod.val ?m.507)
+error: PolarEvaluation/TotientStar.lean:60:38: Application type mismatch: The argument
+  u
+has type
+  (ZMod a)ˣ
+but is expected to have type
+  ZMod ?m.505
+in the application
+  ZMod.natCast_zmod_val u
+error: PolarEvaluation/TotientStar.lean:81:34: Application type mismatch: The argument
+  hu
+has type
+  ¬IsUnit u
+of sort `Prop` but is expected to have type
+  MulChar ?m.514 ?m.516
+of sort `Type (max ?u.234 ?u.233)` in the application
+  @MulChar.map_nonunit ?m.514 ?m.515 ?m.516 ?m.517 hu
+error: PolarEvaluation/TotientStar.lean:81:8: `simp` made no progress
+error: PolarEvaluation/TotientStar.lean:85:61: Application type mismatch: The argument
+  ↑u
+has type
+  ZMod b
+but is expected to have type
+  ℕ
+in the application
+  Nat.chineseRemainder hab 1 ↑u
+error: PolarEvaluation/TotientStar.lean:89:14: Invalid rewrite argument: The pattern to be substituted is a metavariable (`?m.586`) in this equality
+  ?m.586 = ↑(ZMod.val ?m.586)
+error: PolarEvaluation/TotientStar.lean:89:38: Application type mismatch: The argument
+  u
+has type
+  (ZMod b)ˣ
+but is expected to have type
+  ZMod ?m.584
+in the application
+  ZMod.natCast_zmod_val u
+error: PolarEvaluation/TotientStar.lean:108:34: Application type mismatch: The argument
+  hu
+has type
+  ¬IsUnit u
+of sort `Prop` but is expected to have type
+  MulChar ?m.592 ?m.594
+of sort `Type (max ?u.257 ?u.256)` in the application
+  @MulChar.map_nonunit ?m.592 ?m.593 ?m.594 ?m.595 hu
+error: PolarEvaluation/TotientStar.lean:108:8: `simp` made no progress
+error: PolarEvaluation/TotientStar.lean:122:27: Invalid rewrite argument: Expected an equality or iff proof or definition name, but `Finset.mem_univ ?x` is a proof of
+  ?x ∈ Finset.univ
+error: PolarEvaluation/TotientStar.lean:141:64: Application type mismatch: The argument
+  p
+has type
+  ℕ
+of sort `Type` but is expected to have type
+  Type ?u.37
+of sort `Type (?u.37 + 1)` in the application
+  @DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity p
+error: PolarEvaluation/TotientStar.lean:115:29: unsolved goals
+p : ℕ
+hp : Nat.Prime p
+hp3 : p ≥ 3
+this : NeZero p
+h_sub : Finset.univ.erase 1 ⊆ {χ | χ.IsPrimitive}
+h_card : Fintype.card (DirichletCharacter ℂ p) - 1 ≤ {χ | χ.IsPrimitive}.card
+⊢ totientStar p ≥ p - 2
+error: PolarEvaluation/TotientStar.lean:155:27: Invalid rewrite argument: Expected an equality or iff proof or definition name, but `Finset.mem_univ ?x` is a proof of
+  ?x ∈ Finset.univ
+error: PolarEvaluation/TotientStar.lean:176:4: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  f ≥ 0
+  d ≥ 0
+  d - f ≤ 0
+  d ≥ 0
+  c ≥ 0
+  c - f ≤ -1
+  c + d - f ≥ 0
+  b ≥ 0
+  b - c - d + f ≥ 0
+  a ≥ 2
+where
+ a := ↑e
+ b := ↑{χ | χ.IsPrimitive}.card
+ c := ↑Finset.univ.card
+ d := ↑(Fintype.card (DirichletCharacter ℂ (p ^ e)) - S_nonprim.card)
+ f := ↑(Fintype.card (DirichletCharacter ℂ (p ^ e)))
+error: PolarEvaluation/TotientStar.lean:182:71: Type mismatch
+  p ^ (e - 1)
+has type
+  ℕ
+of sort `Type` but is expected to have type
+  Type ?u.150
+of sort `Type (?u.150 + 1)`
+error: PolarEvaluation/TotientStar.lean:183:67: Type mismatch
+  p ^ e
+has type
+  ℕ
+of sort `Type` but is expected to have type
+  Type ?u.160
+of sort `Type (?u.160 + 1)`
+error: PolarEvaluation/TotientStar.lean:145:77: unsolved goals
+p e : ℕ
+hp : Nat.Prime p
+he : e ≥ 2
+this : NeZero (p ^ e)
+hd : p ^ (e - 1) ∣ p ^ e := pow_dvd_pow p (Nat.sub_le e 1)
+S_nonprim : Finset (DirichletCharacter ℂ (p ^ e)) := Finset.image (⇑(DirichletCharacter.changeLevel hd)) Finset.univ
+h_sub : Finset.univ \ S_nonprim ⊆ {χ | χ.IsPrimitive}
+h_card : (Finset.univ \ S_nonprim).card ≤ {χ | χ.IsPrimitive}.card
+h_sdiff : (Finset.univ \ S_nonprim).card ≥ Fintype.card (DirichletCharacter ℂ (p ^ e)) - S_nonprim.card
+h_nonprim_le : S_nonprim.card ≤ (p ^ (e - 1)).totient
+⊢ totientStar (p ^ e) ≥ (p ^ e).totient - (p ^ (e - 1)).totient
+error: PolarEvaluation/TotientStar.lean:198:60: Application type mismatch: The argument
+  ↑u
+has type
+  ZMod m
+but is expected to have type
+  ℕ
+in the application
+  Nat.chineseRemainder hcop 1 ↑u
+error: PolarEvaluation/TotientStar.lean:202:12: Invalid rewrite argument: The pattern to be substituted is a metavariable (`?m.147`) in this equality
+  ?m.147 = ↑(ZMod.val ?m.147)
+error: PolarEvaluation/TotientStar.lean:202:36: Application type mismatch: The argument
+  u
+has type
+  (ZMod m)ˣ
+but is expected to have type
+  ZMod ?m.145
+in the application
+  ZMod.natCast_zmod_val u
+error: PolarEvaluation/TotientStar.lean:218:32: Application type mismatch: The argument
+  hu
+has type
+  ¬IsUnit u
+of sort `Prop` but is expected to have type
+  MulChar ?m.155 ?m.157
+of sort `Type (max ?u.67 ?u.66)` in the application
+  @MulChar.map_nonunit ?m.155 ?m.156 ?m.157 ?m.158 hu
+error: PolarEvaluation/TotientStar.lean:218:6: `simp` made no progress
+error: PolarEvaluation/TotientStar.lean:220:68: Application type mismatch: The argument
+  m
+has type
+  ℕ
+of sort `Type` but is expected to have type
+  Type ?u.77
+of sort `Type (?u.77 + 1)` in the application
+  @DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity m
+error: PolarEvaluation/TotientStar.lean:245:6: Type mismatch
+  Nat.coprime_ordCompl Nat.prime_two hq0
+has type
+  Nat.Coprime 2 (q / 2 ^ q.factorization 2)
+but is expected to have type
+  (2 ^ q.factorization 2).Coprime (q / 2 ^ q.factorization 2)
+error: PolarEvaluation/TotientStar.lean:262:74: failed to synthesize instance of type class
+  OfNat (Type ?u.139) 1
+numerals are polymorphic in Lean, but the numeral `1` cannot be used in a context where the expected type is
+  Type ?u.139
+due to the absence of the instance above
+
+Hint: Type class instance resolution failures can be inspected with the `set_option trace.Meta.synthInstance true` command.
+error: PolarEvaluation/TotientStar.lean:263:51: Unknown constant `Fintype.card_eq_one_iff_unique.mp`
+error: PolarEvaluation/TotientStar.lean:260:37: unsolved goals
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+hs : ∀ p ∈ ∅, Nat.Prime p
+h_card : Fintype.card (DirichletCharacter ℂ 1) = 1
+this : Unique (DirichletCharacter ℂ 1)
+h_eq : {χ | χ.IsPrimitive} = Finset.univ
+⊢ {χ ∈ {default} | χ.IsPrimitive}.card = 1
+error: PolarEvaluation/TotientStar.lean:302:39: Application type mismatch: The argument
+  hq0
+has type
+  q ≠ 0
+but is expected to have type
+  ∀ p ∈ Finsupp.support ?m.615, Nat.Prime p
+in the application
+  Nat.factorization_prod_pow_eq_self hq0
+info: PolarEvaluation/TotientStar.lean:321:61: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/TotientStar.lean:320:93: unsolved goals
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+hp : 2 ∈ q.primeFactors
+hp_prime : Nat.Prime 2
+he_pos : 1 ≤ q.factorization 2
+he2 : 2 ≤ q.factorization 2
+h_star : totientStar (2 ^ q.factorization 2) ≥ (2 ^ q.factorization 2).totient - (2 ^ (q.factorization 2 - 1)).totient
+h_t1 : (2 ^ q.factorization 2).totient = 2 ^ (q.factorization 2 - 1)
+⊢ 2 ^ (q.factorization 2 - 1 - 1) = 2 ^ (q.factorization 2 - 2)
+error: PolarEvaluation/TotientStar.lean:339:53: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ↑(?m.1129 - ?m.1128)
+in the target expression
+  ↑p - 2 = ↑p - 2
+
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+p : ℕ
+hp : p ∈ q.primeFactors
+hp_prime : Nat.Prime p
+he_pos : 1 ≤ q.factorization p
+hp2 : ¬p = 2
+hp3 : p ≥ 3
+hp_real : 3 ≤ ↑p
+he1 : 1 = q.factorization p
+h_star : totientStar p ≥ p - 2
+h_s_pos : 0 < ↑(totientStar p)
+⊢ ↑p - 2 = ↑p - 2
+error: PolarEvaluation/TotientStar.lean:340:23: mod_cast has type
+  totientStar p ≥ p - 2
+but is expected to have type
+  Int.subNatNat p 2 ≤ ↑(totientStar p)
+error: PolarEvaluation/TotientStar.lean:344:47: unsolved goals
+case hd
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+p : ℕ
+hp : p ∈ q.primeFactors
+hp_prime : Nat.Prime p
+he_pos : 1 ≤ q.factorization p
+hp2 : ¬p = 2
+hp3 : p ≥ 3
+hp_real : 3 ≤ ↑p
+he1 : 1 = q.factorization p
+h_star : totientStar p ≥ p - 2
+h_s_pos : 0 < ↑(totientStar p)
+h_s_ge : ↑p - 2 ≤ ↑(totientStar p)
+h_p1 : ↑p - 1 = ↑(p - 1)
+⊢ 0 < ↑p - 2
+info: PolarEvaluation/TotientStar.lean:359:40: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/TotientStar.lean:358:59: unsolved goals
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+p : ℕ
+hp : p ∈ q.primeFactors
+hp_prime : Nat.Prime p
+he_pos : 1 ≤ q.factorization p
+hp2 : ¬p = 2
+hp3 : p ≥ 3
+hp_real : 3 ≤ ↑p
+he2 : 1 < q.factorization p
+h_star :
+  totientStar (p ^ q.factorization p) ≥
+    p ^ (q.factorization p - 2) * p * (p - 1) - p ^ (q.factorization p - 2) * (p - 1)
+h_t1 : (p ^ q.factorization p).totient = p ^ (q.factorization p - 1) * (p - 1)
+h_t2 : (p ^ (q.factorization p - 1)).totient = p ^ (q.factorization p - 2) * (p - 1)
+h_pow : p ^ (q.factorization p - 1) = p ^ (q.factorization p - 2) * p
+⊢ ↑(p * p ^ (q.factorization p - 2) * (p - 1) - p ^ (q.factorization p - 2) * (p - 1)) =
+    -(↑p * ↑p ^ (q.factorization p - 2) * 2) + ↑p ^ 2 * ↑p ^ (q.factorization p - 2) + ↑p ^ (q.factorization p - 2)
+error: PolarEvaluation/TotientStar.lean:364:30: Invalid field `trans_le`: The environment does not contain `Nat.le.trans_le`, so it is not possible to project the field `trans_le` from an expression
+  this
+of type
+  Nat.le 1 (p ^ (q.factorization p - 2) * (p - 1) ^ 2)
+error: PolarEvaluation/TotientStar.lean:380:22: failed to prove positivity/nonnegativity/nonzeroness
+info: PolarEvaluation/TotientStar.lean:399:61: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/TotientStar.lean:398:93: unsolved goals
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+h_ratio_term :
+  ∀ p ∈ q.primeFactors,
+    ↑(p ^ q.factorization p).totient / ↑(totientStar (p ^ q.factorization p)) ≤ if p = 2 then 2 else (↑p / (↑p - 1)) ^ 2
+hp : 2 ∈ q.primeFactors
+hp_prime : Nat.Prime 2
+he_pos : 1 ≤ q.factorization 2
+he2 : 2 ≤ q.factorization 2
+h_star : totientStar (2 ^ q.factorization 2) ≥ (2 ^ q.factorization 2).totient - (2 ^ (q.factorization 2 - 1)).totient
+h_t1 : (2 ^ q.factorization 2).totient = 2 ^ (q.factorization 2 - 1)
+⊢ 2 ^ (q.factorization 2 - 1 - 1) = 2 ^ (q.factorization 2 - 2)
+info: PolarEvaluation/TotientStar.lean:422:40: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/TotientStar.lean:421:59: unsolved goals
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+h_ratio_term :
+  ∀ p ∈ q.primeFactors,
+    ↑(p ^ q.factorization p).totient / ↑(totientStar (p ^ q.factorization p)) ≤ if p = 2 then 2 else (↑p / (↑p - 1)) ^ 2
+p : ℕ
+hp : p ∈ q.primeFactors
+hp_prime : Nat.Prime p
+he_pos : 1 ≤ q.factorization p
+hp2 : ¬p = 2
+hp3 : p ≥ 3
+he2 : 1 < q.factorization p
+h_star :
+  totientStar (p ^ q.factorization p) ≥
+    p ^ (q.factorization p - 2) * p * (p - 1) - p ^ (q.factorization p - 2) * (p - 1)
+h_t1 : (p ^ q.factorization p).totient = p ^ (q.factorization p - 1) * (p - 1)
+h_t2 : (p ^ (q.factorization p - 1)).totient = p ^ (q.factorization p - 2) * (p - 1)
+h_pow : p ^ (q.factorization p - 1) = p ^ (q.factorization p - 2) * p
+⊢ ↑(p * p ^ (q.factorization p - 2) * (p - 1) - p ^ (q.factorization p - 2) * (p - 1)) =
+    -(↑p * ↑p ^ (q.factorization p - 2) * 2) + ↑p ^ 2 * ↑p ^ (q.factorization p - 2) + ↑p ^ (q.factorization p - 2)
+error: PolarEvaluation/TotientStar.lean:434:10: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  (∏ x ∈ ?m.2861, ?f x) / ∏ x ∈ ?m.2861, ?g x
+in the target expression
+  ↑q.totient / ↑(totientStar q) ≤
+    ∏ p ∈ q.primeFactors, ↑(p ^ q.factorization p).totient / ↑(totientStar (p ^ q.factorization p))
+
+q : ℕ
+hq : q ≥ 3
+hqstar : totientStar q ≥ 1
+hq0 : q ≠ 0
+h_v2_ne1 : q.factorization 2 ≠ 1
+h_prod_star :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → ∏ p ∈ s, totientStar (p ^ q.factorization p) ≤ totientStar (∏ p ∈ s, p ^ q.factorization p)
+h_prod_tot :
+  ∀ (s : Finset ℕ),
+    (∀ p ∈ s, Nat.Prime p) → (∏ p ∈ s, p ^ q.factorization p).totient = ∏ p ∈ s, (p ^ q.factorization p).totient
+h_fac_eq : ∏ p ∈ q.primeFactors, p ^ q.factorization p = q
+h_pf_prime : ∀ p ∈ q.primeFactors, Nat.Prime p
+h_star_lb : ∏ p ∈ q.primeFactors, totientStar (p ^ q.factorization p) ≤ totientStar q
+h_tot_eq : q.totient = ∏ p ∈ q.primeFactors, (p ^ q.factorization p).totient
+h_ratio_term :
+  ∀ p ∈ q.primeFactors,
+    ↑(p ^ q.factorization p).totient / ↑(totientStar (p ^ q.factorization p)) ≤ if p = 2 then 2 else (↑p / (↑p - 1)) ^ 2
+h_star_pos_each : ∀ p ∈ q.primeFactors, 0 < ↑(totientStar (p ^ q.factorization p))
+h_prod_pos : 0 < ∏ p ∈ q.primeFactors, ↑(totientStar (p ^ q.factorization p))
+⊢ ↑q.totient / ↑(totientStar q) ≤
+    ∏ p ∈ q.primeFactors, ↑(p ^ q.factorization p).totient / ↑(totientStar (p ^ q.factorization p))
+error: PolarEvaluation/TotientStar.lean:444:13: Function expected at
+  Finset.prod_le_prod fun p x ↦ ?m.2943
+but this term has type
+  ∏ i ∈ ?m.2939, ?m.2937 i ≤ ∏ i ∈ ?m.2939, ?m.2938 i
+
+Note: Expected a function because this term is being applied to the argument
+  (fun p hp => h_ratio_term p hp)
+error: PolarEvaluation/TotientStar.lean:444:48: failed to synthesize
+  Zero ?m.2934
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/TotientStar.lean:453:15: Function expected at
+  Finset.prod_le_prod fun p x ↦ ?m.3134
+but this term has type
+  ∏ i ∈ ?m.3130, ?m.3128 i ≤ ∏ i ∈ ?m.3130, ?m.3129 i
+
+Note: Expected a function because this term is being applied to the argument
+  fun p hp => ?_
+error: PolarEvaluation/TotientStar.lean:453:50: failed to synthesize
+  Zero ?m.3125
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/TotientStar.lean:454:34: Unknown identifier `hp`
+error: PolarEvaluation/TotientStar.lean:462:35: invalid `▸` notation, argument
+  h
+has type
+  ?m.3257
+equality expected
+error: PolarEvaluation/TotientStar.lean:475:6: failed to prove nonzeroness, but it would be possible to prove nonnegativity if desired
+error: PolarEvaluation/TotientStar.lean:476:8: Function expected at
+  log_prod ?m.3501
+but this term has type
+  Real.log (∏ i ∈ ?m.3499, ?m.3500 i) = ∑ i ∈ ?m.3499, Real.log (?m.3500 i)
+
+Note: Expected a function because this term is being applied to the argument
+  _
+error: PolarEvaluation/TotientStar.lean:513:6: failed to prove strict positivity, but it would be possible to prove nonnegativity if desired
+✔ [9055/9073] Built PolarEvaluation.ShiftedLatticeShift (147s)
+✔ [9056/9073] Built PolarEvaluation.ShiftedLatticeContour (15s)
+⚠ [9057/9073] Built PolarEvaluation.ShiftedLatticePositivityA (24s)
+warning: PolarEvaluation/ShiftedLatticePositivityA.lean:190:28: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+warning: PolarEvaluation/ShiftedLatticePositivityA.lean:190:42: this tactic is never executed
+
+Note: This linter can be disabled with `set_option linter.unreachableTactic false`
+✔ [9058/9073] Built PolarEvaluation.ShiftedLatticePositivityB (21s)
+ℹ [9059/9073] Built PolarEvaluation.AsymmetricMajorantBounds (28s)
+info: PolarEvaluation/AsymmetricMajorantBounds.lean:1162:96: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+✔ [9060/9073] Built PolarEvaluation.AsymmetricMajorantDiffA (27s)
+✔ [9061/9073] Built PolarEvaluation.AsymmetricMajorantDiffB (18s)
+✖ [9062/9073] Building PolarEvaluation.AsymmetricMajorantEvalA (17s)
+trace: .> LEAN_PATH=/home/runner/work/polarevaluation/polarevaluation/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.35.0/bin/lean /home/runner/work/polarevaluation/polarevaluation/PolarEvaluation/AsymmetricMajorantEvalA.lean -o /home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean/PolarEvaluation/AsymmetricMajorantEvalA.olean -i /home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean/PolarEvaluation/AsymmetricMajorantEvalA.ilean -c /home/runner/work/polarevaluation/polarevaluation/.lake/build/ir/PolarEvaluation/AsymmetricMajorantEvalA.c --setup /home/runner/work/polarevaluation/polarevaluation/.lake/build/ir/PolarEvaluation/AsymmetricMajorantEvalA.setup.json --json
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:13:4: Function expected at
+  integral_sub_right_eq_self (fun x ↦ 1 / (x ^ 2 + R ^ 2)) ?m.249
+but this term has type
+  ∫ (x : ℝ), 1 / ((x - ?m.249) ^ 2 + R ^ 2) ∂?m.208 = ∫ (x : ℝ), 1 / (x ^ 2 + R ^ 2) ∂?m.208
+
+Note: Expected a function because this term is being applied to the argument
+  c
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:13:62: Application type mismatch: The argument
+  volume
+has type
+  Measure ?m.247
+but is expected to have type
+  ℝ
+in the application
+  integral_sub_right_eq_self (fun x ↦ 1 / (x ^ 2 + R ^ 2)) volume
+info: PolarEvaluation/AsymmetricMajorantEvalA.lean:75:54: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:75:51: unsolved goals
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+y : ℝ
+h1 : (1 + (y / Δ) ^ 2) * |vaalerInterpolant θ Δ α y| ≤ C_s
+h_m : majorantM θ Δ α (y / Δ) = vaalerInterpolant θ Δ α y
+h_1y : (1 + y ^ 2) * |vaalerInterpolant θ Δ α y| ≤ Δ ^ 2 * C_s
+h_pos : 0 < 1 + |y|
+h_1y2 : (1 + |y|) ^ 2 ≤ 2 * (1 + y ^ 2)
+⊢ Δ ^ 2 * C_s * (1 + y ^ 2)⁻¹ = Δ ^ 2 * C_s * (2 + y ^ 2 * 2)⁻¹ * 2
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:159:82: No goals to be solved
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:160:18: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  x - ↑n - α
+in the target expression
+  L / 2 ≤ ‖↑x + I * ↑y - ↑n - ↑α‖
+
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+L : ℝ
+hL : 2 * Δ ≤ L
+x : ℝ
+hx : |x| = L
+y : ℝ
+hy : |y| ≤ R
+hL_pos : 0 < L
+term_z : ℤ → ℂ :=
+  fun n ↦
+    ↑(rescaledF θ Δ (↑n + α)) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2 +
+      ↑(rescaledFDeriv θ Δ (↑n + α)) * (↑x + I * ↑y - ↑n - ↑α) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2
+h_s_tz : Summable term_z
+F_near : Finset ℤ := Finset.Icc (-⌈2 * L⌉) ⌈2 * L⌉
+f_far : ℤ → ℝ := fun n ↦ 4 * (|rescaledF θ Δ (↑n + α)| + |rescaledFDeriv θ Δ (↑n + α)|) * rexp (2 * π * R + 4) / L
+f_near : ℤ → ℝ := fun n ↦ if n ∈ F_near then 32 * Δ ^ 2 / L ^ 2 * rexp (2 * π * R + 4) else 0
+hf_far_s : Summable f_far
+hf_near_s : Summable f_near
+n : ℤ
+him : |(↑x + I * ↑y - ↑n - ↑α).im| ≤ R
+h_far : L / 2 ≤ |x - ↑n - α|
+hre : (↑x + I * ↑y - ↑n - ↑α).re = x - ↑n - α
+⊢ L / 2 ≤ ‖↑x + I * ↑y - ↑n - ↑α‖
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:187:42: No goals to be solved
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:208:62: unsolved goals
+case a
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ⋯
+S_b : ℝ := ⋯
+S_bm : ℝ := ⋯
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := ⋯
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := ⋯
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := ⋯
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := ⋯
+hg_diff : Differentiable ℂ g
+C_v : ℝ := ⋯
+L : ℝ
+hL : 2 * Δ ≤ L
+x : ℝ
+hx : |x| = L
+y : ℝ
+hy : |y| ≤ R
+hL_pos : 0 < L
+term_z : ℤ → ℂ := ⋯
+h_s_tz : Summable term_z
+F_near : Finset ℤ := ⋯
+f_far : ℤ → ℝ := ⋯
+f_near : ℤ → ℝ := ⋯
+hf_far_s : Summable f_far
+hf_near_s : Summable f_near
+n : ℤ
+him : |(↑x + I * ↑y - ↑n - ↑α).im| ≤ R
+h_far : L / 2 ≤ |x - ↑n - α|
+h_u_lb : L / 2 ≤ ‖↑x + I * ↑y - ↑n - ↑α‖
+h_u_ne : ↑x + I * ↑y - ↑n - ↑α ≠ 0
+hs_1 : ‖sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2‖ ≤ 4 * rexp (2 * π * R) / L ^ 2
+hs_2 : ‖(↑x + I * ↑y - ↑n - ↑α) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2‖ ≤ 2 * rexp (2 * π * R) / L
+hL1 : 1 ≤ L
+hs_1' : ‖sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2‖ ≤ 4 * rexp (2 * π * R + 4) / L
+⊢ 2 * π * R ≤ 2 * π * R + 4
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:222:65: unsolved goals
+case calc.step
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+L : ℝ
+hL : 2 * Δ ≤ L
+x : ℝ
+hx : |x| = L
+y : ℝ
+hy : |y| ≤ R
+hL_pos : 0 < L
+term_z : ℤ → ℂ :=
+  fun n ↦
+    ↑(rescaledF θ Δ (↑n + α)) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2 +
+      ↑(rescaledFDeriv θ Δ (↑n + α)) * (↑x + I * ↑y - ↑n - ↑α) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2
+h_s_tz : Summable term_z
+F_near : Finset ℤ := Finset.Icc (-⌈2 * L⌉) ⌈2 * L⌉
+f_far : ℤ → ℝ := fun n ↦ 4 * (|rescaledF θ Δ (↑n + α)| + |rescaledFDeriv θ Δ (↑n + α)|) * rexp (2 * π * R + 4) / L
+f_near : ℤ → ℝ := fun n ↦ if n ∈ F_near then 32 * Δ ^ 2 / L ^ 2 * rexp (2 * π * R + 4) else 0
+hf_far_s : Summable f_far
+hf_near_s : Summable f_near
+n : ℤ
+him : |(↑x + I * ↑y - ↑n - ↑α).im| ≤ R
+h_far : ¬L / 2 ≤ |x - ↑n - α|
+h_near : |x - ↑n - α| < L / 2
+this : ↑n = x - (x - ↑n - α) - α
+⊢ |x| + |x - ↑n - α| + |α| ≤ |x| + |x - (x - (x - ↑n - α) - α) - α| + |α|
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:233:117: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  a + b ≤ -1
+where
+ a := ⌈2 * L⌉
+ b := n
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:235:116: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  a - b ≥ 1
+where
+ a := n
+ b := ⌈2 * L⌉
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:247:46: No goals to be solved
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:261:55: Type mismatch
+  hbm
+has type
+  |↑n + α| * |rescaledFDeriv θ Δ (↑n + α)| ≤ 2 * Δ ^ 2 / (↑n + α) ^ 2
+but is expected to have type
+  |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| ≤ 2 * Δ ^ 2 / (↑n + α) ^ 2
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:288:48: unsolved goals
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+L : ℝ
+hL : 2 * Δ ≤ L
+x : ℝ
+hx : |x| = L
+y : ℝ
+hy : |y| ≤ R
+hL_pos : 0 < L
+term_z : ℤ → ℂ :=
+  fun n ↦
+    ↑(rescaledF θ Δ (↑n + α)) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2 +
+      ↑(rescaledFDeriv θ Δ (↑n + α)) * (↑x + I * ↑y - ↑n - ↑α) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2
+h_s_tz : Summable term_z
+F_near : Finset ℤ := Finset.Icc (-⌈2 * L⌉) ⌈2 * L⌉
+f_far : ℤ → ℝ := fun n ↦ 4 * (|rescaledF θ Δ (↑n + α)| + |rescaledFDeriv θ Δ (↑n + α)|) * rexp (2 * π * R + 4) / L
+f_near : ℤ → ℝ := fun n ↦ if n ∈ F_near then 32 * Δ ^ 2 / L ^ 2 * rexp (2 * π * R + 4) else 0
+hf_far_s : Summable f_far
+hf_near_s : Summable f_near
+h_term_le : ∀ (n : ℤ), ‖term_z n‖ ≤ f_far n + f_near n
+n : ℤ
+hn : n ∈ F_near
+⊢ 32 * Δ ^ 2 / L ^ 2 * rexp (2 * π * R + 4) = ?m.7397 n
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:291:54: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  a ≤ -1
+where
+ a := ⌈2 * L⌉
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:299:30: Type mismatch
+  fun n ↦ 4 * rexp (2 * π * R + 4) / L * (|rescaledF θ Δ (n + α)| + |rescaledFDeriv θ Δ (n + α)|)
+has type
+  ℝ → ℝ
+but is expected to have type
+  ℤ → ℝ
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:324:12: Type mismatch
+  Integrable.const_mul
+    (Integrable.comp_sub_right (Integrable.comp_div integrable_inv_one_add_sq (LT.lt.ne' hR_pos)) (↑n + α)) ?m.8676
+has type
+  Integrable (fun x ↦ ?m.8676 * (1 + ((x - (↑n + α)) / R) ^ 2)⁻¹) volume
+but is expected to have type
+  Integrable (fun x ↦ 1 / R ^ 2 * (1 / (1 + ((x - (↑n + α)) / R) ^ 2))) volume
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:330:12: Type mismatch
+  Integrable.const_mul (Integrable.comp_div integrable_inv_one_add_sq (LT.lt.ne' hR_pos)) ?m.8901
+has type
+  Integrable (fun x ↦ ?m.8901 * (1 + (x / R) ^ 2)⁻¹) volume
+but is expected to have type
+  Integrable (fun x ↦ 1 / R ^ 2 * (1 / (1 + (x / R) ^ 2))) volume
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:345:12: Type mismatch
+  Integrable.const_mul
+    (Integrable.comp_sub_right (Integrable.comp_div integrable_inv_one_add_sq (LT.lt.ne' hR_pos)) (↑n + α)) ?m.9425
+has type
+  Integrable (fun x ↦ ?m.9425 * (1 + ((x - (↑n + α)) / R) ^ 2)⁻¹) volume
+but is expected to have type
+  Integrable (fun x ↦ 1 / R ^ 2 * (1 / (1 + ((x - (↑n + α)) / R) ^ 2))) volume
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:351:12: Type mismatch
+  Integrable.const_mul (Integrable.comp_div integrable_inv_one_add_sq (LT.lt.ne' hR_pos)) ?m.9650
+has type
+  Integrable (fun x ↦ ?m.9650 * (1 + (x / R) ^ 2)⁻¹) volume
+but is expected to have type
+  Integrable (fun x ↦ 1 / R ^ 2 * (1 / (1 + (x / R) ^ 2))) volume
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:352:14: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ∫ (a : ℝ),
+    ?m.9665 * (1 / ((a - ↑n - α) ^ 2 + R ^ 2)) +
+      ?m.9689 * (((fun x ↦ 1 / (x ^ 2 + R ^ 2)) + fun x ↦ 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) a / 2)
+in the target expression
+  ∫ (x : ℝ),
+      |rescaledF θ Δ (↑n + α)| / π ^ 2 * (1 / ((x - ↑n - α) ^ 2 + R ^ 2)) +
+        |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| / π ^ 2 *
+          ((1 / (x ^ 2 + R ^ 2) + 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) / 2) =
+    (|rescaledF θ Δ (↑n + α)| + |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|) / (π * R)
+
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+h_vert_bd : ∀ (L : ℝ), 2 * Δ ≤ L → ∀ (x : ℝ), |x| = L → ∀ (y : ℝ), |y| ≤ R → ‖M_α (↑x + I * ↑y)‖ ≤ C_v / L
+L : ℝ
+hL : 0 ≤ L
+g_dom : ℤ → ℝ → ℝ :=
+  fun n x ↦
+    |rescaledF θ Δ (↑n + α)| / π ^ 2 * (1 / ((x - ↑n - α) ^ 2 + R ^ 2)) +
+      |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| / π ^ 2 * ((1 / (x ^ 2 + R ^ 2) + 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) / 2)
+hg_dom_int : ∀ (n : ℤ), Integrable (g_dom n) volume
+n : ℤ
+hi1 : ∫ (x : ℝ), 1 / ((x - ↑n - α) ^ 2 + R ^ 2) = π / R
+hi2 : ∫ (x : ℝ), 1 / (x ^ 2 + R ^ 2) = π / R
+h_i1 : Integrable (fun x ↦ 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) volume
+h_i2 : Integrable (fun x ↦ 1 / (x ^ 2 + R ^ 2)) volume
+⊢ ∫ (x : ℝ),
+      |rescaledF θ Δ (↑n + α)| / π ^ 2 * (1 / ((x - ↑n - α) ^ 2 + R ^ 2)) +
+        |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| / π ^ 2 *
+          ((1 / (x ^ 2 + R ^ 2) + 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) / 2) =
+    (|rescaledF θ Δ (↑n + α)| + |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|) / (π * R)
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:358:16: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ∫⁻ (x : ℝ), ENNReal.ofReal (g_dom n x) ∂volume
+in the target expression
+  ∫⁻ (x : ℝ), ‖g_dom n x‖ₑ = ENNReal.ofReal (∫ (x : ℝ), g_dom n x)
+
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+h_vert_bd : ∀ (L : ℝ), 2 * Δ ≤ L → ∀ (x : ℝ), |x| = L → ∀ (y : ℝ), |y| ≤ R → ‖M_α (↑x + I * ↑y)‖ ≤ C_v / L
+L : ℝ
+hL : 0 ≤ L
+g_dom : ℤ → ℝ → ℝ :=
+  fun n x ↦
+    |rescaledF θ Δ (↑n + α)| / π ^ 2 * (1 / ((x - ↑n - α) ^ 2 + R ^ 2)) +
+      |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| / π ^ 2 * ((1 / (x ^ 2 + R ^ 2) + 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) / 2)
+hg_dom_int : ∀ (n : ℤ), Integrable (g_dom n) volume
+hg_dom_int_val :
+  ∀ (n : ℤ), ∫ (x : ℝ), g_dom n x = (|rescaledF θ Δ (↑n + α)| + |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|) / (π * R)
+n : ℤ
+⊢ ∫⁻ (x : ℝ), ‖g_dom n x‖ₑ = ENNReal.ofReal (∫ (x : ℝ), g_dom n x)
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:369:10: Unknown identifier `integrable_tsum`
+warning: PolarEvaluation/AsymmetricMajorantEvalA.lean:372:35: Possibly looping simp theorem: `div_eq_mul_one_div`
+
+Hint: You can disable a simp theorem from the default simp set by passing `- theoremName` to `simp`.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:372:35: Tactic `simp` failed with a nested error:
+maximum recursion depth has been reached
+use `set_option maxRecDepth <num>` to increase limit
+use `set_option diagnostics true` to get diagnostic information
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:381:41: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  (↑s * ↑R).re
+in the target expression
+  |s * R| = 0
+
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+h_vert_bd : ∀ (L : ℝ), 2 * Δ ≤ L → ∀ (x : ℝ), |x| = L → ∀ (y : ℝ), |y| ≤ R → ‖M_α (↑x + I * ↑y)‖ ≤ C_v / L
+L : ℝ
+hL : 0 ≤ L
+g_dom : ℤ → ℝ → ℝ :=
+  fun n x ↦
+    |rescaledF θ Δ (↑n + α)| / π ^ 2 * (1 / ((x - ↑n - α) ^ 2 + R ^ 2)) +
+      |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| / π ^ 2 * ((1 / (x ^ 2 + R ^ 2) + 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) / 2)
+hg_dom_int : ∀ (n : ℤ), Integrable (g_dom n) volume
+hg_dom_int_val :
+  ∀ (n : ℤ), ∫ (x : ℝ), g_dom n x = (|rescaledF θ Δ (↑n + α)| + |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|) / (π * R)
+hg_summ_int : ∑' (n : ℤ), ∫⁻ (x : ℝ), ‖g_dom n x‖ₑ < ⊤
+h_tot_int : Integrable (fun x ↦ ∑' (n : ℤ), g_dom n x) volume
+h_tot_val : ∫ (x : ℝ), ∑' (n : ℤ), g_dom n x = (S_a + S_bm) / (π * R)
+x : ℝ
+z : ℂ := ↑x + I * (↑s * ↑R)
+h0 : z = 0
+him : (↑s * ↑R).re = im 0
+⊢ |s * R| = 0
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:388:41: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  (↑s * ↑R).re
+in the target expression
+  |s * R| = 0
+
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+h_vert_bd : ∀ (L : ℝ), 2 * Δ ≤ L → ∀ (x : ℝ), |x| = L → ∀ (y : ℝ), |y| ≤ R → ‖M_α (↑x + I * ↑y)‖ ≤ C_v / L
+L : ℝ
+hL : 0 ≤ L
+g_dom : ℤ → ℝ → ℝ :=
+  fun n x ↦
+    |rescaledF θ Δ (↑n + α)| / π ^ 2 * (1 / ((x - ↑n - α) ^ 2 + R ^ 2)) +
+      |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| / π ^ 2 * ((1 / (x ^ 2 + R ^ 2) + 1 / ((x - ↑n - α) ^ 2 + R ^ 2)) / 2)
+hg_dom_int : ∀ (n : ℤ), Integrable (g_dom n) volume
+hg_dom_int_val :
+  ∀ (n : ℤ), ∫ (x : ℝ), g_dom n x = (|rescaledF θ Δ (↑n + α)| + |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|) / (π * R)
+hg_summ_int : ∑' (n : ℤ), ∫⁻ (x : ℝ), ‖g_dom n x‖ₑ < ⊤
+h_tot_int : Integrable (fun x ↦ ∑' (n : ℤ), g_dom n x) volume
+h_tot_val : ∫ (x : ℝ), ∑' (n : ℤ), g_dom n x = (S_a + S_bm) / (π * R)
+x : ℝ
+z : ℂ := ↑x + I * (↑s * ↑R)
+hz_ne : z ≠ 0
+n : ℤ
+h0 : z - ↑n - ↑α = 0
+him : (↑s * ↑R).re = im 0
+⊢ |s * R| = 0
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:398:12: (deterministic) timeout at `isDefEq`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:404:10: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:310:90: (deterministic) timeout at `«tactic execution»`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:310:90: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:111:80: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:21:0: (deterministic) timeout at `whnf`, maximum number of heartbeats (200000) has been reached
+
+Note: Use `set_option maxHeartbeats <num>` to set the limit.
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+✖ [9063/9073] Building PolarEvaluation.AsymmetricMajorantEvalB (26s)
+trace: .> LEAN_PATH=/home/runner/work/polarevaluation/polarevaluation/.lake/packages/Cli/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/batteries/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/Qq/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/aesop/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/proofwidgets/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/importGraph/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/plausible/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/packages/mathlib/.lake/build/lib/lean:/home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean /home/runner/.elan/toolchains/leanprover--lean4---v4.35.0/bin/lean /home/runner/work/polarevaluation/polarevaluation/PolarEvaluation/AsymmetricMajorantEvalB.lean -o /home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean/PolarEvaluation/AsymmetricMajorantEvalB.olean -i /home/runner/work/polarevaluation/polarevaluation/.lake/build/lib/lean/PolarEvaluation/AsymmetricMajorantEvalB.ilean -c /home/runner/work/polarevaluation/polarevaluation/.lake/build/ir/PolarEvaluation/AsymmetricMajorantEvalB.c --setup /home/runner/work/polarevaluation/polarevaluation/.lake/build/ir/PolarEvaluation/AsymmetricMajorantEvalB.setup.json --json
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:25:54: failed to prove positivity/nonnegativity/nonzeroness
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:48:4: linarith failed to find a contradiction
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+h1 : -(min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2) ≤ α - (1 / 2 - θ / π)
+h2 : δ ≤ δ_star / 2
+h3 : δ_star ≤ α_star / 2
+a✝ : α < δ
+⊢ False
+failed
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:53:4: linarith failed to find a contradiction
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+h1 : α - (1 / 2 - θ / π) ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+h2 : δ ≤ δ_star / 2
+h3 : δ_star ≤ (1 - α_star) / 2
+a✝ : 1 - δ < α
+⊢ False
+failed
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:70:16: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  @Tendsto ?m.1246 ?m.1245 ?m.1250 atTop (𝓝 ?m.1251)
+in the target expression
+  @Tendsto (Finset ℤ) ℝ (fun s ↦ ∑ b ∈ s, rescaledF θ Δ (↑b + α)) (SummationFilter.unconditional ℤ).filter
+    (𝓝 (∑' (b : ℤ), rescaledF θ Δ (↑b + α)))
+
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+ε : ℝ
+hε : ε > 0
+hs :
+  Tendsto (fun s ↦ ∑ b ∈ s, rescaledF θ Δ (↑b + α)) (SummationFilter.unconditional ℤ).filter
+    (𝓝 (∑' (b : ℤ), rescaledF θ Δ (↑b + α)))
+⊢ ∃ N, ∀ n ≥ N, dist (∑ n ∈ Finset.Icc (-↑n) ↑n, rescaledF θ Δ (↑n + α)) (∑' (n : ℤ), rescaledF θ Δ (↑n + α)) < ε
+info: PolarEvaluation/AsymmetricMajorantEvalB.lean:99:8: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:96:13: unsolved goals
+case zero
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+v : ℝ
+⊢ (↑α - I * ↑v)⁻¹ = -(-↑α + I * ↑v)⁻¹
+info: PolarEvaluation/AsymmetricMajorantEvalB.lean:106:19: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:100:18: unsolved goals
+case succ
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+v : ℝ
+N : ℕ
+ih :
+  ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v) =
+    -(1 / (-↑α + I * ↑v) + ∑ k ∈ Finset.range N, (1 / (-↑α + I * ↑v + ↑(k + 1)) + 1 / (-↑α + I * ↑v - ↑(k + 1))))
+h_icc : Finset.Icc (-↑(N + 1)) ↑(N + 1) = insert (↑(N + 1)) (insert (-↑(N + 1)) (Finset.Icc (-↑N) ↑N))
+⊢ (1 + ↑N + ↑α - I * ↑v)⁻¹ + (-1 - ↑N + ↑α - I * ↑v)⁻¹ - (-↑α + I * ↑v)⁻¹ -
+      ∑ x ∈ Finset.range N, ((1 - ↑α + I * ↑v + ↑x)⁻¹ + (-1 - ↑α + I * ↑v - ↑x)⁻¹) =
+    -(-↑α + I * ↑v)⁻¹ - ∑ x ∈ Finset.range N, ((1 - ↑α + I * ↑v + ↑x)⁻¹ + (-1 - ↑α + I * ↑v - ↑x)⁻¹) -
+        (1 + ↑N - ↑α + I * ↑v)⁻¹ -
+      (-1 - ↑N - ↑α + I * ↑v)⁻¹
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:120:28: Invalid field `hasSum`: The environment does not contain `Function.hasSum`, so it is not possible to project the field `hasSum` from an expression
+  h_summ_k
+of type
+  (∀ (n : ℕ), -↑α + I * ↑v + ↑(n + 1) ≠ 0) →
+    Summable fun n ↦ 1 / (-↑α + I * ↑v - ↑(n + 1)) + 1 / (-↑α + I * ↑v + ↑(n + 1))
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:156:16: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  |↑(↑k + 1) - α|
+in the target expression
+  δ ≤ |↑(-(↑k + 1)) + α|
+
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_part_sum_eq :
+  ∀ (N : ℕ) (v : ℝ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v) =
+      -(1 / (-↑α + I * ↑v) + ∑ k ∈ Finset.range N, (1 / (-↑α + I * ↑v + ↑(k + 1)) + 1 / (-↑α + I * ↑v - ↑(k + 1))))
+h_cot_lim :
+  ∀ v ∈ Set.Ioo 0 Δ, Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)) atTop (𝓝 (cot_fn v))
+K0 : ℕ := ⌈2 * (1 + Δ)⌉₊ + 2
+C_z : ℝ := ∑' (k : ℕ), 1 / (↑k + 1) ^ 2
+C_dom : ℝ := 1 / δ + ↑K0 * (2 / δ) + 4 * (1 + Δ) * C_z + 1
+N : ℕ
+v : ℝ
+hv : v ∈ Set.Icc 0 Δ
+z : ℂ := -↑α + I * ↑v
+hz_norm : ‖z‖ ≤ 1 + Δ
+hz0 : ‖1 / z‖ ≤ 1 / δ
+k : ℕ
+hk : k < K0
+hre : (z + ↑(k + 1)).re = ↑(↑k + 1) - α
+h_lb : δ ≤ |↑(-(↑k + 1)) + α|
+h_eq : |↑(-(↑k + 1)) + α| = |↑(↑k + 1) - α|
+⊢ δ ≤ ‖z + ↑(k + 1)‖
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:162:16: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  |(-(↑(↑k + 1) + α))|
+in the target expression
+  δ ≤ |↑(↑k + 1) + α|
+
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_part_sum_eq :
+  ∀ (N : ℕ) (v : ℝ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v) =
+      -(1 / (-↑α + I * ↑v) + ∑ k ∈ Finset.range N, (1 / (-↑α + I * ↑v + ↑(k + 1)) + 1 / (-↑α + I * ↑v - ↑(k + 1))))
+h_cot_lim :
+  ∀ v ∈ Set.Ioo 0 Δ, Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)) atTop (𝓝 (cot_fn v))
+K0 : ℕ := ⌈2 * (1 + Δ)⌉₊ + 2
+C_z : ℝ := ∑' (k : ℕ), 1 / (↑k + 1) ^ 2
+C_dom : ℝ := 1 / δ + ↑K0 * (2 / δ) + 4 * (1 + Δ) * C_z + 1
+N : ℕ
+v : ℝ
+hv : v ∈ Set.Icc 0 Δ
+z : ℂ := -↑α + I * ↑v
+hz_norm : ‖z‖ ≤ 1 + Δ
+hz0 : ‖1 / z‖ ≤ 1 / δ
+k : ℕ
+hk : k < K0
+h1 : δ ≤ ‖z + ↑(k + 1)‖
+hre : (z - ↑(k + 1)).re = -(↑(↑k + 1) + α)
+h_lb : δ ≤ |↑(↑k + 1) + α|
+h_eq : |↑(↑k + 1) + α| = |(-(↑(↑k + 1) + α))|
+⊢ δ ≤ ‖z - ↑(k + 1)‖
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:253:37: Application type mismatch: The argument
+  ?m.5418
+has type
+  volume {v | v = Δ} = 0
+but is expected to have type
+  volume {a | ¬?m.5407 a} = 0
+in the application
+  ae_iff.mpr ?m.5418
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:268:28: Invalid field `hasSum`: The environment does not contain `Function.hasSum`, so it is not possible to project the field `hasSum` from an expression
+  h_summ_k
+of type
+  (∀ (n : ℕ), -↑α + I * ↑Δ + ↑(n + 1) ≠ 0) →
+    Summable fun n ↦ 1 / (-↑α + I * ↑Δ - ↑(n + 1)) + 1 / (-↑α + I * ↑Δ + ↑(n + 1))
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:306:19: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  ∑ i ∈ ?s, ?a * ?f i
+in the target expression
+  (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+      ∑ x ∈ Finset.Icc (-↑N) ↑N, Real.sin θ * Δ * (↑x + α) / ((↑x + α) ^ 2 + Δ ^ 2) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+      Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+N : ℕ
+h_int_fin :
+  ∀ n ∈ Finset.Icc (-↑N) ↑N, IntervalIntegrable (fun v ↦ (cexp (-I * ↑θ) / (↑(↑n + α) - I * ↑v)).im) volume 0 Δ
+h_sum_int :
+  ∑ n ∈ Finset.Icc (-↑N) ↑N, ∫ (v : ℝ) in Set.Ioo 0 Δ, (cexp (-I * ↑θ) / (↑(↑n + α) - I * ↑v)).im =
+    ∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im
+⊢ (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+      ∑ x ∈ Finset.Icc (-↑N) ↑N, Real.sin θ * Δ * (↑x + α) / ((↑x + α) ^ 2 + Δ ^ 2) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+      Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+info: PolarEvaluation/AsymmetricMajorantEvalB.lean:333:31: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:330:117: unsolved goals
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α_star - I * ↑v)) / Complex.sin (↑π * (↑α_star - I * ↑v))
+v : ℝ
+hv : 0 ≤ v
+z₁ : ℂ := ↑π * (↑α - I * ↑v)
+z₂ : ℂ := ↑π * (↑α_star - I * ↑v)
+hs1 : c_sin * rexp (π * v) ≤ ‖Complex.sin z₁‖
+hs2 : c_sin * rexp (π * v) ≤ ‖Complex.sin z₂‖
+hne1 : Complex.sin z₁ ≠ 0
+hne2 : Complex.sin z₂ ≠ 0
+⊢ Complex.cos (↑π * ↑α - ↑π * I * ↑v) * (Complex.sin (↑π * ↑α - ↑π * I * ↑v))⁻¹ * Complex.sin z₂ * Complex.sin z₁ -
+      Complex.cos (-(↑π * I * ↑v) + ↑π * ↑α_star) * (Complex.sin (-(↑π * I * ↑v) + ↑π * ↑α_star))⁻¹ * Complex.sin z₂ *
+        Complex.sin z₁ =
+    Complex.sin z₂ * Complex.cos z₁ - Complex.sin z₁ * Complex.cos z₂
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:348:14: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  rexp (-?x)
+in the target expression
+  π * (π * |α - α_star|) / (c_sin ^ 2 * rexp (2 * π * v)) = π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α_star - I * ↑v)) / Complex.sin (↑π * (↑α_star - I * ↑v))
+v : ℝ
+hv : 0 ≤ v
+z₁ : ℂ := ↑π * (↑α - I * ↑v)
+z₂ : ℂ := ↑π * (↑α_star - I * ↑v)
+hs1 : c_sin * rexp (π * v) ≤ ‖Complex.sin z₁‖
+hs2 : c_sin * rexp (π * v) ≤ ‖Complex.sin z₂‖
+hne1 : Complex.sin z₁ ≠ 0
+hne2 : Complex.sin z₂ ≠ 0
+h_id : cot_fn v - cot_star v = ↑π * Complex.sin (z₂ - z₁) / (Complex.sin z₁ * Complex.sin z₂)
+h_zdiff : ‖Complex.sin (z₂ - z₁)‖ ≤ π * |α - α_star|
+hden : c_sin ^ 2 * rexp (2 * π * v) ≤ ‖Complex.sin z₁‖ * ‖Complex.sin z₂‖
+⊢ π * (π * |α - α_star|) / (c_sin ^ 2 * rexp (2 * π * v)) = π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:361:30: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  cexp (?x * I)
+in the target expression
+  Complex.sin (↑θ + ↑π * I * ↑v) - I * Complex.cos (↑θ + ↑π * I * ↑v) = -I * cexp (I * (↑θ + ↑π * I * ↑v))
+
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α_star - I * ↑v)) / Complex.sin (↑π * (↑α_star - I * ↑v))
+h_cot_diff : ∀ (v : ℝ), 0 ≤ v → ‖cot_fn v - cot_star v‖ ≤ π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+rem_fn : ℝ → ℂ := fun v ↦ ↑π * (-I * cexp (I * (↑θ + I * ↑π * ↑v)) / Complex.cos (↑θ + I * ↑π * ↑v))
+v : ℝ
+h1 : ↑π * (↑α_star - I * ↑v) = ↑π / 2 - (↑θ + I * ↑π * ↑v)
+hcos : Complex.cos (↑θ + I * ↑π * ↑v) ≠ 0
+⊢ Complex.sin (↑θ + ↑π * I * ↑v) - I * Complex.cos (↑θ + ↑π * I * ↑v) = -I * cexp (I * (↑θ + ↑π * I * ↑v))
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:363:4: ring failed, ring expressions not equal
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := ⋯
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := ⋯
+δ : ℝ := ⋯
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := ⋯
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ := ⋯
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := ⋯
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := ⋯
+h_cot_diff : ∀ (v : ℝ), 0 ≤ v → ‖cot_fn v - cot_star v‖ ≤ π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+rem_fn : ℝ → ℂ := ⋯
+v : ℝ
+h1 : ↑π * (↑α_star - I * ↑v) = ↑π / 2 - (↑θ + I * ↑π * ↑v)
+hcos : Complex.cos (↑θ + I * ↑π * ↑v) ≠ 0
+h_euler : Complex.sin (↑θ + I * ↑π * ↑v) - I * Complex.cos (↑θ + I * ↑π * ↑v) = -I * cexp (I * (↑θ + I * ↑π * ↑v))
+⊢ Complex.sin (↑θ + ↑π * I * ↑v) * (Complex.cos (↑θ + ↑π * I * ↑v))⁻¹ +
+              (Complex.cos (↑θ + ↑π * I * ↑v))⁻¹ * I * cexp (I * (↑θ + ↑π * I * ↑v)) -
+            ↑π * I * cexp (I * (↑θ + I * ↑π * ↑v)) +
+          ↑π * I * Complex.cos (↑θ + I * ↑π * ↑v) -
+        ↑π * Complex.sin (↑θ + I * ↑π * ↑v) -
+      I =
+    0
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:370:77: No goals to be solved
+info: PolarEvaluation/AsymmetricMajorantEvalB.lean:396:74: Try this:
+  [apply] ring_nf
+  
+  The `ring` tactic failed to close the goal. Use `ring_nf` to obtain a normal form.
+    
+  Note that `ring` works primarily in *commutative* rings. If you have a noncommutative ring, abelian group or module, consider using `noncomm_ring`, `abel` or `module` instead.
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:401:12: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  1 + Real.cos (2 * θ)
+in the target expression
+  0 < 1 + (Real.cos (2 * θ) + (0 - 0 * 1))
+
+case pos
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α_star - I * ↑v)) / Complex.sin (↑π * (↑α_star - I * ↑v))
+h_cot_diff : ∀ (v : ℝ), 0 ≤ v → ‖cot_fn v - cot_star v‖ ≤ π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+rem_fn : ℝ → ℂ := fun v ↦ ↑π * (-I * cexp (I * (↑θ + I * ↑π * ↑v)) / Complex.cos (↑θ + I * ↑π * ↑v))
+h_cot_star_eq : ∀ (v : ℝ), cot_star v = ↑π * I + rem_fn v
+h_rem_bd : ∀ (v : ℝ), 0 ≤ v → ‖rem_fn v‖ ≤ 2 * π / Real.cos θ * rexp (-2 * π * v)
+G : ℝ → ℝ := fun v ↦ -(cexp (-I * ↑θ) * I * Complex.log (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v)))).im
+hv : 0 ≤ 0
+heq : 1 + cexp (2 * I * (↑θ + I * ↑π * ↑0)) = 1 + cexp (↑(2 * θ) * I)
+h1 : 1 + Real.cos (2 * θ) = 2 * Real.cos θ ^ 2
+⊢ 0 < 1 + (Real.cos (2 * θ) + (0 - 0 * 1))
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:418:11: unsolved goals
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α_star - I * ↑v)) / Complex.sin (↑π * (↑α_star - I * ↑v))
+h_cot_diff : ∀ (v : ℝ), 0 ≤ v → ‖cot_fn v - cot_star v‖ ≤ π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+rem_fn : ℝ → ℂ := fun v ↦ ↑π * (-I * cexp (I * (↑θ + I * ↑π * ↑v)) / Complex.cos (↑θ + I * ↑π * ↑v))
+h_cot_star_eq : ∀ (v : ℝ), cot_star v = ↑π * I + rem_fn v
+h_rem_bd : ∀ (v : ℝ), 0 ≤ v → ‖rem_fn v‖ ≤ 2 * π / Real.cos θ * rexp (-2 * π * v)
+G : ℝ → ℝ := fun v ↦ -(cexp (-I * ↑θ) * I * Complex.log (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v)))).im
+h_slit : ∀ (v : ℝ), 0 ≤ v → 0 < (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v))).re
+v : ℝ
+hv : v ∈ Set.Ioi 0
+⊢ I * ↑π * ↑1 = I * ↑π
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:420:85: No goals to be solved
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:427:8: Type mismatch
+  HasDerivAt.clog ?m.8835 (mem_slitPlane_iff.mpr (Or.inl (h_slit v (LT.lt.le ?m.8845))))
+has type
+  HasDerivAt (fun (t : ℂ) ↦ Complex.log (1 + t)) (?m.8833 / (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v))))
+    (cexp (2 * I * (↑θ + I * ↑π * ↑v)))
+but is expected to have type
+  HasDerivAt (fun (t : ℝ) ↦ Complex.log (1 + cexp (2 * I * (↑θ + I * ↑π * ↑t))))
+    (-2 * ↑π * cexp (2 * I * (↑θ + I * ↑π * ↑v)) / (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v)))) v
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:427:8: Application type mismatch: The argument
+  h_inner
+has type
+  HasDerivAt (fun t ↦ 1 + cexp (2 * I * (↑θ + I * ↑π * ↑t))) (-2 * ↑π * cexp (2 * I * (↑θ + I * ↑π * ↑v))) v
+but is expected to have type
+  HasDerivAt (HAdd.hAdd 1) ?m.8833 (cexp (2 * I * (↑θ + I * ↑π * ↑v)))
+in the application
+  HasDerivAt.clog h_inner
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:473:13: Unknown constant `Complex.continuousAt_clog`
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:483:54: Tactic `rewrite` failed: Did not find an occurrence of the pattern
+  Complex.cos ↑?x
+in the target expression
+  1 + cexp (I * ↑θ) * cexp (I * ↑θ) = cexp (Complex.log (2 * ↑(Real.cos θ))) * cexp (I * ↑θ)
+
+θ : ℝ
+hθ : |θ| < π / 2
+α_star : ℝ := 1 / 2 - θ / π
+hα_star : α_star ∈ Set.Ioo 0 1
+δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
+δ : ℝ := min (δ_star / 2) (1 / 2)
+hδ0 : 0 < δ
+hδ1 : δ ≤ 1 / 2
+hα_star1 : δ ≤ α_star
+hα_star2 : α_star ≤ 1 - δ
+c_sin : ℝ := Real.sin (π * δ) / rexp π
+hsin_δ_pos : 0 < Real.sin (π * δ)
+hc_pos : 0 < c_sin
+hcos_pos : 0 < Real.cos θ
+C_eval : ℝ :=
+  π ^ 2 / c_sin ^ 2 * (1 / (2 * π)) + π ^ 2 / c_sin ^ 2 + 2 * π / Real.cos θ * (1 / (2 * π)) + 2 * π / Real.cos θ + 1
+Δ α : ℝ
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hα_near : |α - (1 / 2 - θ / π)| ≤ min ((1 / 2 - θ / π) / 2) ((1 - (1 / 2 - θ / π)) / 2) / 2
+hΔ_pos : 0 < Δ
+hα1 : δ ≤ α
+hα2 : α ≤ 1 - δ
+h_na_lb : ∀ (n : ℤ), δ ≤ |↑n + α|
+hx_ne : ∀ (n : ℤ), ↑n + α ≠ 0
+h_summ_F : Summable fun n ↦ rescaledF θ Δ (↑n + α)
+h_tend_sum :
+  Tendsto (fun N ↦ ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α)) atTop (𝓝 (∑' (n : ℤ), rescaledF θ Δ (↑n + α)))
+cot_fn : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α - I * ↑v)) / Complex.sin (↑π * (↑α - I * ↑v))
+h_cot_ne : ∀ (v : ℝ), 0 ≤ v → Complex.sin (↑π * (↑α - I * ↑v)) ≠ 0
+h_tend_cot :
+  Tendsto
+    (fun N ↦
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2))
+    atTop (𝓝 ((-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re))
+h_eq_fin :
+  ∀ (N : ℕ),
+    ∑ n ∈ Finset.Icc (-↑N) ↑N, rescaledF θ Δ (↑n + α) =
+      (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * ∑ n ∈ Finset.Icc (-↑N) ↑N, 1 / (↑(↑n + α) - I * ↑v)).im) -
+        Real.sin θ * Δ * ∑ n ∈ Finset.Icc (-↑N) ↑N, (↑n + α) / ((↑n + α) ^ 2 + Δ ^ 2)
+h_sum_val :
+  ∑' (n : ℤ), rescaledF θ Δ (↑n + α) =
+    (-∫ (v : ℝ) in 0..Δ, (cexp (-I * ↑θ) * cot_fn v).im) - Real.sin θ * Δ * (cot_fn Δ).re
+cot_star : ℝ → ℂ := fun v ↦ ↑π * Complex.cos (↑π * (↑α_star - I * ↑v)) / Complex.sin (↑π * (↑α_star - I * ↑v))
+h_cot_diff : ∀ (v : ℝ), 0 ≤ v → ‖cot_fn v - cot_star v‖ ≤ π ^ 2 / c_sin ^ 2 * |α - α_star| * rexp (-2 * π * v)
+rem_fn : ℝ → ℂ := fun v ↦ ↑π * (-I * cexp (I * (↑θ + I * ↑π * ↑v)) / Complex.cos (↑θ + I * ↑π * ↑v))
+h_cot_star_eq : ∀ (v : ℝ), cot_star v = ↑π * I + rem_fn v
+h_rem_bd : ∀ (v : ℝ), 0 ≤ v → ‖rem_fn v‖ ≤ 2 * π / Real.cos θ * rexp (-2 * π * v)
+G : ℝ → ℝ := fun v ↦ -(cexp (-I * ↑θ) * I * Complex.log (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v)))).im
+h_slit : ∀ (v : ℝ), 0 ≤ v → 0 < (1 + cexp (2 * I * (↑θ + I * ↑π * ↑v))).re
+hG_deriv : ∀ v ∈ Set.Ioi 0, HasDerivAt G (-(cexp (-I * ↑θ) * rem_fn v).im) v
+h_int_r : IntegrableOn (fun v ↦ -(cexp (-I * ↑θ) * rem_fn v).im) (Set.Ioi 0) volume
+h_cont : ContinuousAt G 0
+hcos_def : Complex.cos ↑θ = (cexp (↑θ * I) + cexp (-↑θ * I)) / 2
+⊢ 1 + cexp (I * ↑θ) * cexp (I * ↑θ) = cexp (Complex.log (2 * ↑(Real.cos θ))) * cexp (I * ↑θ)
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:553:38: No goals to be solved
+error: PolarEvaluation/AsymmetricMajorantEvalB.lean:726:10: invalid 'calc' step, failed to synthesize `Trans` instance
+  Trans LE.le LE.le ?m.15487
+
+Hint: Additional diagnostic information may be available using the `set_option diagnostics true` command.
+Some required targets logged failures:
+- PolarEvaluation.TotientStar
+- PolarEvaluation.AsymmetricMajorantEvalA
+- PolarEvaluation.AsymmetricMajorantEvalB
+error: build failed

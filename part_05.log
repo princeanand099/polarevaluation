@@ -1,0 +1,150 @@
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+L : ℝ
+hL : 2 * Δ ≤ L
+x : ℝ
+hx : |x| = L
+y : ℝ
+hy : |y| ≤ R
+hL_pos : 0 < L
+term_z : ℤ → ℂ :=
+  fun n ↦
+    ↑(rescaledF θ Δ (↑n + α)) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2 +
+      ↑(rescaledFDeriv θ Δ (↑n + α)) * (↑x + I * ↑y - ↑n - ↑α) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2
+h_s_tz : Summable term_z
+F_near : Finset ℤ := Finset.Icc (-⌈2 * L⌉) ⌈2 * L⌉
+f_far : ℤ → ℝ := fun n ↦ 4 * (|rescaledF θ Δ (↑n + α)| + |rescaledFDeriv θ Δ (↑n + α)|) * rexp (2 * π * R + 4) / L
+f_near : ℤ → ℝ := fun n ↦ if n ∈ F_near then 32 * Δ ^ 2 / L ^ 2 * rexp (2 * π * R + 4) else 0
+hf_far_s : Summable f_far
+hf_near_s : Summable f_near
+n : ℤ
+him : |(↑x + I * ↑y - ↑n - ↑α).im| ≤ R
+h_far : ¬L / 2 ≤ |x - ↑n - α|
+h_near : |x - ↑n - α| < L / 2
+this : ↑n = x - (x - ↑n - α) - α
+⊢ |x| + |x - ↑n - α| + |α| ≤ |x| + |x - (x - (x - ↑n - α) - α) - α| + |α|
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:233:117: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  a + b ≤ -1
+where
+ a := ⌈2 * L⌉
+ b := n
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:235:116: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  a - b ≥ 1
+where
+ a := n
+ b := ⌈2 * L⌉
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:247:46: No goals to be solved
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:261:55: Type mismatch
+  hbm
+has type
+  |↑n + α| * |rescaledFDeriv θ Δ (↑n + α)| ≤ 2 * Δ ^ 2 / (↑n + α) ^ 2
+but is expected to have type
+  |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)| ≤ 2 * Δ ^ 2 / (↑n + α) ^ 2
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:288:48: unsolved goals
+θ Δ α : ℝ
+hθ : |θ| < π / 2
+hΔ : Δ ≥ 1
+hα : α ∈ Set.Ioo 0 1
+hsumm_b : Summable fun n ↦ rescaledFDeriv θ Δ (↑n + α)
+hsum0 : ∑' (n : ℤ), rescaledFDeriv θ Δ (↑n + α) = 0
+h_int_M : Integrable (fun x ↦ majorantM θ Δ α x) volume
+hΔ_pos : 0 < Δ
+ha_summ : Summable fun n ↦ |rescaledF θ Δ (↑n + α)|
+hb_summ : Summable fun n ↦ |rescaledFDeriv θ Δ (↑n + α)|
+hbm_summ : Summable fun n ↦ |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+S_a : ℝ := ∑' (n : ℤ), |rescaledF θ Δ (↑n + α)|
+S_b : ℝ := ∑' (n : ℤ), |rescaledFDeriv θ Δ (↑n + α)|
+S_bm : ℝ := ∑' (n : ℤ), |(↑n + α) * rescaledFDeriv θ Δ (↑n + α)|
+hM_re : ∀ (x : ℝ), (majorantEntire θ Δ α ↑x).im = 0 ∧ (majorantEntire θ Δ α ↑x).re = majorantM θ Δ α x
+hM_diff : Differentiable ℂ (majorantEntire θ Δ α)
+right✝ : ∀ ε > 0, ∃ C > 0, ∀ (z : ℂ), ‖majorantEntire θ Δ α z‖ ≤ C * rexp ((2 * π * Δ + ε) * ‖z‖)
+M_α : ℂ → ℂ := fun z ↦ majorantEntire θ Δ α (z / ↑Δ)
+hMα_diff : Differentiable ℂ M_α
+hMα_real : ∀ (y : ℝ), M_α ↑y = ↑(vaalerInterpolant θ Δ α y)
+f : ℝ → ℂ := fun y ↦ ↑(vaalerInterpolant θ Δ α y)
+hf_cont : Continuous f
+C_s : ℝ
+hC_s : C_s > 0
+h_sup : ∀ (x : ℝ), (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_s
+hf_decay : ∃ C, ∀ (y : ℝ), ‖f y‖ ≤ C * (1 + |y|) ^ (-2)
+hf_int : Integrable f volume
+ξ : ℝ
+hξ : 1 ≤ |ξ|
+h_sin_bd : ∀ (w : ℂ), ‖Complex.sin w‖ ≤ rexp |w.im|
+s : ℝ := if 0 < ξ then -1 else 1
+hξs : ξ * s = -|ξ|
+hs_abs : |s| = 1
+hMα_eq :
+  ∀ (z : ℂ),
+    M_α z =
+      ∑' (n : ℤ),
+        (↑(rescaledF θ Δ (↑n + α)) * sincPi (z - ↑n - ↑α) ^ 2 +
+          ↑(rescaledFDeriv θ Δ (↑n + α)) * (z - ↑n - ↑α) * sincPi (z - ↑n - ↑α) ^ 2)
+R : ℝ
+hR : 1 ≤ R
+hR_pos : 0 < R
+g : ℂ → ℂ := fun z ↦ M_α z * cexp (-2 * ↑π * I * ↑ξ * z)
+hg_diff : Differentiable ℂ g
+C_v : ℝ := 4 * (S_a + S_b) * rexp (2 * π * R + 4) + 192 * Δ ^ 2 * rexp (2 * π * R + 4)
+L : ℝ
+hL : 2 * Δ ≤ L
+x : ℝ
+hx : |x| = L
+y : ℝ
+hy : |y| ≤ R
+hL_pos : 0 < L
+term_z : ℤ → ℂ :=
+  fun n ↦
+    ↑(rescaledF θ Δ (↑n + α)) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2 +
+      ↑(rescaledFDeriv θ Δ (↑n + α)) * (↑x + I * ↑y - ↑n - ↑α) * sincPi (↑x + I * ↑y - ↑n - ↑α) ^ 2
+h_s_tz : Summable term_z
+F_near : Finset ℤ := Finset.Icc (-⌈2 * L⌉) ⌈2 * L⌉
+f_far : ℤ → ℝ := fun n ↦ 4 * (|rescaledF θ Δ (↑n + α)| + |rescaledFDeriv θ Δ (↑n + α)|) * rexp (2 * π * R + 4) / L
+f_near : ℤ → ℝ := fun n ↦ if n ∈ F_near then 32 * Δ ^ 2 / L ^ 2 * rexp (2 * π * R + 4) else 0
+hf_far_s : Summable f_far
+hf_near_s : Summable f_near
+h_term_le : ∀ (n : ℤ), ‖term_z n‖ ≤ f_far n + f_near n
+n : ℤ
+hn : n ∈ F_near
+⊢ 32 * Δ ^ 2 / L ^ 2 * rexp (2 * π * R + 4) = ?m.7397 n
+error: PolarEvaluation/AsymmetricMajorantEvalA.lean:291:54: omega could not prove the goal:
+a possible counterexample may satisfy the constraints
+  a ≤ -1
+where
+ a := ⌈2 * L⌉
