@@ -1006,7 +1006,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         exact (Complex.imCLM.continuous.continuousAt.comp ((continuousAt_const).mul continuousAt_id)).tendsto.comp
           (h_cot_lim v (hv1 hv2))
     have h_bd_tend : Tendsto (fun N : ℕ => ∑ n ∈ Finset.Icc (-(N : ℤ)) (N : ℤ), (n + α) / ((n + α) ^ 2 + Δ ^ 2))
-        atTop (nhds (cot_fn Δ).re)) := by
+        atTop (nhds (cot_fn Δ).re) := by
       have hz := pi_cot_tsum_eq (z := -α + Complex.I * Δ) (by simp [hΔ_pos])
       have h_cot_neg : -(Real.pi : ℂ) * Complex.cos (Real.pi * (-α + Complex.I * Δ)) / Complex.sin (Real.pi * (-α + Complex.I * Δ)) =
           cot_fn Δ := by
@@ -1400,7 +1400,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_val : ∫ v in Set.Ioi Δ, Real.exp (-2 * Real.pi * v) = (1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * Δ) := by
       have h_lim : Tendsto (fun v : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * v)) atTop (nhds 0) := by
         have h1 : Tendsto (fun v : ℝ => Real.exp (-(2 * Real.pi) * v)) atTop (nhds 0) :=
-          Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by positivity : -(2 * Real.pi) < 0))
+          Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by linarith [Real.pi_pos] : -(2 * Real.pi) < 0))
         simpa using h1.const_mul (-(1 / (2 * Real.pi)))
       have h_int : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi Δ) := by
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi Δ) :=
@@ -1563,7 +1563,7 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         _ ≤ ((2 * Real.pi) ^ 3 / 6) * Δ ^ 3 := by gcongr
         _ = (2 * Real.pi * Δ) ^ 3 / Nat.factorial 3 := by norm_num; ring
         _ ≤ Real.exp (2 * Real.pi * Δ) := he
-    rw [show (-2 * Real.pi * Δ : ℝ) = -(2 * Real.pi * Δ) by ring, Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _)]; exact h1
+    rw [show (-2 * Real.pi * Δ : ℝ) = -(2 * Real.pi * Δ) by ring, Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _)]; exact h1.trans_eq (one_mul _).symm
   have h_Δ2_exp : Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) ≤ 1 / Δ := by
     rw [le_div_iff₀ hΔ_pos]
     calc Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) * Δ = Δ ^ 3 * Real.exp (-2 * Real.pi * Δ) := by ring
