@@ -688,6 +688,9 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   have hΔ_pos : 0 < Δ := by linarith
   have hlogΔ_ge : Real.log 2 ≤ Real.log Δ := Real.log_le_log (by norm_num) hΔ_ge_2
   have hlogΔ_pos : 0 < Real.log Δ := lt_of_lt_of_le hlog2_pos hlogΔ_ge
+  have hδ_le_half : δ ≤ 1 / 2 := min_le_right _ _
+  have h_inv_δ_ge1 : 1 ≤ 1 / δ := (one_le_div hδ0).mpr (by linarith [hδ_le_half])
+  have hlog1_nn : 0 ≤ Real.log (1 / δ) := Real.log_nonneg h_inv_δ_ge1
   have h_na_lb : ∀ n : ℤ, δ ≤ |(n : ℝ) + α| := by
     intro n
     have hα1 : δ ≤ α := by
@@ -752,27 +755,30 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             · rw [div_le_div_iff₀ (by positivity) (lt_of_lt_of_le hδ0 (h_na_lb n))]
               nlinarith [sq_nonneg ((n : ℝ) + α)]
             · exact Real.abs_sin_le_one θ
-            · rw [div_le_div_iff₀ (by positivity) hΔ_pos]
-              have h2 : Δ ^ 2 ≤ ((n : ℝ) + α) ^ 2 + Δ ^ 2 := by linarith [sq_nonneg ((n : ℝ) + α)]
-              have h3 : Δ ^ 4 ≤ (((n : ℝ) + α) ^ 2 + Δ ^ 2) ^ 2 := by nlinarith [sq_nonneg Δ]
-              have h4 : Δ ≤ Δ ^ 4 := by nlinarith [hΔ_ge_1, sq_nonneg Δ]
-              nlinarith
+            · have h2 : Δ ^ 2 ≤ ((n : ℝ) + α) ^ 2 + Δ ^ 2 := by linarith [sq_nonneg ((n : ℝ) + α)]
+              have h3 : Δ ^ 4 ≤ (((n : ℝ) + α) ^ 2 + Δ ^ 2) ^ 2 := by
+                calc Δ ^ 4 = (Δ ^ 2) ^ 2 := by ring
+                  _ ≤ (((n : ℝ) + α) ^ 2 + Δ ^ 2) ^ 2 := by gcongr
+              rw [div_le_div_iff₀ (by positivity) hΔ_pos, show 2 * Δ ^ 3 * Δ = 2 * Δ ^ 4 by ring]
+              gcongr
         _ = 1 / |(n : ℝ) + α| + 2 / Δ := by ring
     have h_to_Csmall : ∀ A B : ℝ, A ≤ C_small_0 → B ≤ C_small_1 → A + B * Real.log Δ ≤ C_small * Real.log Δ := by
       intro A B hA hB
       have h1 : A + B * Real.log Δ ≤ C_small_0 + C_small_1 * Real.log Δ := by gcongr
       refine h1.trans ?_
+      have hC0_nn : 0 ≤ C_small_0 := by dsimp only [C_small_0]; positivity
       have h2 : C_small_0 ≤ (C_small_0 / Real.log 2) * Real.log Δ := by
         rw [div_mul_eq_mul_div, le_div_iff₀ hlog2_pos]
-        exact mul_le_mul_of_nonneg_left hlogΔ_ge (by positivity : 0 ≤ C_small_0)
+        exact mul_le_mul_of_nonneg_left hlogΔ_ge hC0_nn
       dsimp only [C_small]; rw [add_mul]; linarith
     by_cases hlat : ∃ n : ℤ, y = n + α
     · obtain ⟨n, rfl⟩ := hlat
       unfold vaalerInterpolant
       rw [if_pos ⟨n, rfl⟩]
       have h_le_c0 : 4 + Real.log (1 / δ) ≤ C_small_0 := by
-        have hlog1 : 0 ≤ Real.log (1 / δ) := Real.log_nonneg ((one_le_div hδ0).mpr (by linarith [min_le_right (δ_star / 2) (1 / 2)]))
-        dsimp only [C_small_0]; linarith [show 0 ≤ (4 + Real.log (1 / δ)) * 72 * C_z by positivity]
+        have h_rem : 0 ≤ (1 / Real.pi ^ 2) * ((4 + Real.log (1 / δ)) * 72 * C_z + 192 * C_z + 4) := by positivity
+        have h_inv_δ : 0 ≤ 1 / δ := by positivity
+        dsimp only [C_small_0]; linarith
       have h_le_c1 : (1 : ℝ) ≤ C_small_1 := by
         dsimp only [C_small_1]; linarith [show 0 ≤ 72 * C_z / Real.pi ^ 2 by positivity]
       exact (hF_unif n).trans (by
@@ -784,9 +790,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have h_inv := summable_inv_add_sq_of_ne_zero (α - y) (fun n h0 => hlat ⟨n, by linarith⟩)
         refine (h_inv.mul_left (4 + Real.log (1 / δ) + Real.log Δ)).of_norm_bounded fun n => ?_
         rw [Real.norm_eq_abs, abs_div, abs_of_nonneg (sq_nonneg (y - n - α)), div_eq_mul_one_div]
-        have h_nonneg : 0 ≤ 4 + Real.log (1 / δ) + Real.log Δ := by
-          have := Real.log_nonneg ((one_le_div hδ0).mpr (by linarith [min_le_right (δ_star / 2) (1 / 2)]))
-          linarith
+        have h_nonneg : 0 ≤ 4 + Real.log (1 / δ) + Real.log Δ := by linarith [hlog1_nn, hlogΔ_pos]
         calc |rescaledF θ Δ (n + α)| * (1 / (y - n - α) ^ 2)
             ≤ (4 + Real.log (1 / δ) + Real.log Δ) * (1 / (y - n - α) ^ 2) := by gcongr; exact hF_unif n
           _ = (4 + Real.log (1 / δ) + Real.log Δ) * (1 / ((n : ℝ) + (α - y)) ^ 2) := by congr 2; ring
@@ -846,7 +850,6 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             (∑' n : ℤ, if n ∈ F5 then term n else 0) + ∑' n : ℤ, (if n ∈ F5 then 0 else term n) := by
           rw [← h_fin_s.tsum_add h_cofin_s, h_add]
         rw [h_sum_add, tsum_eq_sum (s := F5) (fun n hn => by simp [hn])]
-        congr 1; exact Finset.sum_congr rfl (fun n hn => if_pos hn)
       have h_F5_bd : |∑ n ∈ F5, term n| ≤ 5 * (4 + Real.log (1 / δ) + Real.log Δ + 1 / δ + 2) := by
         have h_each : ∀ n ∈ F5, |term n| ≤ 4 + Real.log (1 / δ) + Real.log Δ + 1 / δ + 2 := by
           intro n _
@@ -935,7 +938,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           simp only [F_mid, Finset.mem_filter, Finset.mem_Icc]
           refine ⟨⟨?_, ?_⟩, hn⟩
           · have h_lt : (-Int.floor Δ : ℝ) < (n : ℝ) + 1 := by
-              linarith [(abs_le.mp h_leΔ).1, Int.floor_le Δ]
+              linarith [(abs_le.mp h_leΔ).1, Int.lt_floor_add_one Δ]
             exact Int.le_of_lt_add_one (by exact_mod_cast h_lt)
           · exact Int.le_floor.mpr (abs_le.mp h_leΔ).2
         exact diffB_tail_bound θ Δ α δ y hΔ_ge_1 hα hy hδ0 (min_le_right _ _) h_na_lb hF_unif hFd_bd
@@ -959,9 +962,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
               rw [tsum_mul_left, Summable.tsum_add (hf_inv_s.mul_left K_tail) hf_mid_s, tsum_mul_left]
           _ ≤ (1 / Real.pi ^ 2) * (K_tail * (8 * C_z) + 4) := by
               have hK_nn : 0 ≤ K_tail := by
-                have hδ_le_half : δ ≤ 1 / 2 := min_le_right _ _
-                have h1 := Real.log_nonneg ((one_le_div hδ0).mpr (by linarith [hδ_le_half]))
-                dsimp only [K_tail]; linarith [h1, hlogΔ_pos]
+                dsimp only [K_tail]; linarith [hlog1_nn, hlogΔ_pos]
               gcongr
           _ = (1 / Real.pi ^ 2) * (((4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24) * 8 * C_z + 4) := by
               dsimp only [K_tail]; ring
@@ -1016,11 +1017,12 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     dsimp only [C_mid]
     positivity
   have hC_small_nn : 0 ≤ C_small := by
-    have h1 : 0 ≤ Real.log (1 / δ) := Real.log_nonneg ((one_le_div hδ0).mpr (by linarith [min_le_right (δ_star / 2) (1 / 2)]))
     dsimp only [C_small, C_small_0, C_small_1]
     positivity
+  have h_sup1 : 2 * C_small ≤ C_sup := le_max_left (2 * C_small) ((2 * C_mid + 8) / Real.log 2 + 2)
+  have h_sup2 : (2 * C_mid + 8) / Real.log 2 + 2 ≤ C_sup := le_max_right (2 * C_small) ((2 * C_mid + 8) / Real.log 2 + 2)
   have h_sup : ∀ x : ℝ, (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_sup * Real.log Δ :=
-    diffB_h_sup θ Δ α C_small C_mid C_sup hΔ_pos hΔ_ge_2 hC_mid_nn (le_max_left _ _) (le_max_right _ _) h_small_y h_large_x
+    diffB_h_sup θ Δ α C_small C_mid C_sup hΔ_pos hΔ_ge_2 hC_mid_nn h_sup1 h_sup2 h_small_y h_large_x
   have h_cont : Continuous (fun x : ℝ => majorantM θ Δ α x) := by
     obtain ⟨⟨h_diff, _⟩, h_re⟩ := majorantEntire_props θ Δ α hΔ_ge_1 hα hsumm_b
     have h_eq : (fun x : ℝ => majorantM θ Δ α x) = fun x : ℝ => (majorantEntire θ Δ α x).re := by
