@@ -14,6 +14,17 @@ open Complex Real MeasureTheory Filter Topology Classical
 
 namespace PolarEvaluation
 
+private lemma ld_integral_univ_inv_one_add_sq : ∫ x : ℝ, (1 + x ^ 2)⁻¹ = Real.pi := by
+  have h_tend := intervalIntegral_tendsto_integral integrable_inv_one_add_sq tendsto_neg_atTop_atBot tendsto_id
+  have h_eq : (fun R : ℝ => ∫ x in (-R)..id R, (1 + x ^ 2)⁻¹) = fun R : ℝ => Real.arctan R - Real.arctan (-R) := by
+    ext R; exact integral_inv_one_add_sq
+  rw [h_eq] at h_tend
+  have h_lim : Tendsto (fun R : ℝ => Real.arctan R - Real.arctan (-R)) atTop (𝓝 (Real.pi / 2 - -(Real.pi / 2))) :=
+    (tendsto_arctan_atTop.mono_right nhdsWithin_le_nhds).sub ((tendsto_arctan_atBot.mono_right nhdsWithin_le_nhds).comp tendsto_neg_atTop_atBot)
+  have h_pi : Real.pi / 2 - -(Real.pi / 2) = Real.pi := by ring
+  rw [h_pi] at h_lim
+  exact tendsto_nhds_unique h_tend h_lim
+
 /-- Helper: `S(t, χ)` horizontal zero-sum at `θ = π / 2` obtained by dominated convergence
 as `θ → π / 2` from `horizontal_zero_sum_external`. -/
 private lemma S_val_horizontal_zero_sum (D : LFunctionData) :
@@ -298,7 +309,7 @@ private lemma t_aspect_polar_ld_core (D : LFunctionData) (q : ℕ) (hq : q ≥ 1
       _ = (2 * envelopeC θ + C_err_M) / Δ := by ring
       _ ≤ C_L1_tot / Δ := by gcongr; exact le_trans (by linarith) (le_max_right C_L1 _)
   have hM_L1_tot : ∫ x : ℝ, |majorantM θ Δ α x| ≤ C_L1_tot :=
-    h_L1.trans (le_max_left _ _)
+    hM_L1.trans (le_max_left _ _)
   have h_tail_bd := h_tail q χ Δ (majorantM θ Δ α) hΔ_ge_Δ₀ hM_int hM_L1_diff hM_L1_tot
   -- Show any t ∈ [T, 2T] with nonvanishing and polarLogL ≥ V has |primeSum1| ≥ V / 4
   have h_subset : { t ∈ Set.Icc T (2 * T) | D.nonvanishing q χ t ∧ polarLogL D q χ t θ ≥ V } ⊆
@@ -834,7 +845,7 @@ theorem S_large_deviation_t (D : LFunctionData) (q : ℕ) (hq : q ≥ 1)
     have h_mono : ∫ x : ℝ, |(M_plus x).re| ≤ ∫ x : ℝ, C₃ * (1 / (1 + x ^ 2)) := by
       refine integral_mono hMp_int_re.abs (integrable_inv_one_add_sq.const_mul C₃) fun x => ?_
       exact (Complex.abs_re_le_norm _).trans ((hM_sup x).1.trans_eq (by ring))
-    rw [integral_const_mul, integral_inv_one_add_sq] at h_mono
+    simp_rw [one_div] at h_mono; rw [integral_const_mul, ld_integral_univ_inv_one_add_sq] at h_mono
     exact h_mono.trans (le_max_left _ _)
   have hMm_L1_diff : ∫ x : ℝ, |(M_minus x).re - kernelK (Real.pi / 2) x| ≤ C_L1_tot / Δ := by
     have h_eq : ∫ x : ℝ, |(M_minus x).re - kernelK (Real.pi / 2) x| = ∫ x : ℝ, (kernelK (Real.pi / 2) x - (M_minus x).re) := by
@@ -850,7 +861,7 @@ theorem S_large_deviation_t (D : LFunctionData) (q : ℕ) (hq : q ≥ 1)
     have h_mono : ∫ x : ℝ, |(M_minus x).re| ≤ ∫ x : ℝ, C₃ * (1 / (1 + x ^ 2)) := by
       refine integral_mono hMm_int_re.abs (integrable_inv_one_add_sq.const_mul C₃) fun x => ?_
       exact (Complex.abs_re_le_norm _).trans ((hM_sup x).2.trans_eq (by ring))
-    rw [integral_const_mul, integral_inv_one_add_sq] at h_mono
+    simp_rw [one_div] at h_mono; rw [integral_const_mul, ld_integral_univ_inv_one_add_sq] at h_mono
     exact h_mono.trans (le_max_left _ _)
   let h_hat_p := fourierHat (fun x : ℝ => ((M_plus x).re : ℂ))
   let h_hat_m := fourierHat (fun x : ℝ => ((M_minus x).re : ℂ))
@@ -1868,7 +1879,7 @@ private lemma q_aspect_polar_ld_core (D : LFunctionData) (t₀ θ : ℝ) (hθ : 
       _ = (2 * envelopeC θ + C_err_M) / Δ := by ring
       _ ≤ C_L1_tot / Δ := by gcongr; exact le_trans (by linarith) (le_max_right C_L1 _)
   have hM_L1_tot : ∫ x : ℝ, |majorantM θ Δ α x| ≤ C_L1_tot :=
-    h_L1.trans (le_max_left _ _)
+    hM_L1.trans (le_max_left _ _)
   have h_tail_bd := h_tail q
   let S_target := Finset.univ.filter (fun χ : DirichletCharacter ℂ q =>
     χ.IsPrimitive ∧ D.nonvanishing q χ t₀ ∧ polarLogL D q χ t₀ θ ≥ V)
@@ -2146,7 +2157,7 @@ theorem q_aspect_large_deviation (D : LFunctionData) (t₀ θ : ℝ) (hθ : |θ|
   have hlogq_ge_exp : Real.exp L_α ≤ Real.log q := by
     rw [← Real.log_exp (Real.exp L_α)]; exact Real.log_le_log (Real.exp_pos _) hq_ge_exp
   have hLLq_ge : L_α ≤ Real.log (Real.log q) := by
-    rw [← Real.log_exp L_min] at *; exact Real.log_le_log (Real.exp_pos _) hlogq_ge_exp
+    rw [← Real.log_exp L_α]; exact Real.log_le_log (Real.exp_pos _) hlogq_ge_exp
   have hLLq_pos : 0 < Real.log (Real.log q) := by linarith [le_max_left (100 : ℝ) (max ((A / α) ^ 2) ((Real.exp 1 / α) ^ 4))]
   have hlogq_pos : 0 < Real.log q := by linarith [Real.exp_pos L_α]
   have h_ratio_le : (Real.log q / Real.log (Real.log q)) ≥ (Real.log (Real.log q)) ^ 2 := by
@@ -2422,7 +2433,7 @@ theorem S_large_deviation_q (D : LFunctionData) (t₀ : ℝ) :
     have h_mono : ∫ x : ℝ, |(M_plus x).re| ≤ ∫ x : ℝ, C₃ * (1 / (1 + x ^ 2)) := by
       refine integral_mono hMp_int_re.abs (integrable_inv_one_add_sq.const_mul C₃) fun x => ?_
       exact (Complex.abs_re_le_norm _).trans ((hM_sup x).1.trans_eq (by ring))
-    rw [integral_const_mul, integral_inv_one_add_sq] at h_mono
+    simp_rw [one_div] at h_mono; rw [integral_const_mul, ld_integral_univ_inv_one_add_sq] at h_mono
     exact h_mono.trans (le_max_left _ _)
   have hMm_L1_diff : ∫ x : ℝ, |(M_minus x).re - kernelK (Real.pi / 2) x| ≤ C_L1_tot / Δ := by
     have h_eq : ∫ x : ℝ, |(M_minus x).re - kernelK (Real.pi / 2) x| = ∫ x : ℝ, (kernelK (Real.pi / 2) x - (M_minus x).re) := by
@@ -2438,7 +2449,7 @@ theorem S_large_deviation_q (D : LFunctionData) (t₀ : ℝ) :
     have h_mono : ∫ x : ℝ, |(M_minus x).re| ≤ ∫ x : ℝ, C₃ * (1 / (1 + x ^ 2)) := by
       refine integral_mono hMm_int_re.abs (integrable_inv_one_add_sq.const_mul C₃) fun x => ?_
       exact (Complex.abs_re_le_norm _).trans ((hM_sup x).2.trans_eq (by ring))
-    rw [integral_const_mul, integral_inv_one_add_sq] at h_mono
+    simp_rw [one_div] at h_mono; rw [integral_const_mul, ld_integral_univ_inv_one_add_sq] at h_mono
     exact h_mono.trans (le_max_left _ _)
   let h_hat_p := fourierHat (fun x : ℝ => ((M_plus x).re : ℂ))
   let h_hat_m := fourierHat (fun x : ℝ => ((M_minus x).re : ℂ))

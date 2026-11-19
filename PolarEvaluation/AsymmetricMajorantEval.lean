@@ -1238,8 +1238,11 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have := abs_lt.mp hθ; exact ⟨by linarith, by linarith⟩)]
         have hexp : Complex.exp (-Complex.I * θ) = ((Real.cos θ : ℝ) : ℂ) - ((Real.sin θ : ℝ) : ℂ) * Complex.I := by
           rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
+
             Complex.exp_mul_I]
+
           simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
+
           ring
         rw [hexp]
         unfold envelopeC
@@ -1264,6 +1267,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       simpa [G] using (Complex.imCLM.continuousAt.tendsto.comp (tendsto_const_nhds.mul h_log1)).neg
     have hres := integral_Ioi_of_hasDerivAt_of_tendsto' hG_deriv h_int_r hG_0 hG_inf
     linarith
+  -- Now put all pieces together in h_sum_val!
   have h_int_cot : IntervalIntegrable (fun v : ℝ => (Complex.exp (-Complex.I * θ) * cot_fn v).im) volume 0 Δ := by
     refine (Complex.continuous_im.comp_continuousOn (continuousOn_const.mul ?_)).intervalIntegrable
     refine ContinuousOn.div (continuousOn_const.mul (Complex.continuous_cos.continuousOn.comp (by fun_prop) (fun _ _ => Set.mem_univ _)))
@@ -1288,8 +1292,11 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hexp : Complex.exp (-Complex.I * θ) * ((Real.pi : ℂ) * Complex.I) =
           ((Real.pi * Real.sin θ : ℝ) : ℂ) + ((Real.pi * Real.cos θ : ℝ) : ℂ) * Complex.I := by
         rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
+
           Complex.exp_mul_I]
+
         simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
+
         ring
         push_cast; ring_nf; simp [Complex.I_sq]; ring
       simp_rw [hexp]
@@ -1391,7 +1398,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_val : ∫ v in Set.Ioi Δ, Real.exp (-2 * Real.pi * v) = (1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * Δ) := by
       have h_lim : Tendsto (fun v : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * v)) atTop (nhds 0) := by
         have h1 : Tendsto (fun v : ℝ => Real.exp (-(2 * Real.pi) * v)) atTop (nhds 0) :=
-          Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by linarith [Real.pi_pos] : -(2 * Real.pi) < 0))
+          Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by positivity : -(2 * Real.pi) < 0))
         simpa using h1.const_mul (-(1 / (2 * Real.pi)))
       have h_int : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi Δ) := by
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi Δ) :=
@@ -1531,6 +1538,7 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   have hΔ_ge_Δ₃ : Δ ≥ Δ₃ := le_trans (le_trans (le_max_left _ _) (le_trans (le_max_right _ _) (le_max_left _ _))) hΔ
   have hΔ_ge_Δ₄ : Δ ≥ Δ₄ := le_trans (le_trans (le_max_right _ _) (le_trans (le_max_right _ _) (le_max_left _ _))) hΔ
   obtain ⟨α, ⟨hα_mem, hsumm_b, hsum0, hα_err⟩, _⟩ := h_opt Δ hΔ_ge_Δ₁
+  -- Note: Δ^2 * exp(-2πΔ) ≤ 1 / Δ for Δ ≥ 1 since exp(2πΔ) ≥ (2πΔ)^3 / 6 ≥ Δ^3!
   have h_Δ3_exp : Δ ^ 3 * Real.exp (-2 * Real.pi * Δ) ≤ 1 := by
     have he := Real.pow_div_factorial_le_exp (2 * Real.pi * Δ) (by positivity) 3
     have hpi : (2 * Real.pi) ^ 3 / 6 ≥ 1 := by
@@ -1542,7 +1550,7 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         _ ≤ ((2 * Real.pi) ^ 3 / 6) * Δ ^ 3 := by gcongr
         _ = (2 * Real.pi * Δ) ^ 3 / Nat.factorial 3 := by norm_num; ring
         _ ≤ Real.exp (2 * Real.pi * Δ) := he
-    rw [show (-2 * Real.pi * Δ : ℝ) = -(2 * Real.pi * Δ) by ring, Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _)]; exact h1.trans_eq (one_mul _).symm
+    rw [show (-2 * Real.pi * Δ : ℝ) = -(2 * Real.pi * Δ) by ring, Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _)]; exact h1
   have h_Δ2_exp : Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) ≤ 1 / Δ := by
     rw [le_div_iff₀ hΔ_pos]
     calc Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) * Δ = Δ ^ 3 * Real.exp (-2 * Real.pi * Δ) := by ring
@@ -1682,5 +1690,6 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       _ = C_err * Real.exp (-2 * Real.pi * Δ) := by
           dsimp only [C_err]; field_simp [hΔ_pos.ne']
   exact ⟨α, majorantEntire θ Δ α, hα_mem, hM_type, hM_re, h_int_diff, h_sup, h_L1, h_ge_K, h_excess⟩
+
 
 end PolarEvaluation
