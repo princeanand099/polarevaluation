@@ -35,7 +35,8 @@ lemma sincPi_deriv_bound (R : ℝ) (hR : 0 ≤ R) :
       have hpw : HasDerivAt (fun w : ℂ => (Real.pi : ℂ) * w) (Real.pi : ℂ) u := by
         simpa using (hasDerivAt_id u).const_mul (Real.pi : ℂ)
       have hpi : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-      have hq := HasDerivAt.div (f := fun w : ℂ => Complex.sin ((Real.pi : ℂ) * w)) (g := fun w : ℂ => (Real.pi : ℂ) * w) hpw.sin hpw (mul_ne_zero hpi hu_ne)
+      have hq : HasDerivAt (fun w : ℂ => Complex.sin ((Real.pi : ℂ) * w) / ((Real.pi : ℂ) * w)) _ u :=
+        hpw.sin.div hpw (mul_ne_zero hpi hu_ne)
       rw [hq.deriv]
       field_simp [hpi, hu_ne]; ring
     have h_sin_bd : ∀ w : ℂ, ‖Complex.sin w‖ ≤ Real.exp |w.im| := by
