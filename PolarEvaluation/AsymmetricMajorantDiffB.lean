@@ -41,7 +41,7 @@ lemma sincPi_deriv_bound (R : ℝ) (hR : 0 ≤ R) :
       have hq : HasDerivAt (fun w : ℂ => Complex.sin ((Real.pi : ℂ) * w) / ((Real.pi : ℂ) * w)) _ u :=
         hsin_d.div hpw (mul_ne_zero hpi hu_ne)
       rw [hq.deriv]
-      field_simp [hpi, hu_ne]; ring
+      field_simp [hpi, hu_ne]
     have h_sin_bd : ∀ w : ℂ, ‖Complex.sin w‖ ≤ Real.exp |w.im| := by
       intro w
       have hsin_def : Complex.sin w = (Complex.exp (-w * Complex.I) - Complex.exp (w * Complex.I)) * Complex.I / 2 := by unfold Complex.sin; ring_nf
