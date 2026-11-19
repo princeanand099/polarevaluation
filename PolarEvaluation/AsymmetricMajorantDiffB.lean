@@ -481,13 +481,14 @@ private lemma diffB_h_sup (θ Δ α C_small C_mid C_sup : ℝ)
         _ ≤ C_sup * Real.log Δ := by gcongr
 
 private lemma diffB_L1_bound (θ Δ α C_small C_mid C_L1 : ℝ)
-    (hΔ_ge_1 : 1 ≤ Δ) (hC_small_nn : 0 ≤ C_small) (hC_mid_nn : 0 ≤ C_mid)
+    (hΔ_ge_2 : 2 ≤ Δ) (hC_small_nn : 0 ≤ C_small) (hC_mid_nn : 0 ≤ C_mid)
     (hC_L1 : C_L1 = 2 * C_small + 2 * C_mid + (∫ x in Set.Ioo (-1 : ℝ) 1, |kernelK θ x|) + (2 * C_mid + 8) * Real.pi)
     (h_small_y : ∀ y : ℝ, |y| ≤ 1 → |vaalerInterpolant θ Δ α y| ≤ C_small * Real.log Δ)
     (h_large_x : ∀ x : ℝ, 1 ≤ |Δ * x| → |majorantM θ Δ α x - kernelK θ x| ≤ C_mid / (Δ * x) ^ 2)
     (h_abs_int : Integrable (fun x : ℝ => |majorantM θ Δ α x|)) :
     (∫ x : ℝ, |majorantM θ Δ α x|) ≤ C_L1 := by
-  have hΔ_pos : 0 < Δ := zero_lt_one.trans_le hΔ_ge_1
+  have hΔ_ge_1 : 1 ≤ Δ := by linarith
+  have hΔ_pos : 0 < Δ := by linarith
   let S1 : Set ℝ := Set.Icc (-1 / Δ) (1 / Δ)
   let S2 : Set ℝ := Set.Ioo (-1) (-1 / Δ) ∪ Set.Ioo (1 / Δ) 1
   let S3 : Set ℝ := (Set.Ioo (-1 : ℝ) 1)ᶜ
@@ -568,27 +569,29 @@ private lemma diffB_L1_bound (θ Δ α C_small C_mid C_L1 : ℝ)
       have h_emb := (Homeomorph.neg ℝ).measurableEmbedding
       have h_pre : (Homeomorph.neg ℝ) ⁻¹' Set.Ioo (-1) (-1 / Δ) = Set.Ioo (1 / Δ) 1 := by
         ext x; simp only [Set.mem_preimage, Homeomorph.neg_apply, Set.mem_Ioo]; rw [neg_div]; constructor <;> intro ⟨a, b⟩ <;> exact ⟨by linarith, by linarith⟩
-      rw [← (Measure.measurePreserving_neg volume).setIntegral_preimage_emb h_emb (fun x => C_mid / (Δ * x) ^ 2) (Set.Ioo (-1) (-1 / Δ)), h_pre]
+      rw [← (Measure.measurePreserving_neg volume).setIntegral_preimage_emb h_emb (fun x => C_mid / (Δ * x) ^ 2) (Set.Ioo (-1) (-1 / Δ))]
+      have h_pre' : Neg.neg ⁻¹' Set.Ioo (-1) (-1 / Δ) = Set.Ioo (1 / Δ) 1 := h_pre
+      rw [h_pre']
       simpa [mul_neg, neg_sq] using h_c_pos
     have h_s2_c : ∫ x in S2, C_mid / (Δ * x) ^ 2 ≤ 2 * C_mid := by
       dsimp only [S2]
-      rw [setIntegral_union ((Set.disjoint_iff.mpr fun x ⟨hx1, hx2⟩ => by rw [neg_div] at hx1; linarith only [hx1.2, hx2.1, hΔ_pos]))
+      rw [setIntegral_union ((Set.disjoint_iff.mpr fun x ⟨hx1, hx2⟩ => by rw [neg_div] at hx1; linarith only [hx1.2, hx2.1, show 0 < 1 / Δ by positivity]))
         measurableSet_Ioo (hg2_1.mono_set Set.subset_union_left) (hg2_1.mono_set Set.subset_union_right)]
       linarith
     have h_s2_k : ∫ x in S2, |kernelK θ x| ≤ ∫ x in Set.Ioo (-1 : ℝ) 1, |kernelK θ x| := by
       refine setIntegral_mono_set (kernelK_integrable_sl θ).abs.integrableOn (Eventually.of_forall fun _ => abs_nonneg _) ?_
       refine Eventually.of_forall fun x hx => ?_
       rcases hx with hx | hx
-      · exact ⟨hx.1, by linarith [hx.2, show 0 < 1 / Δ by positivity]⟩
+      · rw [neg_div] at hx; exact ⟨hx.1, by linarith [hx.2, show 0 < 1 / Δ by positivity]⟩
       · exact ⟨by linarith [hx.1, show 0 < 1 / Δ by positivity], hx.2⟩
     calc ∫ x in S2, |majorantM θ Δ α x| ≤ ∫ x in S2, g2 x := h_mono
       _ = (∫ x in S2, C_mid / (Δ * x) ^ 2) + (∫ x in S2, |kernelK θ x|) :=
           integral_add hg2_1 ((kernelK_integrable_sl θ).abs.integrableOn)
       _ ≤ 2 * C_mid + ∫ x in Set.Ioo (-1 : ℝ) 1, |kernelK θ x| := add_le_add h_s2_c h_s2_k
   have h_int3 : ∫ x in S3, |majorantM θ Δ α x| ≤ (2 * C_mid + 8) * Real.pi := by
-    have h_univ : ∫ x : ℝ, (2 * C_mid + 8) * (1 / (1 + x ^ 2)) = (2 * C_mid + 8) * Real.pi := by
+    have h_univ : ∫ x : ℝ, (2 * C_mid + 8) * (1 + x ^ 2)⁻¹ = (2 * C_mid + 8) * Real.pi := by
       rw [integral_const_mul, integral_inv_one_add_sq]
-    have h_mono1 : ∫ x in S3, |majorantM θ Δ α x| ≤ ∫ x in S3, (2 * C_mid + 8) * (1 / (1 + x ^ 2)) := by
+    have h_mono1 : ∫ x in S3, |majorantM θ Δ α x| ≤ ∫ x in S3, (2 * C_mid + 8) * (1 + x ^ 2)⁻¹ := by
       refine setIntegral_mono_on h_s3 ((integrable_inv_one_add_sq.const_mul (2 * C_mid + 8)).integrableOn)
         measurableSet_Ioo.compl fun x hx => ?_
       have hx1 : 1 ≤ |x| := by
@@ -596,17 +599,18 @@ private lemma diffB_L1_bound (θ Δ α C_small C_mid C_L1 : ℝ)
       have h_dx : 1 ≤ |Δ * x| := by rw [abs_mul, abs_of_pos hΔ_pos]; nlinarith
       have h_m_diff := h_large_x x h_dx
       have hK := kernelK_bound_large θ hx1
+      have hx_sq_pos : 0 < x ^ 2 := by rw [← sq_abs x]; nlinarith
       have hM : |majorantM θ Δ α x| ≤ (C_mid + 4) / x ^ 2 := by
         have htri : |majorantM θ Δ α x| ≤ |majorantM θ Δ α x - kernelK θ x| + |kernelK θ x| := by
           simpa only [sub_add_cancel] using abs_add_le (majorantM θ Δ α x - kernelK θ x) (kernelK θ x)
-        have h_dx2 : C_mid / (Δ * x) ^ 2 ≤ C_mid / x ^ 2 := by gcongr; nlinarith [sq_nonneg x]
+        have h_dx2 : C_mid / (Δ * x) ^ 2 ≤ C_mid / x ^ 2 := by gcongr; nlinarith
         linarith [show (C_mid + 4) / x ^ 2 = C_mid / x ^ 2 + 4 / x ^ 2 by ring]
       have hx2 : 1 + x ^ 2 ≤ 2 * x ^ 2 := by rw [← sq_abs x]; nlinarith
       calc |majorantM θ Δ α x| ≤ (C_mid + 4) / x ^ 2 := hM
         _ = (2 * C_mid + 8) / (2 * x ^ 2) := by ring
         _ ≤ (2 * C_mid + 8) / (1 + x ^ 2) := div_le_div_of_nonneg_left (by positivity) (by positivity) hx2
-        _ = (2 * C_mid + 8) * (1 / (1 + x ^ 2)) := by ring
-    have h_mono2 : ∫ x in S3, (2 * C_mid + 8) * (1 / (1 + x ^ 2)) ≤ ∫ x : ℝ, (2 * C_mid + 8) * (1 / (1 + x ^ 2)) :=
+        _ = (2 * C_mid + 8) * (1 + x ^ 2)⁻¹ := by rw [div_eq_mul_inv]
+    have h_mono2 : ∫ x in S3, (2 * C_mid + 8) * (1 + x ^ 2)⁻¹ ≤ ∫ x : ℝ, (2 * C_mid + 8) * (1 + x ^ 2)⁻¹ :=
       setIntegral_le_integral (integrable_inv_one_add_sq.const_mul (2 * C_mid + 8)) (Eventually.of_forall fun _ => by positivity)
     linarith
   have h_tot_split : ∫ x : ℝ, |majorantM θ Δ α x| ≤
@@ -617,8 +621,8 @@ private lemma diffB_L1_bound (θ Δ α C_small C_mid C_L1 : ℝ)
       · by_cases hx2 : |x| ≤ 1 / Δ
         · exact Or.inl (Or.inl ⟨by rw [neg_div]; linarith [(abs_le.mp hx2).1], (abs_le.mp hx2).2⟩)
         · have hx2' : 1 / Δ < |x| := not_le.mp hx2
-          rcases lt_or_gt_of_ne (abs_pos.mp (by linarith [show 0 < 1 / Δ by positivity])) with h | h
-          · exact Or.inl (Or.inr (Or.inl ⟨(abs_lt.mp hx1).1, by rw [neg_div, abs_of_neg h] at hx2'; linarith⟩))
+          rcases lt_or_gt_of_ne (abs_pos.mp (by linarith [hx2', show 0 < 1 / Δ by positivity])) with h | h
+          · exact Or.inl (Or.inr (Or.inl ⟨(abs_lt.mp hx1).1, by rw [abs_of_neg h] at hx2'; rw [neg_div]; linarith⟩))
           · exact Or.inl (Or.inr (Or.inr ⟨by rw [abs_of_pos h] at hx2'; exact hx2', (abs_lt.mp hx1).2⟩))
       · exact Or.inr (fun h => hx1 (abs_lt.mpr h))
     have h_disj12 : Disjoint S1 S2 := by
@@ -626,19 +630,19 @@ private lemma diffB_L1_bound (θ Δ α C_small C_mid C_L1 : ℝ)
       intro x ⟨hx1, hx2⟩
       simp only [S1, S2, Set.mem_Icc, Set.mem_union, Set.mem_Ioo] at hx1 hx2
       rcases hx2 with hx2 | hx2
-      · rw [neg_div] at hx1; linarith only [hx1.1, hx2.2]
+      · rw [neg_div] at hx1 hx2; linarith only [hx1.1, hx2.2]
       · linarith only [hx1.2, hx2.1]
     have h_disj123 : Disjoint (S1 ∪ S2) S3 := by
       rw [Set.disjoint_iff]
       intro x ⟨hx12, hx3⟩
       apply hx3
       simp only [S1, S2, Set.mem_union, Set.mem_Icc, Set.mem_Ioo] at hx12
-      have h_1_div_le : 1 / Δ ≤ 1 := div_le_one_of_le₀ hΔ_ge_1 hΔ_pos.le
+      have h_1_div_lt : 1 / Δ < 1 := by rw [div_lt_one hΔ_pos]; linarith
       rcases hx12 with hx1 | (hx2 | hx2)
-      · rw [neg_div] at hx1; exact ⟨by linarith only [hx1.1, h_1_div_le], by linarith only [hx1.2, h_1_div_le]⟩
-      · exact ⟨hx2.1, by linarith only [hx2.2, h_1_div_le]⟩
-      · exact ⟨by linarith only [hx2.1, h_1_div_le], hx2.2⟩
-    have h123 := setIntegral_mono_set h_abs_int (Eventually.of_forall fun _ => abs_nonneg _) (Eventually.of_forall fun x _ => h_u (Set.mem_univ x))
+      · rw [neg_div] at hx1; exact ⟨by linarith only [hx1.1, h_1_div_lt], by linarith only [hx1.2, h_1_div_lt]⟩
+      · exact ⟨hx2.1, by rw [neg_div] at hx2; linarith only [hx2.2, h_1_div_lt]⟩
+      · exact ⟨by linarith only [hx2.1, h_1_div_lt], hx2.2⟩
+    have h123 := setIntegral_mono_set h_abs_int.integrableOn (Eventually.of_forall fun _ => abs_nonneg _) (Eventually.of_forall fun x _ => h_u (Set.mem_univ x))
     calc ∫ x : ℝ, |majorantM θ Δ α x| = ∫ x in Set.univ, |majorantM θ Δ α x| := setIntegral_univ.symm
       _ ≤ ∫ x in S1 ∪ S2 ∪ S3, |majorantM θ Δ α x| := h123
       _ = (∫ x in S1 ∪ S2, |majorantM θ Δ α x|) + ∫ x in S3, |majorantM θ Δ α x| :=
@@ -663,7 +667,8 @@ private lemma diffB_rescaledFDeriv_bd (θ Δ α δ : ℝ) (hΔ_ge_1 : 1 ≤ Δ) 
       abs_of_pos (by positivity : 0 < ((n : ℝ) + α) ^ 2 + Δ ^ 2)]
     have h1 : Δ ^ 2 / (|(n : ℝ) + α| * (((n : ℝ) + α) ^ 2 + Δ ^ 2)) ≤ 1 / |(n : ℝ) + α| := by
       rw [div_le_div_iff₀ (by positivity) (lt_of_lt_of_le hδ0 (h_na_lb n))]
-      nlinarith [sq_nonneg ((n : ℝ) + α)]
+      calc Δ ^ 2 * |(n : ℝ) + α| ≤ (((n : ℝ) + α) ^ 2 + Δ ^ 2) * |(n : ℝ) + α| := by gcongr; linarith [sq_nonneg ((n : ℝ) + α)]
+        _ = 1 * (|(n : ℝ) + α| * (((n : ℝ) + α) ^ 2 + Δ ^ 2)) := by ring
     calc |Real.cos θ| * (Δ ^ 2 / (|(n : ℝ) + α| * (((n : ℝ) + α) ^ 2 + Δ ^ 2)))
         ≤ 1 * (1 / |(n : ℝ) + α|) := mul_le_mul (Real.abs_cos_le_one θ) h1 (by positivity) zero_le_one
       _ = 1 / |(n : ℝ) + α| := one_mul _
@@ -709,9 +714,12 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   let δ_star : ℝ := min (α_star / 2) ((1 - α_star) / 2)
   let δ : ℝ := min (δ_star / 2) (1 / 2)
   have hδ0 : 0 < δ := lt_min (div_pos (lt_min (div_pos hα_star.1 (by norm_num)) (div_pos (sub_pos.mpr hα_star.2) (by norm_num))) (by norm_num)) (by norm_num)
+  have hδ_le_half : δ ≤ 1 / 2 := min_le_right _ _
+  have h_inv_δ_ge1 : 1 ≤ 1 / δ := (one_le_div hδ0).mpr (by linarith [hδ_le_half])
+  have hlog1_nn : 0 ≤ Real.log (1 / δ) := Real.log_nonneg h_inv_δ_ge1
   let C_mid : ℝ := C_up + C_err1 * (1 + δ_star / 2)
   let C_z : ℝ := ∑' k : ℕ, (1 : ℝ) / (k + 1 : ℝ) ^ 2
-  have hCz_pos : 0 < C_z := tsum_pos summable_one_div_sq_nat (fun _ => by positivity) 0 (by positivity)
+  have hCz_pos : 0 < C_z := lt_of_lt_of_le zero_lt_one (by simpa using summable_one_div_sq_nat.le_tsum 0 (fun _ _ => by positivity))
   let C_small_0 : ℝ := 5 * (4 + Real.log (1 / δ) + 1 / δ + 2) +
     (1 / Real.pi ^ 2) * ((4 + Real.log (1 / δ)) * 72 * C_z + 192 * C_z + 4) + 1
   let C_small_1 : ℝ := 5 + 72 * C_z / Real.pi ^ 2 + 1
@@ -730,9 +738,6 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   have hΔ_pos : 0 < Δ := by linarith
   have hlogΔ_ge : Real.log 2 ≤ Real.log Δ := Real.log_le_log (by norm_num) hΔ_ge_2
   have hlogΔ_pos : 0 < Real.log Δ := lt_of_lt_of_le hlog2_pos hlogΔ_ge
-  have hδ_le_half : δ ≤ 1 / 2 := min_le_right _ _
-  have h_inv_δ_ge1 : 1 ≤ 1 / δ := (one_le_div hδ0).mpr (by linarith [hδ_le_half])
-  have hlog1_nn : 0 ≤ Real.log (1 / δ) := Real.log_nonneg h_inv_δ_ge1
   have h_na_lb : ∀ n : ℤ, δ ≤ |(n : ℝ) + α| := by
     intro n
     have hα1 : δ ≤ α := by
@@ -762,8 +767,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         have h1 : 4 / (((n : ℝ) + α) / Δ) ^ 2 ≤ 4 := by
           have : 1 ≤ (((n : ℝ) + α) / Δ) ^ 2 := by rw [← sq_abs]; nlinarith
           exact div_le_self (by norm_num) this
-        have hlog1 : 0 ≤ Real.log (1 / δ) := Real.log_nonneg ((one_le_div hδ0).mpr (by linarith [min_le_right (δ_star / 2) (1 / 2)]))
-        linarith
+        linarith [hlog1_nn]
       · have h_abs_pos : 0 < |(n : ℝ) + α| := lt_of_lt_of_le hδ0 (h_na_lb n)
         have hu0 : 0 < |((n : ℝ) + α) / Δ| := by rw [abs_div, abs_of_pos hΔ_pos]; exact div_pos h_abs_pos hΔ_pos
         have hbd := kernelK_bound_small θ hu0 h.le
@@ -771,7 +775,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have heq : 1 / |((n : ℝ) + α) / Δ| = (1 / |(n : ℝ) + α|) * Δ := by
             rw [abs_div, abs_of_pos hΔ_pos]; field_simp [h_abs_pos.ne', hΔ_pos.ne']
           rw [heq, Real.log_mul (by positivity) hΔ_pos.ne']
-          gcongr; exact div_le_div_of_nonneg_left zero_le_one hδ0 (h_na_lb n)
+          exact add_le_add_right (Real.log_le_log (by positivity) (div_le_div_of_nonneg_left zero_le_one hδ0 (h_na_lb n))) _
         linarith
     have hFd_bd : ∀ n : ℤ, |rescaledFDeriv θ Δ (n + α)| ≤ 1 / |(n : ℝ) + α| + 2 / Δ :=
       diffB_rescaledFDeriv_bd θ Δ α δ hΔ_ge_1 hδ0 h_na_lb
@@ -1043,7 +1047,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     filter_upwards with x
     rw [Real.norm_eq_abs, ← div_eq_mul_inv, le_div_iff₀' (by positivity : 0 < 1 + x ^ 2)]
     exact h_sup x
-  refine ⟨h_sup, h_int, diffB_L1_bound θ Δ α C_small C_mid C_L1 hΔ_ge_1 hC_small_nn hC_mid_nn rfl h_small_y h_large_x h_int.abs⟩
+  refine ⟨h_sup, h_int, diffB_L1_bound θ Δ α C_small C_mid C_L1 hΔ_ge_2 hC_small_nn hC_mid_nn rfl h_small_y h_large_x h_int.abs⟩
 
 
 end PolarEvaluation
