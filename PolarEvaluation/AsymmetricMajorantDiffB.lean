@@ -414,6 +414,72 @@ private lemma diffB_f_inv_sum (F5 : Finset ℤ) (hF5 : F5 = Finset.Icc (-2) 2)
             (hf_inv_neg.sum_le_tsum sN (fun k _ => hf_nn (-↑k)))
   exact (le_of_tendsto_of_tendsto' hf_inv_s.hasSum tendsto_const_nhds h_fin).trans (by linarith)
 
+private lemma diffB_h_sup (θ Δ α C_small C_mid C_sup : ℝ)
+    (hΔ_pos : 0 < Δ) (hΔ_ge_2 : 2 ≤ Δ)
+    (hC_mid_nn : 0 ≤ C_mid)
+    (hC_sup_1 : 2 * C_small ≤ C_sup)
+    (hC_sup_2 : (2 * C_mid + 8) / Real.log 2 + 2 ≤ C_sup)
+    (h_small_y : ∀ y : ℝ, |y| ≤ 1 → |vaalerInterpolant θ Δ α y| ≤ C_small * Real.log Δ)
+    (h_large_x : ∀ x : ℝ, 1 ≤ |Δ * x| → |majorantM θ Δ α x - kernelK θ x| ≤ C_mid / (Δ * x) ^ 2) :
+    ∀ x : ℝ, (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_sup * Real.log Δ := by
+  have hlog2_pos : 0 < Real.log 2 := Real.log_pos (by norm_num)
+  have hlogΔ_ge : Real.log 2 ≤ Real.log Δ := Real.log_le_log (by norm_num) hΔ_ge_2
+  have hlogΔ_pos : 0 < Real.log Δ := lt_of_lt_of_le hlog2_pos hlogΔ_ge
+  intro x
+  rcases le_or_gt |Δ * x| 1 with hx | hx
+  · have hx_x : |x| ≤ 1 := by rw [abs_mul, abs_of_pos hΔ_pos] at hx; nlinarith [abs_nonneg x]
+    have hx2 : 1 + x ^ 2 ≤ 2 := by rw [← sq_abs x]; nlinarith [abs_nonneg x]
+    have hm := h_small_y (Δ * x) hx
+    unfold majorantM
+    calc (1 + x ^ 2) * |vaalerInterpolant θ Δ α (Δ * x)|
+        ≤ 2 * (C_small * Real.log Δ) := mul_le_mul hx2 hm (abs_nonneg _) zero_le_two
+      _ = (2 * C_small) * Real.log Δ := by ring
+      _ ≤ C_sup * Real.log Δ := by gcongr
+  · have h_m_diff := h_large_x x hx.le
+    have hx_ne : x ≠ 0 := by intro h0; subst h0; simp at hx; linarith
+    rcases le_or_gt 1 |x| with hx1 | hx1
+    · have hK := kernelK_bound_large θ hx1
+      have hM : |majorantM θ Δ α x| ≤ (C_mid + 4) / x ^ 2 := by
+        have htri : |majorantM θ Δ α x| ≤ |majorantM θ Δ α x - kernelK θ x| + |kernelK θ x| := by
+          simpa only [sub_add_cancel] using abs_add_le (majorantM θ Δ α x - kernelK θ x) (kernelK θ x)
+        have h_dx : C_mid / (Δ * x) ^ 2 ≤ C_mid / x ^ 2 := by gcongr; nlinarith [sq_nonneg x]
+        linarith [show (C_mid + 4) / x ^ 2 = C_mid / x ^ 2 + 4 / x ^ 2 by ring]
+      have hx2 : 1 + x ^ 2 ≤ 2 * x ^ 2 := by rw [← sq_abs x]; nlinarith
+      calc (1 + x ^ 2) * |majorantM θ Δ α x|
+          ≤ (2 * x ^ 2) * ((C_mid + 4) / x ^ 2) := mul_le_mul hx2 hM (abs_nonneg _) (by positivity)
+        _ = 2 * C_mid + 8 := by field_simp [hx_ne]; ring
+        _ ≤ ((2 * C_mid + 8) / Real.log 2 + 2) * Real.log Δ := by
+            have h1 : 1 ≤ Real.log Δ / Real.log 2 := (one_le_div hlog2_pos).mpr hlogΔ_ge
+            calc 2 * C_mid + 8 = (2 * C_mid + 8) * 1 := (mul_one _).symm
+              _ ≤ (2 * C_mid + 8) * (Real.log Δ / Real.log 2) := by gcongr; positivity
+              _ = ((2 * C_mid + 8) / Real.log 2) * Real.log Δ := by ring
+              _ ≤ ((2 * C_mid + 8) / Real.log 2 + 2) * Real.log Δ := by gcongr; linarith
+        _ ≤ C_sup * Real.log Δ := by gcongr
+    · have h_abs_pos : 0 < |x| := abs_pos.mpr hx_ne
+      have hK := kernelK_bound_small θ h_abs_pos hx1.le
+      have h_log_x : Real.log (1 / |x|) ≤ Real.log Δ := by
+        rw [abs_mul, abs_of_pos hΔ_pos] at hx
+        have h1 : 1 / |x| < Δ := by rw [div_lt_iff₀ h_abs_pos]; linarith
+        exact Real.log_le_log (by positivity) h1.le
+      have h_dx : 1 ≤ (Δ * x) ^ 2 := by rw [← sq_abs (Δ * x)]; nlinarith
+      have hM : |majorantM θ Δ α x| ≤ C_mid + 4 + Real.log Δ := by
+        have htri : |majorantM θ Δ α x| ≤ |majorantM θ Δ α x - kernelK θ x| + |kernelK θ x| := by
+          simpa only [sub_add_cancel] using abs_add_le (majorantM θ Δ α x - kernelK θ x) (kernelK θ x)
+        have h1 : C_mid / (Δ * x) ^ 2 ≤ C_mid := div_le_self (by positivity) h_dx
+        linarith
+      have hx2 : 1 + x ^ 2 ≤ 2 := by rw [← sq_abs x]; nlinarith [abs_nonneg x]
+      calc (1 + x ^ 2) * |majorantM θ Δ α x|
+          ≤ 2 * (C_mid + 4 + Real.log Δ) := mul_le_mul hx2 hM (abs_nonneg _) zero_le_two
+        _ = (2 * C_mid + 8) + 2 * Real.log Δ := by ring
+        _ ≤ ((2 * C_mid + 8) / Real.log 2 + 2) * Real.log Δ := by
+            have h1 : 1 ≤ Real.log Δ / Real.log 2 := (one_le_div hlog2_pos).mpr hlogΔ_ge
+            have h2 : 2 * C_mid + 8 ≤ ((2 * C_mid + 8) / Real.log 2) * Real.log Δ := by
+              calc 2 * C_mid + 8 = (2 * C_mid + 8) * 1 := (mul_one _).symm
+                _ ≤ (2 * C_mid + 8) * (Real.log Δ / Real.log 2) := by gcongr; positivity
+                _ = ((2 * C_mid + 8) / Real.log 2) * Real.log Δ := by ring
+            linarith
+        _ ≤ C_sup * Real.log Δ := by gcongr
+
 lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ (Δ₃ C_sup C_L1 : ℝ), Δ₃ ≥ 2 ∧ C_sup > 0 ∧ C_L1 > 0 ∧
       ∀ (Δ α : ℝ), Δ ≥ Δ₃ → α ∈ Set.Ioo (0 : ℝ) 1 →
@@ -722,10 +788,10 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           _ = (1 / Real.pi ^ 2) * (K_tail * ∑' n : ℤ, f_inv_sq n + ∑' n : ℤ, f_mid n) := by
               rw [tsum_mul_left, Summable.tsum_add (hf_inv_s.mul_left K_tail) hf_mid_s, tsum_mul_left]
           _ ≤ (1 / Real.pi ^ 2) * (K_tail * (8 * C_z) + 4) := by
+              have hK_nn : 0 ≤ K_tail := by
+                have h1 := Real.log_nonneg ((one_le_div hδ0).mpr (by linarith [min_le_right (δ_star / 2) (1 / 2)]))
+                dsimp only [K_tail]; linarith
               gcongr
-              dsimp only [K_tail]
-              have := Real.log_nonneg ((one_le_div hδ0).mpr (by linarith [min_le_right (δ_star / 2) (1 / 2)]))
-              positivity
           _ = (1 / Real.pi ^ 2) * (((4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24) * 8 * C_z + 4) := by
               dsimp only [K_tail]; ring
       rw [h_split]
@@ -733,7 +799,11 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have h_tot_le : 5 * (4 + Real.log (1 / δ) + Real.log Δ + 1 / δ + 2) +
           (1 / Real.pi ^ 2) * (((4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24) * 8 * C_z + 4) ≤
           C_small_0 + C_small_1 * Real.log Δ := by
-        dsimp only [C_small_0, C_small_1]; linarith
+        have h_diff_eq : C_small_0 + C_small_1 * Real.log Δ -
+            (5 * (4 + Real.log (1 / δ) + Real.log Δ + 1 / δ + 2) +
+              (1 / Real.pi ^ 2) * (((4 + Real.log (1 / δ) + Real.log Δ) * 9 + 24) * 8 * C_z + 4)) =
+            1 + Real.log Δ := by dsimp only [C_small_0, C_small_1]; ring
+        linarith [hlogΔ_pos]
       exact (add_le_add h_F5_bd h_tail_sum).trans (h_tot_le.trans (h_to_Csmall C_small_0 C_small_1 le_rfl le_rfl))
   have h_large_x : ∀ x : ℝ, 1 ≤ |Δ * x| →
       |majorantM θ Δ α x - kernelK θ x| ≤ C_mid / (Δ * x) ^ 2 := by
@@ -742,13 +812,14 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_diff := (h_diff_bd Δ α hΔ_ge_Δ₂ hα hα_near hsumm_b hsum0).2 (Δ * x) hx1
     have h_j := hJ_up (Δ * x) hx1
     have h_sin1 : Real.sin (Real.pi * (Δ * x - α)) ^ 2 ≤ 1 := by
-      have := Real.abs_sin_le_one (Real.pi * (Δ * x - α))
-      nlinarith [sq_abs (Real.sin (Real.pi * (Δ * x - α)))]
+      have h_abs := Real.abs_sin_le_one (Real.pi * (Δ * x - α))
+      rw [← sq_abs (Real.sin (Real.pi * (Δ * x - α)))]
+      nlinarith [abs_nonneg (Real.sin (Real.pi * (Δ * x - α)))]
     have h_exp_le : Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) ≤ 1 := by
       have he := Real.pow_div_factorial_le_exp (2 * Real.pi * Δ) (by positivity) 2
       have hpi : 4 ≤ (2 * Real.pi) ^ 2 / 2 := by nlinarith [Real.two_le_pi]
       have h2 : Δ ^ 2 ≤ Real.exp (2 * Real.pi * Δ) := by nlinarith [sq_nonneg Δ]
-      rw [Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _)]
+      rw [show (-2 * Real.pi * Δ : ℝ) = -(2 * Real.pi * Δ) by ring, Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _)]
       linarith
     have h_res : rescaledF θ Δ (Δ * x) = kernelK θ x := by
       unfold rescaledF; congr 1; field_simp [hΔ_pos.ne']
@@ -757,69 +828,16 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         ≤ |vaalerInterpolant θ Δ α (Δ * x) - kernelK θ x -
             Real.sin (Real.pi * (Δ * x - α)) ^ 2 * limitingJ (Δ * x) θ| +
           |Real.sin (Real.pi * (Δ * x - α)) ^ 2 * limitingJ (Δ * x) θ| := by
-            simpa using abs_add_le (vaalerInterpolant θ Δ α (Δ * x) - kernelK θ x -
+            simpa only [sub_add_cancel] using abs_add_le (vaalerInterpolant θ Δ α (Δ * x) - kernelK θ x -
               Real.sin (Real.pi * (Δ * x - α)) ^ 2 * limitingJ (Δ * x) θ)
               (Real.sin (Real.pi * (Δ * x - α)) ^ 2 * limitingJ (Δ * x) θ)
       _ ≤ Real.sin (Real.pi * (Δ * x - α)) ^ 2 * (C_err1 * (Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) + |α - α_star|) / (Δ * x) ^ 2) +
           Real.sin (Real.pi * (Δ * x - α)) ^ 2 * |limitingJ (Δ * x) θ| := by
-            gcongr; rw [abs_mul, abs_of_nonneg (sq_nonneg _)]
+            rw [abs_mul, abs_of_nonneg (sq_nonneg _)]; gcongr
       _ ≤ 1 * (C_err1 * (1 + δ_star / 2) / (Δ * x) ^ 2) + 1 * (C_up / (Δ * x) ^ 2) := by gcongr
       _ = C_mid / (Δ * x) ^ 2 := by dsimp only [C_mid]; ring
-  have h_sup : ∀ x : ℝ, (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_sup * Real.log Δ := by
-    intro x
-    rcases le_or_gt |Δ * x| 1 with hx | hx
-    · have hx_x : |x| ≤ 1 := by rw [abs_mul, abs_of_pos hΔ_pos] at hx; nlinarith [abs_nonneg x]
-      have hx2 : 1 + x ^ 2 ≤ 2 := by rw [← sq_abs x]; nlinarith [abs_nonneg x]
-      have hm := h_small_y (Δ * x) hx
-      unfold majorantM
-      calc (1 + x ^ 2) * |vaalerInterpolant θ Δ α (Δ * x)|
-          ≤ 2 * (C_small * Real.log Δ) := mul_le_mul hx2 hm (abs_nonneg _) zero_le_two
-        _ = (2 * C_small) * Real.log Δ := by ring
-        _ ≤ C_sup * Real.log Δ := by gcongr; exact le_max_left _ _
-    · have h_m_diff := h_large_x x hx.le
-      have hx_ne : x ≠ 0 := by intro h0; subst h0; simp at hx; linarith
-      rcases le_or_gt 1 |x| with hx1 | hx1
-      · have hK := kernelK_bound_large θ hx1
-        have hM : |majorantM θ Δ α x| ≤ (C_mid + 4) / x ^ 2 := by
-          have htri : |majorantM θ Δ α x| ≤ |majorantM θ Δ α x - kernelK θ x| + |kernelK θ x| := by
-            simpa using abs_add_le (majorantM θ Δ α x - kernelK θ x) (kernelK θ x)
-          have h_dx : C_mid / (Δ * x) ^ 2 ≤ C_mid / x ^ 2 := by gcongr; nlinarith [sq_nonneg x]
-          linarith [show (C_mid + 4) / x ^ 2 = C_mid / x ^ 2 + 4 / x ^ 2 by ring]
-        have hx2 : 1 + x ^ 2 ≤ 2 * x ^ 2 := by rw [← sq_abs x]; nlinarith
-        calc (1 + x ^ 2) * |majorantM θ Δ α x|
-            ≤ (2 * x ^ 2) * ((C_mid + 4) / x ^ 2) := mul_le_mul hx2 hM (abs_nonneg _) (by positivity)
-          _ = 2 * C_mid + 8 := by field_simp [hx_ne]; ring
-          _ ≤ ((2 * C_mid + 8) / Real.log 2 + 2) * Real.log Δ := by
-              have h1 : 1 ≤ Real.log Δ / Real.log 2 := (one_le_div hlog2_pos).mpr hlogΔ_ge
-              calc 2 * C_mid + 8 = (2 * C_mid + 8) * 1 := (mul_one _).symm
-                _ ≤ (2 * C_mid + 8) * (Real.log Δ / Real.log 2) := by gcongr; positivity
-                _ = ((2 * C_mid + 8) / Real.log 2) * Real.log Δ := by ring
-                _ ≤ ((2 * C_mid + 8) / Real.log 2 + 2) * Real.log Δ := by gcongr; linarith
-          _ ≤ C_sup * Real.log Δ := by gcongr; exact le_max_right _ _
-      · have h_abs_pos : 0 < |x| := abs_pos.mpr hx_ne
-        have hK := kernelK_bound_small θ h_abs_pos hx1.le
-        have h_log_x : Real.log (1 / |x|) ≤ Real.log Δ := by
-          rw [abs_mul, abs_of_pos hΔ_pos] at hx
-          have h1 : 1 / |x| < Δ := by rw [div_lt_iff₀ h_abs_pos]; linarith
-          exact Real.log_le_log (by positivity) h1.le
-        have h_dx : 1 ≤ (Δ * x) ^ 2 := by rw [← sq_abs (Δ * x)]; nlinarith
-        have hM : |majorantM θ Δ α x| ≤ C_mid + 4 + Real.log Δ := by
-          have htri : |majorantM θ Δ α x| ≤ |majorantM θ Δ α x - kernelK θ x| + |kernelK θ x| := by
-            simpa using abs_add_le (majorantM θ Δ α x - kernelK θ x) (kernelK θ x)
-          have h1 : C_mid / (Δ * x) ^ 2 ≤ C_mid := div_le_self (by positivity) h_dx
-          linarith
-        have hx2 : 1 + x ^ 2 ≤ 2 := by rw [← sq_abs x]; nlinarith [abs_nonneg x]
-        calc (1 + x ^ 2) * |majorantM θ Δ α x|
-            ≤ 2 * (C_mid + 4 + Real.log Δ) := mul_le_mul hx2 hM (abs_nonneg _) zero_le_two
-          _ = (2 * C_mid + 8) + 2 * Real.log Δ := by ring
-          _ ≤ ((2 * C_mid + 8) / Real.log 2 + 2) * Real.log Δ := by
-              have h1 : 1 ≤ Real.log Δ / Real.log 2 := (one_le_div hlog2_pos).mpr hlogΔ_ge
-              have h2 : 2 * C_mid + 8 ≤ ((2 * C_mid + 8) / Real.log 2) * Real.log Δ := by
-                calc 2 * C_mid + 8 = (2 * C_mid + 8) * 1 := (mul_one _).symm
-                  _ ≤ (2 * C_mid + 8) * (Real.log Δ / Real.log 2) := by gcongr; positivity
-                  _ = ((2 * C_mid + 8) / Real.log 2) * Real.log Δ := by ring
-              linarith
-          _ ≤ C_sup * Real.log Δ := by gcongr; exact le_max_right _ _
+  have h_sup : ∀ x : ℝ, (1 + x ^ 2) * |majorantM θ Δ α x| ≤ C_sup * Real.log Δ :=
+    diffB_h_sup θ Δ α C_small C_mid C_sup hΔ_pos hΔ_ge_2 (by positivity) (le_max_left _ _) (le_max_right _ _) h_small_y h_large_x
   have h_cont : Continuous (fun x : ℝ => majorantM θ Δ α x) := by
     obtain ⟨⟨h_diff, _⟩, h_re⟩ := majorantEntire_props θ Δ α hΔ_ge_1 hα hsumm_b
     have h_eq : (fun x : ℝ => majorantM θ Δ α x) = fun x : ℝ => (majorantEntire θ Δ α x).re := by
@@ -886,7 +904,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         · have : 1 < Δ * x := by rw [← div_lt_iff₀' hΔ_pos]; linarith [hx.1]
           rw [abs_of_pos (by linarith)]; linarith
       have h_tri : |majorantM θ Δ α x| ≤ |majorantM θ Δ α x - kernelK θ x| + |kernelK θ x| := by
-        simpa using abs_add_le (majorantM θ Δ α x - kernelK θ x) (kernelK θ x)
+        simpa only [sub_add_cancel] using abs_add_le (majorantM θ Δ α x - kernelK θ x) (kernelK θ x)
       exact h_tri.trans (add_le_add_right (h_large_x x h_dx) _)
     have h_1_div_le : 1 / Δ < 1 := by rw [div_lt_one hΔ_pos]; linarith
     have h_c_pos : ∫ x in Set.Ioo (1 / Δ) 1, C_mid / (Δ * x) ^ 2 ≤ C_mid := by
@@ -945,7 +963,7 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hK := kernelK_bound_large θ hx1
       have hM : |majorantM θ Δ α x| ≤ (C_mid + 4) / x ^ 2 := by
         have htri : |majorantM θ Δ α x| ≤ |majorantM θ Δ α x - kernelK θ x| + |kernelK θ x| := by
-          simpa using abs_add_le (majorantM θ Δ α x - kernelK θ x) (kernelK θ x)
+          simpa only [sub_add_cancel] using abs_add_le (majorantM θ Δ α x - kernelK θ x) (kernelK θ x)
         have h_dx2 : C_mid / (Δ * x) ^ 2 ≤ C_mid / x ^ 2 := by gcongr; nlinarith [sq_nonneg x]
         linarith [show (C_mid + 4) / x ^ 2 = C_mid / x ^ 2 + 4 / x ^ 2 by ring]
       have hx2 : 1 + x ^ 2 ≤ 2 * x ^ 2 := by rw [← sq_abs x]; nlinarith
