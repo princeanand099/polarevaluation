@@ -358,7 +358,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have hcos : Complex.cos (θ + Complex.I * Real.pi * v) ≠ 0 := cos_ne_zero_of_abs_lt hθ
     have h_euler : Complex.sin (θ + Complex.I * Real.pi * v) - Complex.I * Complex.cos (θ + Complex.I * Real.pi * v) =
         -Complex.I * Complex.exp (Complex.I * (θ + Complex.I * Real.pi * v)) := by
-      rw [Complex.exp_mul_I]; ring_nf; simp [Complex.I_sq]; ring
+      rw [mul_comm Complex.I, Complex.exp_mul_I]; ring_nf; simp [Complex.I_sq]; ring
     field_simp [hcos]
     linear_combination (Real.pi : ℂ) * h_euler
   have h_rem_bd : ∀ v : ℝ, 0 ≤ v → ‖rem_fn v‖ ≤ (2 * Real.pi / Real.cos θ) * Real.exp (-2 * Real.pi * v) := by
@@ -392,7 +392,8 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       by_cases hv0 : v = 0
       · subst hv0
         have heq : 1 + Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * (0 : ℝ))) =
-            1 + Complex.exp (Complex.I * (2 * θ)) := by ring_nf
+            1 + Complex.exp (((2 * θ : ℝ) : ℂ) * Complex.I) := by
+          simp only [Complex.ofReal_zero, mul_zero, add_zero]; push_cast; ring
         rw [heq, Complex.exp_mul_I]
         simp only [Complex.add_re, Complex.one_re, Complex.cos_ofReal_re, Complex.mul_re, Complex.I_re,
           Complex.sin_ofReal_im, Complex.I_im, mul_zero, sub_zero, add_zero]
@@ -412,13 +413,14 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           Complex.abs_re_le_norm (Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * v)))]
     have hG_deriv : ∀ v ∈ Set.Ioi (0 : ℝ), HasDerivAt G (-(Complex.exp (-Complex.I * θ) * rem_fn v).im) v := by
       intro v hv
+      have ha : HasDerivAt (fun t : ℝ => (θ : ℂ) + Complex.I * Real.pi * t) (Complex.I * Real.pi) v :=
+        ((hasDerivAt_const v (θ : ℂ)).add ((hasDerivAt_id v).ofReal_comp.const_mul (Complex.I * Real.pi))).congr_deriv
+          (by simp only [zero_add, mul_one])
+      have hd1 : HasDerivAt (fun t : ℝ => 2 * Complex.I * ((θ : ℂ) + Complex.I * Real.pi * t)) (-2 * Real.pi : ℂ) v :=
+        (ha.const_mul (2 * Complex.I)).congr_deriv (by ring_nf; simp [Complex.I_sq]; ring)
       have h_inner : HasDerivAt (fun t : ℝ => 1 + Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * t)))
-          ((-2 * Real.pi : ℂ) * Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * v))) v := by
-        have hd1 : HasDerivAt (fun t : ℝ => 2 * Complex.I * ((θ : ℂ) + Complex.I * Real.pi * t)) (-2 * Real.pi : ℂ) v := by
-          have ha : HasDerivAt (fun t : ℝ => (θ : ℂ) + Complex.I * Real.pi * t) (Complex.I * Real.pi) v := by
-            simpa using (hasDerivAt_const v (θ : ℂ)).add ((hasDerivAt_id v).ofReal_comp.const_mul (Complex.I * Real.pi))
-          exact (ha.const_mul (2 * Complex.I)).congr_deriv (by ring_nf; simp [Complex.I_sq]; ring)
-        simpa [mul_comm] using (hasDerivAt_const v (1 : ℂ)).add hd1.cexp
+          ((-2 * Real.pi : ℂ) * Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * v))) v :=
+        ((hasDerivAt_const v (1 : ℂ)).add hd1.cexp).congr_deriv (by simp only [zero_add]; ring)
       have h_log : HasDerivAt (fun t : ℝ => Complex.log (1 + Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * t))))
           (((-2 * Real.pi : ℂ) * Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * v))) /
             (1 + Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * v)))) v :=
@@ -468,8 +470,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         exact h_rem_bd v hv.le
     have h_cont : ContinuousAt G 0 := by
       refine (Complex.imCLM.continuous.continuousAt.comp (continuousAt_const.mul ?_)).neg
-      refine (Complex.hasDerivAt_log (Complex.mem_slitPlane_iff.mpr (Or.inl (h_slit 0 le_rfl)))).continuousAt.comp ?_
-      fun_prop
+      exact (Complex.continuousAt_clog (Complex.mem_slitPlane_iff.mpr (Or.inl (h_slit 0 le_rfl)))).comp (by fun_prop)
     have hG_val : G 0 = -2 * envelopeC θ := by
       dsimp only [G]
       have heq : 1 + Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * (0 : ℝ))) =
@@ -479,7 +480,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           Complex.exp_add]
         have hcos_def : Complex.cos (θ : ℂ) = (Complex.exp ((θ : ℂ) * Complex.I) + Complex.exp (-(θ : ℂ) * Complex.I)) / 2 := by
           unfold Complex.cos; ring_nf
-        rw [← Complex.ofReal_cos, hcos_def]
+        rw [Complex.ofReal_mul, Complex.ofReal_ofNat, ← Complex.ofReal_cos, hcos_def]
         push_cast; rw [Complex.exp_mul_I, show -(θ : ℂ) * Complex.I = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring, Complex.exp_mul_I]; simp [Complex.cos_neg, Complex.sin_neg]
         ring_nf; simp [Complex.I_sq]; ring
       rw [heq, Complex.log_exp (by
@@ -518,7 +519,8 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hG_eq : G = fun v : ℝ => -(Complex.imCLM (Complex.exp (-Complex.I * θ) * Complex.I *
           Complex.log (1 + Complex.exp (2 * Complex.I * (θ + Complex.I * Real.pi * v))))) := rfl
       rw [hG_eq]
-      simpa using (Complex.imCLM.continuous.continuousAt.tendsto.comp (tendsto_const_nhds.mul h_log1)).neg
+      simpa using (Complex.imCLM.continuous.continuousAt.tendsto.comp
+        ((tendsto_const_nhds (x := Complex.exp (-Complex.I * θ) * Complex.I)).mul h_log1)).neg
     have hres := integral_Ioi_of_hasDerivAt_of_tendsto h_cont.continuousWithinAt hG_deriv h_int_r hG_inf
     rw [hG_val] at hres
     linarith
@@ -548,7 +550,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
           Complex.exp_mul_I]
         simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
-        linear_combination -(Real.sin θ * Real.pi : ℂ) * Complex.I_sq
+        ring_nf; simp [Complex.I_sq]; ring
       simp_rw [hexp]
       simp only [Complex.add_im, Complex.ofReal_im, Complex.mul_im, Complex.I_re, Complex.I_im,
         Complex.ofReal_re, mul_zero, mul_one, add_zero, zero_add]
@@ -745,10 +747,10 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
             (2 * Real.pi / Real.cos θ) * (1 / (2 * Real.pi)) * (Δ * Real.exp (-2 * Real.pi * Δ)) +
             (Real.pi ^ 2 / c_sin ^ 2) * |α - α_star| +
             (2 * Real.pi / Real.cos θ) * (Δ * Real.exp (-2 * Real.pi * Δ)) := by
-          calc _ = (2 * Real.pi / Real.cos θ) * (1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * Δ) +
-                  Δ * ((Real.pi ^ 2 / c_sin ^ 2) * |α - α_star| * Real.exp (-2 * Real.pi * Δ)) +
-                  (2 * Real.pi / Real.cos θ) * (Δ * Real.exp (-2 * Real.pi * Δ)) := by ring
-            _ ≤ _ := by gcongr
+          rw [mul_add]
+          have h_mul2 : Δ * ((2 * Real.pi / Real.cos θ) * Real.exp (-2 * Real.pi * Δ)) =
+              (2 * Real.pi / Real.cos θ) * (Δ * Real.exp (-2 * Real.pi * Δ)) := by ring
+          linarith
         have h_s1 : (Real.pi ^ 2 / c_sin ^ 2) * |α - α_star| * (1 / (2 * Real.pi)) ≤
             (Real.pi ^ 2 / c_sin ^ 2 * (1 / (2 * Real.pi))) * (Δ * Real.exp (-2 * Real.pi * Δ) + |α - α_star|) := by
           rw [mul_assoc _ |α - α_star| _, mul_comm |α - α_star| _, ← mul_assoc]
