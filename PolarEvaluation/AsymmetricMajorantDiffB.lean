@@ -38,7 +38,8 @@ lemma sincPi_deriv_bound (R : ℝ) (hR : 0 ≤ R) :
       have hsin_d : HasDerivAt (fun w : ℂ => Complex.sin ((Real.pi : ℂ) * w))
           (Complex.cos ((Real.pi : ℂ) * u) * (Real.pi : ℂ)) u :=
         (Complex.hasDerivAt_sin ((Real.pi : ℂ) * u)).comp u hpw
-      have hq := hsin_d.div hpw (mul_ne_zero hpi hu_ne)
+      have hq : HasDerivAt (fun w : ℂ => Complex.sin ((Real.pi : ℂ) * w) / ((Real.pi : ℂ) * w)) _ u :=
+        hsin_d.div hpw (mul_ne_zero hpi hu_ne)
       rw [hq.deriv]
       field_simp [hpi, hu_ne]; ring
     have h_sin_bd : ∀ w : ℂ, ‖Complex.sin w‖ ≤ Real.exp |w.im| := by
