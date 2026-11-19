@@ -35,7 +35,7 @@ lemma sincPi_deriv_bound (R : ℝ) (hR : 0 ≤ R) :
       have hpw : HasDerivAt (fun w : ℂ => (Real.pi : ℂ) * w) (Real.pi : ℂ) u := by
         simpa using (hasDerivAt_id u).const_mul (Real.pi : ℂ)
       have hpi : (Real.pi : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr Real.pi_ne_zero
-      have hq := (hpw.sin).div hpw (by dsimp only; exact mul_ne_zero hpi hu_ne)
+      have hq := HasDerivAt.div (f := fun w : ℂ => Complex.sin ((Real.pi : ℂ) * w)) (g := fun w : ℂ => (Real.pi : ℂ) * w) hpw.sin hpw (mul_ne_zero hpi hu_ne)
       rw [hq.deriv]
       field_simp [hpi, hu_ne]; ring
     have h_sin_bd : ∀ w : ℂ, ‖Complex.sin w‖ ≤ Real.exp |w.im| := by
@@ -491,7 +491,7 @@ private lemma diffB_h_sup (θ Δ α C_small C_mid C_sup : ℝ)
             linarith
         _ ≤ C_sup * Real.log Δ := by gcongr
 
-private lemma integral_univ_inv_one_add_sq : ∫ x : ℝ, (1 + x ^ 2)⁻¹ = Real.pi := by
+lemma integral_univ_inv_one_add_sq : ∫ x : ℝ, (1 + x ^ 2)⁻¹ = Real.pi := by
   have h_tend := intervalIntegral_tendsto_integral integrable_inv_one_add_sq tendsto_neg_atTop_atBot tendsto_id
   have h_eq : (fun R : ℝ => ∫ x in (-R)..id R, (1 + x ^ 2)⁻¹) = fun R : ℝ => Real.arctan R - Real.arctan (-R) := by
     ext R; exact integral_inv_one_add_sq
@@ -790,6 +790,7 @@ private lemma diffB_small_y (θ Δ α δ C_z C_small_0 C_small_1 C_small : ℝ)
       linarith
   have hFd_bd : ∀ n : ℤ, |rescaledFDeriv θ Δ (n + α)| ≤ 1 / |(n : ℝ) + α| + 2 / Δ :=
     diffB_rescaledFDeriv_bd θ Δ α δ hΔ_ge_1 hδ0 h_na_lb
+  have hCz_nn : 0 ≤ C_z := by rw [hCz]; exact tsum_nonneg (fun _ => by positivity)
   have h_to_Csmall : ∀ A B : ℝ, A ≤ C_small_0 → B ≤ C_small_1 → A + B * Real.log Δ ≤ C_small * Real.log Δ := by
     intro A B hA hB
     have h1 : A + B * Real.log Δ ≤ C_small_0 + C_small_1 * Real.log Δ := by gcongr
@@ -803,7 +804,6 @@ private lemma diffB_small_y (θ Δ α δ C_z C_small_0 C_small_1 C_small : ℝ)
   · obtain ⟨n, rfl⟩ := hlat
     unfold vaalerInterpolant
     rw [if_pos ⟨n, rfl⟩]
-    have hCz_nn : 0 ≤ C_z := by rw [hCz]; exact tsum_nonneg (fun _ => by positivity)
     have h_le_c0 : 4 + Real.log (1 / δ) ≤ C_small_0 := by
       have h_rem : 0 ≤ (1 / Real.pi ^ 2) * ((4 + Real.log (1 / δ)) * 72 * C_z + 192 * C_z + 4) := by positivity
       have h_inv_δ : 0 ≤ 1 / δ := by positivity
@@ -1104,6 +1104,5 @@ lemma majorantM_sup_and_L1_bounds (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     rw [Real.norm_eq_abs, ← div_eq_mul_inv, le_div_iff₀' (by positivity : 0 < 1 + x ^ 2)]
     exact h_sup x
   refine ⟨h_sup, h_int, diffB_L1_bound θ Δ α C_small C_mid C_L1 hΔ_ge_2 hC_small_nn hC_mid_nn rfl h_small_y h_large_x h_int.abs⟩
-
 
 end PolarEvaluation
