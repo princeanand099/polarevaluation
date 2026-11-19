@@ -8,8 +8,8 @@ open scoped FourierTransform
 
 namespace PolarEvaluation
 
-/-- **Theorem 1.6** (Asymmetric Beurling–Selberg majorant `M_{θ,Δ}`). -/
 set_option maxHeartbeats 800000 in
+/-- **Theorem 1.6** (Asymmetric Beurling–Selberg majorant `M_{θ,Δ}`). -/
 theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ (Δ₀ C_sup C_L1 C_err : ℝ), Δ₀ ≥ 1 ∧ C_sup > 0 ∧ C_L1 > 0 ∧ C_err > 0 ∧
       ∀ Δ ≥ Δ₀, ∃ (α : ℝ) (M_entire : ℂ → ℂ),
@@ -197,7 +197,7 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         ≤ (1 / Δ) * (C_eval * (Δ * Real.exp (-2 * Real.pi * Δ) + |α - α_star|)) :=
           mul_le_mul_of_nonneg_left h_ev (by positivity)
       _ ≤ (1 / Δ) * (C_eval * (Δ * Real.exp (-2 * Real.pi * Δ) + C_α * Δ * Real.exp (-2 * Real.pi * Δ))) :=
-          mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left (add_le_add_left hα_err _) hC_eval.le) (by positivity)
+          mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left (add_le_add le_rfl hα_err) hC_eval.le) (by positivity)
       _ = C_err * Real.exp (-2 * Real.pi * Δ) := by
           dsimp only [C_err]; field_simp [hΔ_pos.ne']
   exact ⟨α, majorantEntire θ Δ α, hα_mem, hM_type, hM_re, h_int_diff, h_sup, h_L1, h_ge_K, h_excess⟩
