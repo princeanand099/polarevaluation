@@ -18,7 +18,7 @@ lemma integral_inv_add_sq_R {c R : ℝ} (hR : 0 < R) :
   have h3 : ∫ x : ℝ, 1 / (1 + (x / R) ^ 2) = R * ∫ u : ℝ, 1 / (1 + u ^ 2) := by
     have h_sub := integral_comp_div (fun u : ℝ => 1 / (1 + u ^ 2)) R
     simpa [abs_of_pos hR] using h_sub
-  rw [h3, integral_inv_one_add_sq]
+  rw [h3]; simp_rw [one_div]; rw [integral_univ_inv_one_add_sq]
   field_simp [hR.ne']; ring
 
 lemma vaaler_integral_eq_tsum (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
@@ -763,6 +763,7 @@ lemma vaaler_integral_eq_tsum (θ Δ α : ℝ) (hθ : |θ| < Real.pi / 2)
   rw [hpois] at h_lhs
   linarith
 
+set_option maxHeartbeats 800000 in
 lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     ∃ (Δ₄ C_eval : ℝ), Δ₄ ≥ 1 ∧ C_eval > 0 ∧
       ∀ (Δ α : ℝ), Δ ≥ Δ₄ → α ∈ Set.Ioo (0 : ℝ) 1 →
@@ -1240,11 +1241,8 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
           have := abs_lt.mp hθ; exact ⟨by linarith, by linarith⟩)]
         have hexp : Complex.exp (-Complex.I * θ) = ((Real.cos θ : ℝ) : ℂ) - ((Real.sin θ : ℝ) : ℂ) * Complex.I := by
           rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
-
             Complex.exp_mul_I]
-
           simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
-
           ring
         rw [hexp]
         unfold envelopeC
@@ -1269,7 +1267,6 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       simpa [G] using (Complex.imCLM.continuousAt.tendsto.comp (tendsto_const_nhds.mul h_log1)).neg
     have hres := integral_Ioi_of_hasDerivAt_of_tendsto' hG_deriv h_int_r hG_0 hG_inf
     linarith
-  -- Now put all pieces together in h_sum_val!
   have h_int_cot : IntervalIntegrable (fun v : ℝ => (Complex.exp (-Complex.I * θ) * cot_fn v).im) volume 0 Δ := by
     refine (Complex.continuous_im.comp_continuousOn (continuousOn_const.mul ?_)).intervalIntegrable
     refine ContinuousOn.div (continuousOn_const.mul (Complex.continuous_cos.continuousOn.comp (by fun_prop) (fun _ _ => Set.mem_univ _)))
@@ -1294,11 +1291,8 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       have hexp : Complex.exp (-Complex.I * θ) * ((Real.pi : ℂ) * Complex.I) =
           ((Real.pi * Real.sin θ : ℝ) : ℂ) + ((Real.pi * Real.cos θ : ℝ) : ℂ) * Complex.I := by
         rw [show -Complex.I * (θ : ℂ) = ((-θ : ℝ) : ℂ) * Complex.I by push_cast; ring,
-
           Complex.exp_mul_I]
-
         simp [Complex.cos_neg, Complex.sin_neg, Complex.ofReal_cos, Complex.ofReal_sin]
-
         ring
         push_cast; ring_nf; simp [Complex.I_sq]; ring
       simp_rw [hexp]
@@ -1336,7 +1330,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_val : ∫ v in Set.Ioi (0 : ℝ), Real.exp (-2 * Real.pi * v) = 1 / (2 * Real.pi) := by
       have h_lim : Tendsto (fun v : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * v)) atTop (nhds 0) := by
         have h1 : Tendsto (fun v : ℝ => Real.exp (-(2 * Real.pi) * v)) atTop (nhds 0) :=
-          Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by positivity : -(2 * Real.pi) < 0))
+          Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by linarith [Real.pi_pos] : -(2 * Real.pi) < 0))
         simpa using h1.const_mul (-(1 / (2 * Real.pi)))
       have h_int : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi 0) := by
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi 0) :=
@@ -1373,12 +1367,13 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         exact h_rem_bd v hv.le
     have h_split : 2 * envelopeC θ = (∫ v in (0 : ℝ)..Δ, -(Complex.exp (-Complex.I * θ) * rem_fn v).im) +
         ∫ v in Set.Ioi Δ, -(Complex.exp (-Complex.I * θ) * rem_fn v).im := by
-      rw [← h_rem_int_Ioi, intervalIntegral.integral_of_le hΔ_pos.le, integral_Ioc_eq_integral_Ioo,
-        ← integral_Ioc_eq_integral_Ioo, ← setIntegral_union (Set.Ioc_disjoint_Ioi le_rfl) measurableSet_Ioi
+      have h_set : Set.Ioi (0 : ℝ) = Set.Ioc 0 Δ ∪ Set.Ioi Δ := by
+        ext v; simp only [Set.mem_union, Set.mem_Ioc, Set.mem_Ioi]
+        exact ⟨fun h => (lt_or_ge v Δ).elim (fun h' => Or.inl ⟨h, h'.le⟩) (fun h' => Or.inr (by linarith)),
+          fun h => h.elim (fun a => a.1) (fun a => by linarith)⟩
+      rw [← h_rem_int_Ioi, intervalIntegral.integral_of_le hΔ_pos.le, h_set,
+        setIntegral_union (Set.Ioc_disjoint_Ioi le_rfl) measurableSet_Ioi
           (h_int_r.mono_set Set.Ioc_subset_Ioi_self) (h_int_r.mono_set (Set.Ioi_subset_Ioi (by linarith)))]
-      congr 1; ext v; simp only [Set.mem_union, Set.mem_Ioc, Set.mem_Ioi]
-      exact ⟨fun h => lt_or_le v Δ |>.imp (fun h' => ⟨h, h'.le⟩) (fun h' => h'),
-        fun h => h.elim (fun a => a.1) (fun a => by linarith)⟩
     rw [show (∫ v in (0 : ℝ)..Δ, -(Complex.exp (-Complex.I * θ) * rem_fn v).im) - 2 * envelopeC θ =
         -(∫ v in Set.Ioi Δ, -(Complex.exp (-Complex.I * θ) * rem_fn v).im) by linarith, abs_neg, ← Real.norm_eq_abs]
     refine (norm_integral_le_integral_norm _).trans ?_
@@ -1399,7 +1394,7 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_val : ∫ v in Set.Ioi Δ, Real.exp (-2 * Real.pi * v) = (1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * Δ) := by
       have h_lim : Tendsto (fun v : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * v)) atTop (nhds 0) := by
         have h1 : Tendsto (fun v : ℝ => Real.exp (-(2 * Real.pi) * v)) atTop (nhds 0) :=
-          Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by positivity : -(2 * Real.pi) < 0))
+          Real.tendsto_exp_atBot.comp (tendsto_id.const_mul_atTop_of_neg (by linarith [Real.pi_pos] : -(2 * Real.pi) < 0))
         simpa using h1.const_mul (-(1 / (2 * Real.pi)))
       have h_int : IntegrableOn (fun v : ℝ => Real.exp (-2 * Real.pi * v)) (Set.Ioi Δ) := by
         have hc : IntegrableOn (fun v : ℝ => Complex.exp ((-2 * Real.pi : ℂ) * v)) (Set.Ioi Δ) :=
@@ -1408,11 +1403,11 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         dsimp only
         rw [show (-2 * (Real.pi : ℂ) * v) = ((-2 * Real.pi * v : ℝ) : ℂ) by push_cast; ring,
           ← Complex.ofReal_exp, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
-      have h_d : ∀ v ∈ Set.Ioi Δ, HasDerivAt (fun t : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * t))
+      have h_d : ∀ v ∈ Set.Ici Δ, HasDerivAt (fun t : ℝ => -(1 / (2 * Real.pi)) * Real.exp (-2 * Real.pi * t))
           (Real.exp (-2 * Real.pi * v)) v := by
         intro v _
         have hd := ((hasDerivAt_id v).const_mul (-2 * Real.pi)).exp.const_mul (-(1 / (2 * Real.pi)))
-        refine hd.congr_deriv ?_; field_simp [Real.pi_ne_zero]; ring
+        refine hd.congr_deriv ?_; dsimp only [id]; field_simp [Real.pi_ne_zero]; ring
       have hres := integral_Ioi_of_hasDerivAt_of_tendsto' h_d h_int h_lim
       linarith
     rw [integral_const_mul, h_val] at h_mono
@@ -1432,12 +1427,14 @@ lemma tsum_rescaledF_eval (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       refine (Complex.abs_re_le_norm _).trans ((norm_add_le _ _).trans ?_)
       exact add_le_add (h_cot_diff Δ hΔ_pos.le) (h_rem_bd Δ hΔ_pos.le)
     calc |Real.sin θ| * Δ * |(cot_fn Δ - cot_star Δ + rem_fn Δ).re|
-        ≤ 1 * Δ * _ := by gcongr
+        ≤ 1 * Δ * ((Real.pi ^ 2 / c_sin ^ 2) * |α - α_star| * Real.exp (-2 * Real.pi * Δ) +
+            (2 * Real.pi / Real.cos θ) * Real.exp (-2 * Real.pi * Δ)) := by gcongr
       _ = _ := by ring
   have h_exp_le : Δ * Real.exp (-2 * Real.pi * Δ) ≤ 1 := by
     have he := Real.add_one_le_exp (2 * Real.pi * Δ)
-    have h1 : Δ ≤ Real.exp (2 * Real.pi * Δ) := by nlinarith [Real.two_le_pi]
-    rw [Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _)]; exact h1
+    have hpi : 1 ≤ 2 * Real.pi := by linarith [Real.two_le_pi]
+    have h1 : Δ ≤ Real.exp (2 * Real.pi * Δ) := by nlinarith
+    rw [show (-2 * Real.pi * Δ : ℝ) = -(2 * Real.pi * Δ) by ring, Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _)]; exact h1
   have h_exp_le2 : Real.exp (-2 * Real.pi * Δ) ≤ Δ * Real.exp (-2 * Real.pi * Δ) :=
     le_mul_of_one_le_left (Real.exp_pos _).le hΔ
   rw [h_sum_val]
@@ -1523,18 +1520,18 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
   have hΔ_ge_Δ₃ : Δ ≥ Δ₃ := le_trans (le_trans (le_max_left _ _) (le_trans (le_max_right _ _) (le_max_left _ _))) hΔ
   have hΔ_ge_Δ₄ : Δ ≥ Δ₄ := le_trans (le_trans (le_max_right _ _) (le_trans (le_max_right _ _) (le_max_left _ _))) hΔ
   obtain ⟨α, ⟨hα_mem, hsumm_b, hsum0, hα_err⟩, _⟩ := h_opt Δ hΔ_ge_Δ₁
-  -- Note: Δ^2 * exp(-2πΔ) ≤ 1 / Δ for Δ ≥ 1 since exp(2πΔ) ≥ (2πΔ)^3 / 6 ≥ Δ^3!
   have h_Δ3_exp : Δ ^ 3 * Real.exp (-2 * Real.pi * Δ) ≤ 1 := by
     have he := Real.pow_div_factorial_le_exp (2 * Real.pi * Δ) (by positivity) 3
     have hpi : (2 * Real.pi) ^ 3 / 6 ≥ 1 := by
-      have : 2 ≤ Real.pi := Real.two_le_pi
+      have h2 : 4 ≤ 2 * Real.pi := by linarith [Real.two_le_pi]
+      have h3 : 16 ≤ (2 * Real.pi) ^ 2 := by nlinarith
       nlinarith
     have h1 : Δ ^ 3 ≤ Real.exp (2 * Real.pi * Δ) := by
       calc Δ ^ 3 = 1 * Δ ^ 3 := (one_mul _).symm
         _ ≤ ((2 * Real.pi) ^ 3 / 6) * Δ ^ 3 := by gcongr
         _ = (2 * Real.pi * Δ) ^ 3 / Nat.factorial 3 := by norm_num; ring
         _ ≤ Real.exp (2 * Real.pi * Δ) := he
-    rw [Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _)]; exact h1
+    rw [show (-2 * Real.pi * Δ : ℝ) = -(2 * Real.pi * Δ) by ring, Real.exp_neg, mul_inv_le_iff₀ (Real.exp_pos _)]; exact h1
   have h_Δ2_exp : Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) ≤ 1 / Δ := by
     rw [le_div_iff₀ hΔ_pos]
     calc Δ ^ 2 * Real.exp (-2 * Real.pi * Δ) * Δ = Δ ^ 3 * Real.exp (-2 * Real.pi * Δ) := by ring
@@ -1566,8 +1563,7 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
     have h_diff := h_diff_bd Δ α hΔ_ge_Δ₂ hα_mem hα_near hsumm_b hsum0
     unfold majorantM
     rcases lt_or_ge |Δ * x| 1 with hy1 | hy1
-    · have hd1 := (h_diff.1 (Δ * x) (abs_pos.mpr hy_ne) hy1).symm |> fun h =>
-        (abs_le.mp (h_diff.1 (Δ * x) (abs_pos.mpr hy_ne) hy1)).1
+    · have hd1 := (abs_le.mp (h_diff.1 (Δ * x) (abs_pos.mpr hy_ne) hy1)).1
       rw [h_res] at hd1
       have hj := hJ_small (Δ * x) (abs_pos.mpr hy_ne) hy1.le
       have h_err_le : C_err1 * (Δ * Real.exp (-2 * Real.pi * Δ) + |α - α_star|) ≤ c'_J := by
@@ -1624,8 +1620,11 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
       ⟨C_sup * Real.log Δ, mul_pos hC_sup (Real.log_pos (by linarith [hΔ_ge_Δ₃])), h_sup⟩
     have h_scale_M : ∫ x : ℝ, majorantM θ Δ α x = (1 / Δ) * ∫ y : ℝ, vaalerInterpolant θ Δ α y := by
       unfold majorantM
-      have h_sub := integral_comp_mul_left (vaalerInterpolant θ Δ α) Δ
-      rw [h_sub, abs_of_pos hΔ_pos, smul_eq_mul, inv_eq_one_div]
+      have h_eq : (fun x : ℝ => vaalerInterpolant θ Δ α (Δ * x)) =
+          fun x : ℝ => vaalerInterpolant θ Δ α (x / (1 / Δ)) := by
+        ext x; congr 1; field_simp [hΔ_pos.ne']
+      rw [h_eq, integral_comp_div (vaalerInterpolant θ Δ α) (1 / Δ),
+        abs_of_pos (by positivity : 0 < 1 / Δ), smul_eq_mul]
     have h_diff_eq : ∫ x : ℝ, (majorantM θ Δ α x - kernelK θ x) =
         (∫ x : ℝ, majorantM θ Δ α x) - (∫ x : ℝ, kernelK θ x) :=
       integral_sub h_int_M (kernelK_integrable_sl θ)
@@ -1639,8 +1638,7 @@ theorem asymmetric_majorant (θ : ℝ) (hθ : |θ| < Real.pi / 2) :
         ≤ (1 / Δ) * (C_eval * (Δ * Real.exp (-2 * Real.pi * Δ) + |α - α_star|)) := by gcongr
       _ ≤ (1 / Δ) * (C_eval * (Δ * Real.exp (-2 * Real.pi * Δ) + C_α * Δ * Real.exp (-2 * Real.pi * Δ))) := by gcongr
       _ = C_err * Real.exp (-2 * Real.pi * Δ) := by
-          dsimp only [C_err]; field_simp [hΔ_pos.ne']; ring
+          dsimp only [C_err]; field_simp [hΔ_pos.ne']
   exact ⟨α, majorantEntire θ Δ α, hα_mem, hM_type, hM_re, h_int_diff, h_sup, h_L1, h_ge_K, h_excess⟩
-
 
 end PolarEvaluation
